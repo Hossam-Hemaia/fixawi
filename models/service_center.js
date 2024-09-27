@@ -7,10 +7,13 @@ const serviceCenterSchema = new Schema(
       type: String,
       required: true,
     },
+    serviceCenterTitleEn: {
+      type: String,
+    },
     address: {
       type: String,
     },
-    centerLocation: {
+    location: {
       lat: {
         type: String,
       },
@@ -34,9 +37,26 @@ const serviceCenterSchema = new Schema(
       type: String,
     },
     carBrands: [],
+    image: {
+      type: String,
+    },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    username: {
+      type: String,
+    },
+    password: {
+      type: String,
+    },
+    priceListId: {
+      type: Schema.Types.ObjectId,
+      ref: "price_list",
     },
   },
   { timestamps: true }

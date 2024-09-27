@@ -9,6 +9,10 @@ const cron = require("node-cron");
 
 const connectDB = require("./config/dbConnect");
 
+const authRouter = require("./routes/auth");
+const adminRouter = require("./routes/admin");
+const scRouter = require("./routes/sc");
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "images");
@@ -42,6 +46,10 @@ app.use(compression());
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/files", express.static(path.join(__dirname, "files")));
 app.use(multer({ storage: fileStorage }).array("files"));
+
+app.use(process.env.API, authRouter);
+app.use(process.env.API, adminRouter);
+app.use(process.env.API, scRouter);
 
 app.use((error, req, res, next) => {
   console.log(error);

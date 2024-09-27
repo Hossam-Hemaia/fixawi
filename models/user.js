@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const userSchema = new Schema(
   {
-    name: {
+    fullName: {
       type: String,
       required: true,
     },
@@ -16,6 +16,7 @@ const userSchema = new Schema(
     authMethod: {
       type: String,
       enum: ["Google", "Facebook", "email", "phone"],
+      default: "phone",
     },
     carBrand: {
       type: String,
@@ -25,7 +26,7 @@ const userSchema = new Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     hasProfile: {
       type: Boolean,
