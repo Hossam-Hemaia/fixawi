@@ -12,6 +12,7 @@ const connectDB = require("./config/dbConnect");
 const authRouter = require("./routes/auth");
 const adminRouter = require("./routes/admin");
 const scRouter = require("./routes/sc");
+const logger = require("./middleware/logger");
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -53,6 +54,7 @@ app.use(process.env.API, scRouter);
 
 app.use((error, req, res, next) => {
   console.log(error);
+  logger.error(error);
   const status = error.statusCode || 500;
   const message = error.message;
   res.status(status).json({ success: false, message: message });

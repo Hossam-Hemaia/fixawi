@@ -1,7 +1,8 @@
 const Admin = require("../models/admin");
 const PriceList = require("../models/priceList");
+const ServiceCategory = require("../models/service_types");
 const ServiceCenter = require("../models/service_center");
-const ObjectId = require("mongoose").Types.ObjectId;
+const { getModifiedPriceLists } = require("../controllers/adminController");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -130,7 +131,18 @@ exports.editList = async (serviceCenterId, priceListData) => {
   try {
     const priceList = await PriceList.findOne({ serviceCenterId });
     await priceList.modifyList(priceListData);
-    return true;
+    return priceList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.approveWholeList = async (priceListId, isApproved) => {
+  try {
+    const list = await PriceList.findById(priceListId);
+    if (isApproved) {
+      await list.approveWholeList();
+    }
   } catch (err) {
     throw err;
   }
@@ -145,6 +157,64 @@ exports.approveModifiedService = async (modifiedData) => {
       throw error;
     }
     await priceList.modifyService(modifiedData);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.modifiedLists = async () => {
+  try {
+    const lists = await PriceList.find({ priceListApporved: false });
+    return lists;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.showPriceList = async (serviceCenterId) => {
+  try {
+    const priceList = await PriceList.findOne({ serviceCenterId });
+    return priceList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.createCategory = async (categoryData) => {
+  try {
+    const category = new ServiceCategory(categoryData);
+    await category.save();
+    return category;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allCategories = async () => {
+  try {
+    const categories = await ServiceCategory.find();
+    return categories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeCategory = async (categoryId) => {
+  try {
+    await ServiceCategory.findByIdAndDelete(categoryId);
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setCategoryStatus = async (categoryId, status) => {
+  try {
+    console.log(status);
+    await ServiceCategory.findByIdAndUpdate(categoryId, {
+      isAvailable: status,
+    });
+    return true;
   } catch (err) {
     throw err;
   }

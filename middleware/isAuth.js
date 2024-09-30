@@ -80,11 +80,12 @@ exports.scIsAuth = async (req, res, next) => {
     next(error);
   }
   const sc = await adminServices.getAdmin(decodedToken.adminId);
-  if (!sc || sc.role !== "service center") {
+  const serviceCenter = await adminServices.serviceCenter(sc.serviceCenterId);
+  if (!sc || sc.role !== "service center" || !serviceCenter.isActive) {
     const error = new Error("Authorization faild!");
     error.statusCode = 403;
     next(error);
   }
-  req.scId = admin._id;
+  req.sc = sc;
   next();
 };

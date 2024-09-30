@@ -3,10 +3,10 @@ const Schema = mongoose.Schema;
 
 const serviceTypeSchema = new Schema(
   {
-    serviceTitle: {
+    categoryTitle: {
       type: String,
     },
-    serviceDescription: {
+    categoryDescription: {
       type: String,
     },
     isAvailable: {

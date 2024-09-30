@@ -16,6 +16,10 @@ const priceListSchema = new Schema(
         isApproved: { type: Boolean, default: false },
       },
     ],
+    priceListApporved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
@@ -26,6 +30,7 @@ priceListSchema.methods.addToList = function (priceList) {
     const newList = list.concat(priceList);
     this.priceList = newList;
     this.save();
+    return this;
   } catch (err) {
     throw err;
   }
@@ -34,6 +39,20 @@ priceListSchema.methods.addToList = function (priceList) {
 priceListSchema.methods.modifyList = function (priceList) {
   try {
     this.priceList = priceList;
+    this.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+priceListSchema.methods.approveWholeList = function () {
+  try {
+    const newList = this.priceList;
+    for (let item of newList) {
+      item.isApproved = true;
+    }
+    this.priceList = newList;
+    this.priceListApporved = true;
     this.save();
   } catch (err) {
     throw err;
@@ -53,6 +72,7 @@ priceListSchema.methods.modifyService = function (serviceData) {
       service.isApproved = serviceData.isApproved;
       this.priceList[serviceIndex] = service;
       this.save();
+      return this;
     } else {
       throw new Error("service not found!");
     }

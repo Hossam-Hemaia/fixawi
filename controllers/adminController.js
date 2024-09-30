@@ -65,6 +65,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
         username,
         password: hashedPassword,
         role: "service center",
+        serviceCenterId: serviceCenter._id,
       };
       await adminServices.createAdmin(scData);
       return res.status(201).json({
@@ -138,7 +139,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       lat,
       lng,
     };
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const hashedPassword =
+      password !== "" ? await bcrypt.hash(password, 12) : "";
     const brands = JSON.parse(carBrands);
     const serviceCenterData = {
       serviceCenterTitle,
@@ -221,6 +223,7 @@ exports.approveServiceCenter = async (req, res, next) => {
       username,
       password: hashedPassword,
       role: "service center",
+      serviceCenterId: serviceCenter._id,
     };
     await adminServices.createAdmin(scData);
     res.status(201).json({
@@ -261,6 +264,35 @@ exports.putEditPriceList = async (req, res, next) => {
   }
 };
 
+exports.getPriceList = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.query.serviceCenterId;
+    const priceList = await adminServices.showPriceList(serviceCenterId);
+    res.status(200).json({ success: true, priceList });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getModifiedPriceLists = async (req, res, next) => {
+  try {
+    const priceLists = await adminServices.modifiedLists();
+    res.status(200).json({ success: true, priceLists });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putApproveWholeList = async (req, res, next) => {
+  try {
+    const { priceListId, isApproved } = req.body;
+    await adminServices.approveWholeList(priceListId, isApproved);
+    res.status(200).json({ success: true, message: "List Approved" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.patchApproveModifiedList = async (req, res, next) => {
   try {
     const { serviceId, serviceTitle, servicePrice, isApproved, priceListId } =
@@ -274,6 +306,63 @@ exports.patchApproveModifiedList = async (req, res, next) => {
     };
     await adminServices.approveModifiedService(modifiedData);
     res.status(200).json({ success: true, message: "service updated" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Service Centers Categories
+ **********************************************************/
+exports.postCreateCategory = async (req, res, next) => {
+  try {
+    const { categoryTitle, categoryDescription } = req.body;
+    const categoryData = {
+      categoryTitle,
+      categoryDescription,
+    };
+    const category = await adminServices.createCategory(categoryData);
+    if (!category) {
+      const error = new Error("faild to create category!");
+      error.statusCode = 422;
+      throw error;
+    }
+    res.status(201).json({ success: true, message: "New Category Created" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllCategories = async (req, res, next) => {
+  try {
+    const categories = await adminServices.allCategories();
+    res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCategory = async (req, res, next) => {
+  try {
+    const categoryId = req.query.categoryId;
+    await adminServices.removeCategory(categoryId);
+    res
+      .status(200)
+      .json({ success: true, message: "Category has been deleted!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putSetCategoryStatus = async (req, res, next) => {
+  try {
+    const categoryId = req.body.categoryId;
+    const isAvailable = req.body.status;
+    await adminServices.setCategoryStatus(categoryId, isAvailable);
+    res.status(200).json({
+      success: true,
+      message: `Category has been ${isAvailable ? "enabled" : "blocked"}`,
+    });
   } catch (err) {
     next(err);
   }

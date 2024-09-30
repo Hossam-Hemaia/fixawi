@@ -18,6 +18,10 @@ const userSchema = new Schema(
       type: String,
       default: "admin",
     },
+    serviceCenterId: {
+      type: Schema.Types.ObjectId,
+      ref: "service_center",
+    },
   },
   { timestamps: true, strictPopulate: false }
 );

@@ -40,7 +40,7 @@ router.put(
   [
     validators.validatePassword.custom((value, { req }) => {
       if (req.url === "/create/service/center") {
-        if (value !== req.body.confirmPassword) {
+        if (value !== "" && value !== req.body.confirmPassword) {
           throw new Error("Passowrd does not match!");
         }
       }
@@ -92,10 +92,49 @@ router.put(
   adminController.putEditPriceList
 );
 
+router.put(
+  "/approve/whole/list",
+  isAuth.adminIsAuth,
+  adminController.putApproveWholeList
+);
+
 router.patch(
   "/approve/modified/service",
   isAuth.adminIsAuth,
   adminController.patchApproveModifiedList
+);
+
+router.get(
+  "/show/price/list",
+  isAuth.adminIsAuth,
+  adminController.getPriceList
+);
+
+/**********************************************************
+ * Service Centers Categories
+ **********************************************************/
+router.post(
+  "/create/category",
+  isAuth.adminIsAuth,
+  adminController.postCreateCategory
+);
+
+router.get(
+  "/all/categories",
+  isAuth.adminIsAuth,
+  adminController.getAllCategories
+);
+
+router.delete(
+  "/delete/category",
+  isAuth.adminIsAuth,
+  adminController.deleteCategory
+);
+
+router.put(
+  "/set/category/status",
+  isAuth.adminIsAuth,
+  adminController.putSetCategoryStatus
 );
 
 module.exports = router;
