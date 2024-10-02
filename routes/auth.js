@@ -55,11 +55,19 @@ router.post(
             const error = new Error("incorrect email!");
             error.statusCode = 422;
             throw error;
+          } else if (user.isBlocked) {
+            const error = new Error("User is blocked!");
+            error.statusCode = 422;
+            throw error;
           }
         } else if (value === "phone") {
           user = await User.findOne({ phoneNumber: req.body.username });
           if (!user) {
             const error = new Error("incorrect phone number!");
+            error.statusCode = 422;
+            throw error;
+          } else if (user.isBlocked) {
+            const error = new Error("User is blocked!");
             error.statusCode = 422;
             throw error;
           }

@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const adminServices = require("../services/adminServices");
+const userServices = require("../services/userServices");
 const { validationResult } = require("express-validator");
 
 /**********************************************************
@@ -363,6 +364,56 @@ exports.putSetCategoryStatus = async (req, res, next) => {
       success: true,
       message: `Category has been ${isAvailable ? "enabled" : "blocked"}`,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllUsers = async (req, res, next) => {
+  try {
+    const page = +req.query.page;
+    const ITEMS_PER_PAGE = 200;
+    let totalUsers;
+    const users = await userServices.allUsers(page, ITEMS_PER_PAGE);
+    totalUsers = users.length;
+    res.status(200).json({
+      success: true,
+      data: {
+        users: users,
+        itemsPerPage: ITEMS_PER_PAGE,
+        currentPage: page,
+        hasNextPage: page * ITEMS_PER_PAGE < totalUsers,
+        nextPage: page + 1,
+        hasPreviousPage: page > 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalUsers / ITEMS_PER_PAGE),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUser = async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    const user = await userServices.findUserById(userId);
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putBlockUser = async (req, res, next) => {
+  try {
+    const { userId, status } = req.body;
+    const blocked = await userServices.blockUser(userId, status);
+    if (blocked) {
+      return res.status(200).json({
+        success: true,
+        message: `User is ${status ? "blocked" : "unblocked"}`,
+      });
+    }
   } catch (err) {
     next(err);
   }

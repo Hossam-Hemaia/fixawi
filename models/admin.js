@@ -22,6 +22,10 @@ const userSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "service_center",
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, strictPopulate: false }
 );

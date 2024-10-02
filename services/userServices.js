@@ -65,3 +65,25 @@ exports.resendCode = async (username) => {
     throw err;
   }
 };
+
+exports.allUsers = async (page, itemsPerPage) => {
+  try {
+    const users = await User.find()
+      .skip((page - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+    return users;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.blockUser = async (userId, status) => {
+  try {
+    const user = await this.findUserById(userId);
+    user.isBlocked = status;
+    await user.save();
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};

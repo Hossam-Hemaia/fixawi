@@ -137,4 +137,13 @@ router.put(
   adminController.putSetCategoryStatus
 );
 
+/**********************************************************
+ * Clients
+ **********************************************************/
+router.get("/all/users", isAuth.adminIsAuth, adminController.getAllUsers);
+
+router.get("/user", isAuth.adminIsAuth, adminController.getUser);
+
+router.put("/block/user", isAuth.adminIsAuth, adminController.putBlockUser);
+
 module.exports = router;
