@@ -14,11 +14,15 @@ const serviceCenterSchema = new Schema(
       type: String,
     },
     location: {
-      lat: {
+      type: {
         type: String,
+        enum: ["Point"], // 'location.type' must be 'Point'
+        required: true,
+        default: "Point",
       },
-      lng: {
-        type: String,
+      coordinates: {
+        type: [Number], // Array of numbers: [longitude, latitude]
+        required: true,
       },
     },
     serviceType: {
@@ -59,7 +63,9 @@ const serviceCenterSchema = new Schema(
       ref: "price_list",
     },
   },
-  { timestamps: true }
+  { timestamps: true, autoIndex: false }
 );
+
+serviceCenterSchema.index({ location: "2dsphere" }, { unique: true });
 
 module.exports = mongoose.model("service_center", serviceCenterSchema);

@@ -18,8 +18,8 @@ exports.postJoinRequest = async (req, res, next) => {
       carBrands,
     } = req.body;
     const location = {
-      lat,
-      lng,
+      type: "Point",
+      coordinates: [lng, lat],
     };
     const serviceCenterData = {
       serviceCenterTitle,
@@ -82,8 +82,8 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
     }
     const location = {
-      lat,
-      lng,
+      type: "Point",
+      coordinates: [lng, lat],
     };
     let hashedPassword;
     if (password !== "") {

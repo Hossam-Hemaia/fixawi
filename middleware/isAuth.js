@@ -7,6 +7,7 @@ exports.userIsAuth = async (req, res, next) => {
   try {
     const token = req.get("Authorization").split(" ")[1];
     decodedToken = jwt.verify(token, process.env.SECRET);
+    console.log(decodedToken);
   } catch (err) {
     err.statusCode = 403;
     next(err);
@@ -22,7 +23,7 @@ exports.userIsAuth = async (req, res, next) => {
     next(error);
   }
   const user = await userServices.findUserById(decodedToken.userId);
-  if (!user || user.role !== "user" || !user.verified) {
+  if (!user || user.role !== "user" || user.isBlocked) {
     const error = new Error("Authorization faild!");
     error.statusCode = 403;
     next(error);

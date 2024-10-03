@@ -36,8 +36,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
     }
     const location = {
-      lat,
-      lng,
+      type: "Point",
+      coordinates: [lng, lat],
     };
     const hashedPassword = await bcrypt.hash(password, 12);
     const brands = JSON.parse(carBrands);
@@ -137,8 +137,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
     }
     const location = {
-      lat,
-      lng,
+      type: "Point",
+      coordinates: [lng, lat],
     };
     const hashedPassword =
       password !== "" ? await bcrypt.hash(password, 12) : "";

@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const ServiceCenter = require("../models/service_center");
 const utilities = require("../utils/utilities");
 
 exports.createUser = async (userData) => {
@@ -83,6 +84,39 @@ exports.blockUser = async (userId, status) => {
     user.isBlocked = status;
     await user.save();
     return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateProfile = async (userId, userData) => {
+  try {
+    const updateData = {};
+    for (let key in userData) {
+      if (userData[key] !== "") {
+        updateData[key] = userData[key];
+      }
+    }
+    await User.findByIdAndUpdate(userId, updateData);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.nearestServiceCenters = async (coords, maxDistance) => {
+  try {
+    const nearestCenters = await ServiceCenter.find({
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: coords,
+          },
+          $maxDistance: maxDistance,
+        },
+      },
+    });
+    return nearestCenters;
   } catch (err) {
     throw err;
   }

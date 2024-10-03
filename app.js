@@ -10,6 +10,7 @@ const cron = require("node-cron");
 const connectDB = require("./config/dbConnect");
 
 const authRouter = require("./routes/auth");
+const userRouter = require("./routes/user");
 const adminRouter = require("./routes/admin");
 const scRouter = require("./routes/sc");
 const logger = require("./middleware/logger");
@@ -49,6 +50,7 @@ app.use("/files", express.static(path.join(__dirname, "files")));
 app.use(multer({ storage: fileStorage }).array("files"));
 
 app.use(process.env.API, authRouter);
+app.use(process.env.API, userRouter);
 app.use(process.env.API, adminRouter);
 app.use(process.env.API, scRouter);
 
