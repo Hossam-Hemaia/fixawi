@@ -121,3 +121,12 @@ exports.nearestServiceCenters = async (coords, maxDistance) => {
     throw err;
   }
 };
+
+exports.filterCenters = async (filter) => {
+  try {
+    const serviceCenters = await ServiceCenter.find(filter);
+    return serviceCenters;
+  } catch (err) {
+    throw err;
+  }
+};

@@ -30,6 +30,15 @@ const serviceCenterSchema = new Schema(
     },
     averageRating: {
       type: Number,
+      default: 0,
+    },
+    ratings: {
+      type: Number,
+      default: 0,
+    },
+    reviewers: {
+      type: Number,
+      default: 0,
     },
     openAt: {
       type: String,
@@ -61,6 +70,10 @@ const serviceCenterSchema = new Schema(
     priceListId: {
       type: Schema.Types.ObjectId,
       ref: "price_list",
+    },
+    ratingId: {
+      type: Schema.Types.ObjectId,
+      ref: "rating",
     },
   },
   { timestamps: true, autoIndex: false }

@@ -17,4 +17,22 @@ router.get(
   userController.getNearServiceCenters
 );
 
+router.get(
+  "/filter/service/centers",
+  isAuth.userIsAuth,
+  userController.filterServiceCenters
+);
+
+router.post(
+  "/review/service/center",
+  isAuth.userIsAuth,
+  userController.postReviewServiceCenter
+);
+
+router.get(
+  "/service/center/ratings",
+  isAuth.userIsAuth,
+  userController.getServiceCenterRatings
+);
+
 module.exports = router;

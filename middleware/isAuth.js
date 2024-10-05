@@ -7,7 +7,6 @@ exports.userIsAuth = async (req, res, next) => {
   try {
     const token = req.get("Authorization").split(" ")[1];
     decodedToken = jwt.verify(token, process.env.SECRET);
-    console.log(decodedToken);
   } catch (err) {
     err.statusCode = 403;
     next(err);

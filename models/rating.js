@@ -10,7 +10,7 @@ const ratingSchema = new Schema(
     },
     reviews: [
       {
-        clientId: { type: Schema.Types.ObjectId, ref: "user" },
+        userId: { type: Schema.Types.ObjectId, ref: "user" },
         rating: { type: Number },
         review: { type: String },
       },

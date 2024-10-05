@@ -1,3 +1,4 @@
+const ServiceCenter = require("../models/service_center");
 const ServiceCategory = require("../models/service_types");
 const PriceList = require("../models/priceList");
 
@@ -17,5 +18,14 @@ exports.setPriceListDisapproved = async (priceListId) => {
     await priceList.save();
   } catch (err) {
     throw err;
+  }
+};
+
+exports.getServiceCenter = async (serviceCenterId) => {
+  try {
+    const serviceCenter = await ServiceCenter.findById(serviceCenterId);
+    return serviceCenter;
+  } catch (err) {
+    next(err);
   }
 };
