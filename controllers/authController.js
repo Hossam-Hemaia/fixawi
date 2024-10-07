@@ -14,8 +14,10 @@ exports.postCreateUser = async (req, res, next) => {
       phoneNumber,
       email,
       authMethod,
+      carNumber,
       carBrand,
       carModel,
+      modelYear,
       password,
     } = req.body;
     const error = validationResult(req);
@@ -30,8 +32,10 @@ exports.postCreateUser = async (req, res, next) => {
       phoneNumber,
       email,
       authMethod,
+      carNumber,
       carBrand,
       carModel,
+      modelYear,
       password: hashedPassword,
     };
     const user = await userServices.createUser(userData);

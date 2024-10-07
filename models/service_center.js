@@ -13,6 +13,9 @@ const serviceCenterSchema = new Schema(
     address: {
       type: String,
     },
+    area: {
+      type: String,
+    },
     location: {
       type: {
         type: String,
@@ -26,6 +29,9 @@ const serviceCenterSchema = new Schema(
       },
     },
     serviceType: {
+      type: String,
+    },
+    visitType: {
       type: String,
     },
     averageRating: {

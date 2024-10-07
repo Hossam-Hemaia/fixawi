@@ -2,7 +2,6 @@ const Admin = require("../models/admin");
 const PriceList = require("../models/priceList");
 const ServiceCategory = require("../models/service_types");
 const ServiceCenter = require("../models/service_center");
-const { getModifiedPriceLists } = require("../controllers/adminController");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -210,10 +209,24 @@ exports.removeCategory = async (categoryId) => {
 
 exports.setCategoryStatus = async (categoryId, status) => {
   try {
-    console.log(status);
     await ServiceCategory.findByIdAndUpdate(categoryId, {
       isAvailable: status,
     });
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.editCategory = async (categoryId, categoryData) => {
+  try {
+    const updateData = {};
+    for (let key in categoryData) {
+      if (categoryData[key] !== "") {
+        updateData[key] = categoryData[key];
+      }
+    }
+    await ServiceCategory.findByIdAndUpdate(categoryId, updateData);
     return true;
   } catch (err) {
     throw err;

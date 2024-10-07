@@ -12,9 +12,11 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       lat,
       lng,
       serviceType,
+      visitType,
       openAt,
       closeAt,
       contacts,
@@ -45,8 +47,10 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       location,
       serviceType,
+      visitType,
       openAt,
       closeAt,
       contacts,
@@ -111,9 +115,11 @@ exports.putEditServiceCenter = async (req, res, next) => {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       lat,
       lng,
       serviceType,
+      visitType,
       openAt,
       closeAt,
       contacts,
@@ -147,8 +153,10 @@ exports.putEditServiceCenter = async (req, res, next) => {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       location,
       serviceType,
+      visitType,
       openAt,
       closeAt,
       contacts,
@@ -317,10 +325,19 @@ exports.patchApproveModifiedList = async (req, res, next) => {
  **********************************************************/
 exports.postCreateCategory = async (req, res, next) => {
   try {
-    const { categoryTitle, categoryDescription } = req.body;
+    const { categoryTitle, categoryTitleEn, categoryDescription } = req.body;
+    const files = req.files;
+    let image;
+    let imageUrl = "";
+    if (files.length > 0) {
+      image = files[0];
+      imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    }
     const categoryData = {
       categoryTitle,
+      categoryTitleEn,
       categoryDescription,
+      imageUrl,
     };
     const category = await adminServices.createCategory(categoryData);
     if (!category) {
@@ -369,6 +386,38 @@ exports.putSetCategoryStatus = async (req, res, next) => {
   }
 };
 
+exports.putEditServiceCategory = async (req, res, next) => {
+  try {
+    const { categoryTitle, categoryTitleEn, categoryDescription, categoryId } =
+      req.body;
+    const files = req.files;
+    let image;
+    let imageUrl = "";
+    if (files.length > 0) {
+      image = files[0];
+      imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    }
+    const categoryData = {
+      categoryTitle,
+      categoryTitleEn,
+      categoryDescription,
+      imageUrl,
+    };
+    const category = await adminServices.editCategory(categoryId, categoryData);
+    if (!category) {
+      const error = new Error("faild to create category!");
+      error.statusCode = 422;
+      throw error;
+    }
+    res.status(201).json({ success: true, message: "Category Updated" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Users
+ **********************************************************/
 exports.getAllUsers = async (req, res, next) => {
   try {
     const page = +req.query.page;

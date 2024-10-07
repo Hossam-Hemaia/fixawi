@@ -64,6 +64,6 @@ app.use((error, req, res, next) => {
 
 connectDB.connectDB(DB_URI);
 
-const server = app.listen(process.env.PORT, "localhost", () => {
+const server = app.listen(process.env.PORT, "127.0.0.1", () => {
   console.log("Listening on port " + process.env.PORT);
 });

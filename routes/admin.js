@@ -137,6 +137,12 @@ router.put(
   adminController.putSetCategoryStatus
 );
 
+router.put(
+  "/edit/service/category",
+  isAuth.adminIsAuth,
+  adminController.putEditServiceCategory
+);
+
 /**********************************************************
  * Clients
  **********************************************************/

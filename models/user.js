@@ -18,10 +18,16 @@ const userSchema = new Schema(
       enum: ["Google", "Facebook", "email", "phone"],
       default: "phone",
     },
+    carNumber: {
+      type: String,
+    },
     carBrand: {
       type: String,
     },
     carModel: {
+      type: String,
+    },
+    modelYear: {
       type: String,
     },
     isActive: {
