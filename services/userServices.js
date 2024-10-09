@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const ServiceCenter = require("../models/service_center");
+const Category = require("../models/service_types");
 const utilities = require("../utils/utilities");
 
 exports.createUser = async (userData) => {
@@ -126,6 +127,15 @@ exports.filterCenters = async (filter) => {
   try {
     const serviceCenters = await ServiceCenter.find(filter);
     return serviceCenters;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.servicesCategories = async () => {
+  try {
+    const categories = await Category.find({ isAvailable: true });
+    return categories;
   } catch (err) {
     throw err;
   }

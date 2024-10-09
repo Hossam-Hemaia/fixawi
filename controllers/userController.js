@@ -1,6 +1,8 @@
+const connectRedis = require("../config/redisConnect");
 const userServices = require("../services/userServices");
 const scServices = require("../services/scServices");
 const ratingServices = require("../services/ratingServices");
+const utilities = require("../utils/utilities");
 
 exports.getUserProfile = async (req, res, next) => {
   try {
@@ -113,7 +115,76 @@ exports.getServiceCenterRatings = async (req, res, next) => {
   try {
     const ratingId = req.query.ratingId;
     const ratings = await ratingServices.getRatings(ratingId);
-    res.status(200).json({success: true, ratings})
+    res.status(200).json({ success: true, ratings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postFirebaseToken = async (req, res, next) => {
+  try {
+    const token = req.body.firebaseToken;
+    const userId = req.userId;
+    const cacheDb = await connectRedis.getRedisConnection();
+    await cacheDb.hSet(`${userId}`, "fbaseToken", JSON.stringify(token));
+    res
+      .status(201)
+      .json({ success: true, message: "firebase token registered" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getServicesCategories = async (req, res, next) => {
+  try {
+    const categories = await userServices.servicesCategories();
+    res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getServiceCenterDetails = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.query.serviceCenterId;
+    const serviceCenter = await scServices.getUserServiceCenter(
+      serviceCenterId
+    );
+    return res.status(200).json({ success: true, serviceCenter });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postVisitServiceCenter = async (req, res, next) => {
+  try {
+    const { serviceCenterId, lng, lat } = req.body;
+    const serviceCenter = await scServices.getUserServiceCenter(
+      serviceCenterId
+    );
+    const fromPoint = {
+      lat,
+      lng,
+    };
+    const toPoint = {
+      lat: serviceCenter.location.coordinates[0],
+      lng: serviceCenter.location.coordinates[1],
+    };
+    const locations = { fromPoint, toPoint };
+    const data = await utilities.getDrivingRoute(locations, false);
+    const drivingRoute = data.paths[0].points;
+    const distance = data.paths[0].distance / 1000;
+    const estimatedTime = data.paths[0].time / 1000 / 60;
+    // Create a Visit transaction and let it appear on the service center visits page
+    // and the user app - with the ability to cancel the visit from the user side
+    res.status(200).json({
+      success: true,
+      data: {
+        route: drivingRoute,
+        km: distance,
+        time: estimatedTime,
+      },
+    });
   } catch (err) {
     next(err);
   }

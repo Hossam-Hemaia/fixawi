@@ -29,3 +29,19 @@ exports.getServiceCenter = async (serviceCenterId) => {
     next(err);
   }
 };
+
+exports.getUserServiceCenter = async (serviceCenterId) => {
+  try {
+    const serviceCenter = await ServiceCenter.findById(serviceCenterId, {
+      username: 0,
+      password: 0,
+      createdAt: 0,
+      updatedAt: 0,
+    }).populate("ratingId");
+    return serviceCenter;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setUserVisit = async (visitData)=>{};

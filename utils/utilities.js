@@ -1,4 +1,7 @@
 const nodemailer = require("nodemailer");
+const firebaseAdmin = require("firebase-admin");
+const rdsClient = require("../config/redisConnect");
+const axios = require("axios");
 
 exports.tokenCreator = () => {
   try {
@@ -42,4 +45,57 @@ exports.emailSender = async (email, verificationCode, emailType = "reset") => {
   }
   const emailStatus = await transporter.sendMail(emailOptions);
   console.log(emailStatus);
+};
+
+exports.sendPushNotification = async (token, title, message) => {
+  try {
+    const payload = {
+      notification: {
+        title,
+        body: message,
+      },
+      token,
+    };
+    const response = await firebaseAdmin.messaging().send(payload);
+    if (response) {
+      console.log(response);
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getFirebaseToken = async (userId) => {
+  try {
+    const cacheDb = await rdsClient.getRedisConnection();
+    const userToken = await cacheDb.hGetAll(`${userId}`);
+    const token = JSON.parse(userToken.fbaseToken);
+    return token;
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDrivingRoute = async (locations, instructions) => {
+  try {
+    const response = await axios.post(
+      `https://graphhopper.com/api/1/route?key=${process.env.GH_KEY}`,
+      {
+        points: [
+          [locations.fromPoint.lng, locations.fromPoint.lat],
+          [locations.toPoint.lng, locations.toPoint.lat],
+        ],
+        details: ["road_class", "surface"],
+        vehicle: "car",
+        locale: "en",
+        instructions: instructions,
+        calc_points: true,
+        points_encoded: false,
+      }
+    );
+    const data = await response.data;
+    return data;
+  } catch (err) {
+    throw err;
+  }
 };

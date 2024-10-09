@@ -5,9 +5,11 @@ const helmet = require("helmet");
 const cors = require("cors-express");
 const dotenv = require("dotenv");
 const multer = require("multer");
+const firebaseAdmin = require("firebase-admin");
 const cron = require("node-cron");
 
 const connectDB = require("./config/dbConnect");
+const connectRedis = require("./config/redisConnect");
 
 const authRouter = require("./routes/auth");
 const userRouter = require("./routes/user");
@@ -38,6 +40,12 @@ const options = {
 dotenv.config();
 const app = express();
 
+firebaseAdmin.initializeApp({
+  credential: firebaseAdmin.credential.cert(
+    require(path.resolve(__dirname, "serviceAccount.json"))
+  ),
+});
+
 const DB_URI = `${process.env.DB_URI}`;
 
 app.use(cors(options));
@@ -63,6 +71,7 @@ app.use((error, req, res, next) => {
 });
 
 connectDB.connectDB(DB_URI);
+connectRedis.initRedis();
 
 const server = app.listen(process.env.PORT, "127.0.0.1", () => {
   console.log("Listening on port " + process.env.PORT);

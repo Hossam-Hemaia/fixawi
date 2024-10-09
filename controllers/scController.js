@@ -20,7 +20,7 @@ exports.postJoinRequest = async (req, res, next) => {
     } = req.body;
     const location = {
       type: "Point",
-      coordinates: [lng, lat],
+      coordinates: [lat, lng],
     };
     const serviceCenterData = {
       serviceCenterTitle,
@@ -85,7 +85,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
     }
     const location = {
       type: "Point",
-      coordinates: [lng, lat],
+      coordinates: [lat, lng],
     };
     let hashedPassword;
     if (password !== "") {

@@ -39,7 +39,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
     }
     const location = {
       type: "Point",
-      coordinates: [lng, lat],
+      coordinates: [lat, lng],
     };
     const hashedPassword = await bcrypt.hash(password, 12);
     const brands = JSON.parse(carBrands);
@@ -144,7 +144,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
     }
     const location = {
       type: "Point",
-      coordinates: [lng, lat],
+      coordinates: [lat, lng],
     };
     const hashedPassword =
       password !== "" ? await bcrypt.hash(password, 12) : "";

@@ -23,6 +23,18 @@ router.get(
   userController.filterServiceCenters
 );
 
+router.get(
+  "/service/center/details",
+  isAuth.userIsAuth,
+  userController.getServiceCenterDetails
+);
+
+router.post(
+  "/visit/service/center",
+  isAuth.userIsAuth,
+  userController.postVisitServiceCenter
+);
+
 router.post(
   "/review/service/center",
   isAuth.userIsAuth,
@@ -33,6 +45,18 @@ router.get(
   "/service/center/ratings",
   isAuth.userIsAuth,
   userController.getServiceCenterRatings
+);
+
+router.post(
+  "/user/set/firebase/token",
+  isAuth.userIsAuth,
+  userController.postFirebaseToken
+);
+
+router.get(
+  "/user/services/categories",
+  isAuth.userIsAuth,
+  userController.getServicesCategories
 );
 
 module.exports = router;

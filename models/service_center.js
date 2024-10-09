@@ -82,7 +82,7 @@ const serviceCenterSchema = new Schema(
       ref: "rating",
     },
   },
-  { timestamps: true, autoIndex: false }
+  { timestamps: true, autoIndex: false, strictPopulate: false }
 );
 
 serviceCenterSchema.index({ location: "2dsphere" }, { unique: true });
