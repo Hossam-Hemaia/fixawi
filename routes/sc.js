@@ -45,4 +45,6 @@ router.put(
   scController.putEditServiceCenterPriceList
 );
 
+router.get("/service/center/visits", isAuth.scIsAuth, scController.getVisits);
+
 module.exports = router;

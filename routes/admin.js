@@ -77,6 +77,8 @@ router.post(
   adminController.approveServiceCenter
 );
 
+router.get("/users/visits", isAuth.adminIsAuth, adminController.getUsersVisits);
+
 /**********************************************************
  * Price List
  **********************************************************/

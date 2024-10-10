@@ -159,6 +159,7 @@ exports.getServiceCenterDetails = async (req, res, next) => {
 exports.postVisitServiceCenter = async (req, res, next) => {
   try {
     const { serviceCenterId, lng, lat } = req.body;
+    const userId = req.userId;
     const serviceCenter = await scServices.getUserServiceCenter(
       serviceCenterId
     );
@@ -175,8 +176,11 @@ exports.postVisitServiceCenter = async (req, res, next) => {
     const drivingRoute = data.paths[0].points;
     const distance = data.paths[0].distance / 1000;
     const estimatedTime = data.paths[0].time / 1000 / 60;
-    // Create a Visit transaction and let it appear on the service center visits page
-    // and the user app - with the ability to cancel the visit from the user side
+    const visitData = {
+      userId,
+      serviceCenterId,
+    };
+    await userServices.createVisit(visitData);
     res.status(200).json({
       success: true,
       data: {

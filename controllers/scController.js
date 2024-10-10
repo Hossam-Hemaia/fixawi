@@ -166,3 +166,13 @@ exports.getPriceList = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getVisits = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const visits = await scServices.visits(serviceCenterId);
+    res.status(200).json({ success: true, visits });
+  } catch (err) {
+    next(err);
+  }
+};

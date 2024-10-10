@@ -2,6 +2,7 @@ const Admin = require("../models/admin");
 const PriceList = require("../models/priceList");
 const ServiceCategory = require("../models/service_types");
 const ServiceCenter = require("../models/service_center");
+const Visit = require("../models/visit");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -228,6 +229,18 @@ exports.editCategory = async (categoryId, categoryData) => {
     }
     await ServiceCategory.findByIdAndUpdate(categoryId, updateData);
     return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.usersVisits = async (page, itemsPerPage) => {
+  try {
+    const visits = await Visit.find()
+      .skip((page - 1) * itemsPerPage)
+      .limit(itemsPerPage)
+      .populate(["userId", "serviceCenterId"]);
+    return visits;
   } catch (err) {
     throw err;
   }

@@ -1,5 +1,6 @@
 const ServiceCenter = require("../models/service_center");
 const ServiceCategory = require("../models/service_types");
+const Visit = require("../models/visit");
 const PriceList = require("../models/priceList");
 
 exports.servicesCategories = async () => {
@@ -44,4 +45,14 @@ exports.getUserServiceCenter = async (serviceCenterId) => {
   }
 };
 
-exports.setUserVisit = async (visitData)=>{};
+exports.visits = async (serviceCenterId) => {
+  try {
+    const visits = await Visit.find({ serviceCenterId }).populate([
+      "userId",
+      "serviceCenterId",
+    ]);
+    return visits;
+  } catch (err) {
+    throw err;
+  }
+};

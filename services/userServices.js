@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const ServiceCenter = require("../models/service_center");
 const Category = require("../models/service_types");
+const Visit = require("../models/visit");
 const utilities = require("../utils/utilities");
 
 exports.createUser = async (userData) => {
@@ -136,6 +137,16 @@ exports.servicesCategories = async () => {
   try {
     const categories = await Category.find({ isAvailable: true });
     return categories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.createVisit = async (visitData) => {
+  try {
+    const visit = await Visit(visitData);
+    await visit.save();
+    return visit;
   } catch (err) {
     throw err;
   }

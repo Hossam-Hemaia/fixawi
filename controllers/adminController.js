@@ -467,3 +467,28 @@ exports.putBlockUser = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getUsersVisits = async (req, res, next) => {
+  try {
+    const page = +req.query.page;
+    const ITEMS_PER_PAGE = 200;
+    let totalVisits;
+    const visits = await adminServices.usersVisits(page, ITEMS_PER_PAGE);
+    totalVisits = visits.length;
+    res.status(200).json({
+      success: true,
+      data: {
+        visits: visits,
+        itemsPerPage: ITEMS_PER_PAGE,
+        currentPage: page,
+        hasNextPage: page * ITEMS_PER_PAGE < totalVisits,
+        nextPage: page + 1,
+        hasPreviousPage: page > 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalVisits / ITEMS_PER_PAGE),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};

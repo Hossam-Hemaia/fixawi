@@ -1,0 +1,23 @@
+const mongoose = require("mongoose");
+
+const Schema = mongoose.Schema;
+
+const visitSchema = new Schema(
+  {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+    },
+    serviceCenterId: {
+      type: Schema.Types.ObjectId,
+      ref: "service_center",
+    },
+    visitStatus: {
+      type: String,
+      default: "pending",
+    },
+  },
+  { timestamps: true, strictPopulate: false }
+);
+
+module.exports = mongoose.model("visit", visitSchema);
