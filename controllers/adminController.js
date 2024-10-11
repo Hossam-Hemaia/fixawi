@@ -3,6 +3,174 @@ const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const { validationResult } = require("express-validator");
 
+/*****************************************
+ * Category
+ *****************************************/
+
+exports.postCreateCategory = async (req, res, next) => {
+  try {
+    console.log(req.body);
+    const { categoryName, categoryNameEn } = req.body;
+    const image = req.files[0];
+    let cateImageUrl;
+    if (image) {
+      cateImageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    } else {
+      cateImageUrl = "";
+    }
+    const categoryData = {
+      categoryName,
+      categoryNameEn,
+      categoryImage: cateImageUrl,
+    };
+    const category = await adminServices.createMainCategory(categoryData);
+    res
+      .status(201)
+      .json({ success: true, category, message: "Category Created!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditCategory = async (req, res, next) => {
+  try {
+    const { categoryName, categoryNameEn, categoryId } = req.body;
+    const image = req.files[0];
+    let cateImageUrl;
+    if (image) {
+      cateImageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    } else {
+      cateImageUrl = "";
+    }
+    const categoryData = {
+      categoryName,
+      categoryNameEn,
+      categoryImage: cateImageUrl,
+    };
+    await adminServices.editMainCategory(categoryData, categoryId);
+    res.status(200).json({ success: true, message: "Category updated!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllCategories = async (req, res, next) => {
+  try {
+    const categories = await adminServices.allCategories();
+    res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCategory = async (req, res, next) => {
+  try {
+    const categoryId = req.query.categoryId;
+    const category = await adminServices.getCategory(categoryId);
+    res.status(200).json({ success: true, category });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCategory = async (req, res, next) => {
+  try {
+    const categoryId = req.query.categoryId;
+    await adminServices.deleteCategory(categoryId);
+    res.status(200).json({ success: true, message: "category deleted!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/*****************************************
+ * Sub-Category
+ *****************************************/
+
+exports.postCreateSubCategory = async (req, res, next) => {
+  try {
+    const { subCategoryName, subCategoryNameEn, mainCategoryId } = req.body;
+    const image = req.files[0];
+    let subCategoryImageUrl;
+    if (image) {
+      subCategoryImageUrl = `${req.protocol}s://${req.get("host")}/${
+        image.path
+      }`;
+    } else {
+      subCategoryImageUrl = "";
+    }
+    const subCategoryData = {
+      subCategoryName,
+      subCategoryNameEn,
+      subCategoryImage: subCategoryImageUrl,
+      mainCategoryId,
+    };
+    await adminServices.createSubCategory(subCategoryData);
+    res
+      .status(201)
+      .json({ success: true, message: "New Sub-category created!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllSubCategories = async (req, res, next) => {
+  try {
+    const subCategories = await adminServices.allSubCategories();
+    res.status(200).json({ success: true, subCategories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getSubCategory = async (req, res, next) => {
+  try {
+    const subCategoryId = req.query.subCategoryId;
+    const subCategory = await adminServices.getSubCategory(subCategoryId);
+    res.status(200).json({ success: true, subCategory });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditSubCategory = async (req, res, next) => {
+  try {
+    const {
+      subCategoryName,
+      subCategoryNameEn,
+      mainCategoryId,
+      subCategoryId,
+    } = req.body;
+    const image = req.files[0];
+    let imageUrl;
+    if (image) {
+      imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    } else {
+      imageUrl = "";
+    }
+    const subCategoryData = {
+      subCategoryName,
+      subCategoryNameEn,
+      mainCategoryId,
+      subCategoryImage: imageUrl,
+    };
+    await adminServices.editSubCategory(subCategoryData, subCategoryId);
+    res.status(200).json({ success: true, message: "Sub-Category updated" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteSubcategory = async (req, res, next) => {
+  try {
+    const subCategoryId = req.query.subCategoryId;
+    await adminServices.removeSubcategory(subCategoryId);
+    res.status(200).json({ success: true, message: "Sub-Category deleted!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**********************************************************
  * Service Centers
  **********************************************************/
@@ -15,7 +183,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       area,
       lat,
       lng,
-      serviceType,
+      serviceCategoryIds,
       visitType,
       openAt,
       closeAt,
@@ -41,6 +209,10 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       type: "Point",
       coordinates: [lat, lng],
     };
+    const serviceCategories = JSON.parse(serviceCategoryIds);
+    const serviceTypes = await adminServices.getServicesNames(
+      serviceCategories
+    );
     const hashedPassword = await bcrypt.hash(password, 12);
     const brands = JSON.parse(carBrands);
     const serviceCenterData = {
@@ -49,7 +221,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       address,
       area,
       location,
-      serviceType,
+      serviceCategoryIds: serviceCategories,
+      serviceTypes,
       visitType,
       openAt,
       closeAt,
@@ -118,7 +291,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
       area,
       lat,
       lng,
-      serviceType,
+      serviceCategoryIds,
       visitType,
       openAt,
       closeAt,
@@ -146,6 +319,10 @@ exports.putEditServiceCenter = async (req, res, next) => {
       type: "Point",
       coordinates: [lat, lng],
     };
+    const serviceCategories = JSON.parse(serviceCategoryIds);
+    const serviceTypes = await adminServices.getServicesNames(
+      serviceCategories
+    );
     const hashedPassword =
       password !== "" ? await bcrypt.hash(password, 12) : "";
     const brands = JSON.parse(carBrands);
@@ -155,7 +332,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       address,
       area,
       location,
-      serviceType,
+      serviceCategoryIds: serviceCategories,
+      serviceTypes,
       visitType,
       openAt,
       closeAt,
@@ -323,97 +501,97 @@ exports.patchApproveModifiedList = async (req, res, next) => {
 /**********************************************************
  * Service Centers Categories
  **********************************************************/
-exports.postCreateCategory = async (req, res, next) => {
-  try {
-    const { categoryTitle, categoryTitleEn, categoryDescription } = req.body;
-    const files = req.files;
-    let image;
-    let imageUrl = "";
-    if (files.length > 0) {
-      image = files[0];
-      imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
-    }
-    const categoryData = {
-      categoryTitle,
-      categoryTitleEn,
-      categoryDescription,
-      imageUrl,
-    };
-    const category = await adminServices.createCategory(categoryData);
-    if (!category) {
-      const error = new Error("faild to create category!");
-      error.statusCode = 422;
-      throw error;
-    }
-    res.status(201).json({ success: true, message: "New Category Created" });
-  } catch (err) {
-    next(err);
-  }
-};
+// exports.postCreateCategory = async (req, res, next) => {
+//   try {
+//     const { categoryTitle, categoryTitleEn, categoryDescription } = req.body;
+//     const files = req.files;
+//     let image;
+//     let imageUrl = "";
+//     if (files.length > 0) {
+//       image = files[0];
+//       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+//     }
+//     const categoryData = {
+//       categoryTitle,
+//       categoryTitleEn,
+//       categoryDescription,
+//       imageUrl,
+//     };
+//     const category = await adminServices.createCategory(categoryData);
+//     if (!category) {
+//       const error = new Error("faild to create category!");
+//       error.statusCode = 422;
+//       throw error;
+//     }
+//     res.status(201).json({ success: true, message: "New Category Created" });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.getAllCategories = async (req, res, next) => {
-  try {
-    const categories = await adminServices.allCategories();
-    res.status(200).json({ success: true, categories });
-  } catch (err) {
-    next(err);
-  }
-};
+// exports.getAllCategories = async (req, res, next) => {
+//   try {
+//     const categories = await adminServices.allCategories();
+//     res.status(200).json({ success: true, categories });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.deleteCategory = async (req, res, next) => {
-  try {
-    const categoryId = req.query.categoryId;
-    await adminServices.removeCategory(categoryId);
-    res
-      .status(200)
-      .json({ success: true, message: "Category has been deleted!" });
-  } catch (err) {
-    next(err);
-  }
-};
+// exports.deleteCategory = async (req, res, next) => {
+//   try {
+//     const categoryId = req.query.categoryId;
+//     await adminServices.removeCategory(categoryId);
+//     res
+//       .status(200)
+//       .json({ success: true, message: "Category has been deleted!" });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.putSetCategoryStatus = async (req, res, next) => {
-  try {
-    const categoryId = req.body.categoryId;
-    const isAvailable = req.body.status;
-    await adminServices.setCategoryStatus(categoryId, isAvailable);
-    res.status(200).json({
-      success: true,
-      message: `Category has been ${isAvailable ? "enabled" : "blocked"}`,
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+// exports.putSetCategoryStatus = async (req, res, next) => {
+//   try {
+//     const categoryId = req.body.categoryId;
+//     const isAvailable = req.body.status;
+//     await adminServices.setCategoryStatus(categoryId, isAvailable);
+//     res.status(200).json({
+//       success: true,
+//       message: `Category has been ${isAvailable ? "enabled" : "blocked"}`,
+//     });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
-exports.putEditServiceCategory = async (req, res, next) => {
-  try {
-    const { categoryTitle, categoryTitleEn, categoryDescription, categoryId } =
-      req.body;
-    const files = req.files;
-    let image;
-    let imageUrl = "";
-    if (files.length > 0) {
-      image = files[0];
-      imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
-    }
-    const categoryData = {
-      categoryTitle,
-      categoryTitleEn,
-      categoryDescription,
-      imageUrl,
-    };
-    const category = await adminServices.editCategory(categoryId, categoryData);
-    if (!category) {
-      const error = new Error("faild to create category!");
-      error.statusCode = 422;
-      throw error;
-    }
-    res.status(201).json({ success: true, message: "Category Updated" });
-  } catch (err) {
-    next(err);
-  }
-};
+// exports.putEditServiceCategory = async (req, res, next) => {
+//   try {
+//     const { categoryTitle, categoryTitleEn, categoryDescription, categoryId } =
+//       req.body;
+//     const files = req.files;
+//     let image;
+//     let imageUrl = "";
+//     if (files.length > 0) {
+//       image = files[0];
+//       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+//     }
+//     const categoryData = {
+//       categoryTitle,
+//       categoryTitleEn,
+//       categoryDescription,
+//       imageUrl,
+//     };
+//     const category = await adminServices.editCategory(categoryId, categoryData);
+//     if (!category) {
+//       const error = new Error("faild to create category!");
+//       error.statusCode = 422;
+//       throw error;
+//     }
+//     res.status(201).json({ success: true, message: "Category Updated" });
+//   } catch (err) {
+//     next(err);
+//   }
+// };
 
 /**********************************************************
  * Users

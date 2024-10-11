@@ -1,6 +1,8 @@
 const Admin = require("../models/admin");
 const PriceList = require("../models/priceList");
-const ServiceCategory = require("../models/service_types");
+const Category = require("../models/category");
+const SubCategory = require("../models/subCategory");
+// const ServiceCategory = require("../models/service_types");
 const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
 
@@ -46,6 +48,151 @@ exports.getAdmin = async (adminId) => {
   }
 };
 
+/*************Categories**************/
+exports.createMainCategory = async (categoryData) => {
+  try {
+    const category = new Category(categoryData);
+    await category.save();
+    return category;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.editMainCategory = async (categoryData, categoryId) => {
+  try {
+    const updateData = {};
+    for (let key in categoryData) {
+      if (categoryData[key] !== "") {
+        updateData[key] = categoryData[key];
+      }
+    }
+    await Category.findByIdAndUpdate(categoryId, updateData);
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.allCategories = async () => {
+  try {
+    const categories = await Category.find().populate({
+      path: "subCategories",
+    });
+    return categories;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.getCategory = async (categoryId) => {
+  try {
+    const category = await Category.findById(categoryId);
+    return category;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.deleteCategory = async (categoryId) => {
+  try {
+    const category = await Category.findById(categoryId);
+    if (category.subCategories.length > 0) {
+      throw new Error(
+        "You cannot remove category that have sub-categories! remove sub-categories first"
+      );
+    }
+    await Category.findByIdAndDelete(categoryId);
+    return true;
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.addSubCategoryId = async (mainCategoryId, subCategoryId) => {
+  try {
+    const category = await Category.findById(mainCategoryId);
+    category.subCategories.push(subCategoryId);
+    await category.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeSubCategoryId = async (mainCategoryId, subCategoryId) => {
+  try {
+    const category = await Category.findById(mainCategoryId);
+    let newSubCategoryIds;
+    if (category.subCategories.length > 0) {
+      newSubCategoryIds = category.subCategories.filter((cate) => {
+        return cate._id.toString() !== subCategoryId.toString();
+      });
+    }
+    if (newSubCategoryIds) {
+      category.subCategories = newSubCategoryIds;
+    }
+    await category.save();
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/****************Sub-Category******************/
+exports.createSubCategory = async (categoryData) => {
+  try {
+    const subCategory = new SubCategory(categoryData);
+    await subCategory.save();
+    await this.addSubCategoryId(categoryData.mainCategoryId, subCategory._id);
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allSubCategories = async () => {
+  try {
+    const subCategories = await SubCategory.find().populate(["mainCategoryId"]);
+    return subCategories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getSubCategory = async (subCategoryId) => {
+  try {
+    const subCategory = await SubCategory.findById(subCategoryId);
+    return subCategory;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.editSubCategory = async (subCategoryData, subCategoryId) => {
+  try {
+    const updateData = {};
+    for (let key in subCategoryData) {
+      if (subCategoryData[key] !== "" && !Array.isArray(key)) {
+        updateData[key] = subCategoryData[key];
+      }
+    }
+    await SubCategory.findByIdAndUpdate(subCategoryId, updateData);
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.removeSubcategory = async (subCategoryId) => {
+  try {
+    const subCategory = await SubCategory.findById(subCategoryId);
+    await this.removeSubCategoryId(subCategory.mainCategoryId, subCategoryId);
+    await SubCategory.findByIdAndDelete(subCategoryId);
+    return true;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/*****************Service Center*****************/
 exports.createServiceCenter = async (serviceCenterData) => {
   try {
     const serviceCenter = new ServiceCenter(serviceCenterData);
@@ -67,7 +214,9 @@ exports.allServiceCenters = async () => {
 
 exports.serviceCenter = async (serviceCenterId) => {
   try {
-    const serviceCenter = await ServiceCenter.findById(serviceCenterId);
+    const serviceCenter = await ServiceCenter.findById(
+      serviceCenterId
+    ).populate("serviceCategoryIds");
     return serviceCenter;
   } catch (err) {
     throw err;
@@ -85,6 +234,22 @@ exports.updateServiceCenter = async (serviceCenterId, serviceCenterData) => {
     await ServiceCenter.findByIdAndUpdate(serviceCenterId, updateData);
     const serviceCenter = await ServiceCenter.findById(serviceCenterId);
     return serviceCenter;
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getServicesNames = async (categories) => {
+  try {
+    let servicesNames = [];
+    for (let cateId of categories) {
+      const subCategory = await SubCategory.findById(cateId);
+      servicesNames.push(
+        subCategory.subCategoryName,
+        subCategory.subCategoryNameEn
+      );
+    }
+    return servicesNames;
   } catch (err) {
     next(err);
   }
@@ -175,60 +340,6 @@ exports.showPriceList = async (serviceCenterId) => {
   try {
     const priceList = await PriceList.findOne({ serviceCenterId });
     return priceList;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.createCategory = async (categoryData) => {
-  try {
-    const category = new ServiceCategory(categoryData);
-    await category.save();
-    return category;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.allCategories = async () => {
-  try {
-    const categories = await ServiceCategory.find();
-    return categories;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.removeCategory = async (categoryId) => {
-  try {
-    await ServiceCategory.findByIdAndDelete(categoryId);
-    return true;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.setCategoryStatus = async (categoryId, status) => {
-  try {
-    await ServiceCategory.findByIdAndUpdate(categoryId, {
-      isAvailable: status,
-    });
-    return true;
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.editCategory = async (categoryId, categoryData) => {
-  try {
-    const updateData = {};
-    for (let key in categoryData) {
-      if (categoryData[key] !== "") {
-        updateData[key] = categoryData[key];
-      }
-    }
-    await ServiceCategory.findByIdAndUpdate(categoryId, updateData);
-    return true;
   } catch (err) {
     throw err;
   }

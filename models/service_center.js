@@ -28,9 +28,13 @@ const serviceCenterSchema = new Schema(
         required: true,
       },
     },
-    serviceType: {
-      type: String,
-    },
+    serviceCategoryIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "subCategory",
+      },
+    ],
+    serviceTypes: [],
     visitType: {
       type: String,
     },

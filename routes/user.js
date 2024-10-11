@@ -59,4 +59,16 @@ router.get(
   userController.getServicesCategories
 );
 
+router.get(
+  "/user/service/sub/categories",
+  isAuth.userIsAuth,
+  userController.getSubCategories
+);
+
+router.get(
+  "/categorized/service/centers",
+  isAuth.userIsAuth,
+  userController.getCategorizedServiceCenters
+);
+
 module.exports = router;

@@ -43,7 +43,8 @@ exports.postCreateUser = async (req, res, next) => {
       if (user.authMethod === "email") {
         utilities.emailSender(email, user.verificationCode, "confirmation");
       } else if (user.authMethod === "phone") {
-        // your code here to use otp to send code to user
+        user.isActive = true;
+        await user.save();
       }
       res.status(200).json({
         success: true,

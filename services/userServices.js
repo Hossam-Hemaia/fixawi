@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const ServiceCenter = require("../models/service_center");
-const Category = require("../models/service_types");
+const Category = require("../models/category");
+const SubCategory = require("../models/subCategory");
 const Visit = require("../models/visit");
 const utilities = require("../utils/utilities");
 
@@ -135,8 +136,35 @@ exports.filterCenters = async (filter) => {
 
 exports.servicesCategories = async () => {
   try {
-    const categories = await Category.find({ isAvailable: true });
+    const categories = await Category.find();
     return categories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.subCategories = async (categoryId) => {
+  try {
+    const subCategories = await SubCategory.find({
+      mainCategoryId: categoryId,
+    });
+    return subCategories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.findServiceCenters = async (serviceName) => {
+  try {
+    const serviceCenters = await ServiceCenter.find(
+      {
+        serviceTypes: { $elemMatch: { $regex: new RegExp(serviceName, "i") } },
+        isActive: true,
+        isApproved: true,
+      },
+      { username: 0, password: 0 }
+    );
+    return serviceCenters;
   } catch (err) {
     throw err;
   }

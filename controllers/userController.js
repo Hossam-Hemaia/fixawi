@@ -48,7 +48,7 @@ exports.getNearServiceCenters = async (req, res, next) => {
 
 exports.filterServiceCenters = async (req, res, next) => {
   try {
-    const { lat, lng, maxDistance, carBrand, serviceType } = req.query;
+    const { lat, lng, maxDistance, carBrand, serviceName } = req.query;
     if (!lat || !lng || lat === "" || lng === "") {
       const error = new Error("Location coordenates are required!");
       error.statusCode = 422;
@@ -66,12 +66,16 @@ exports.filterServiceCenters = async (req, res, next) => {
           $maxDistance: distance,
         },
       },
+      isActive: true,
+      isApproved: true,
     };
     if (carBrand && carBrand !== "") {
       filter.carBrands = { $elemMatch: { $regex: new RegExp(carBrand, "i") } };
     }
-    if (serviceType && serviceType !== "") {
-      filter.serviceType = serviceType;
+    if (serviceName && serviceName !== "") {
+      filter.serviceTypes = {
+        $elemMatch: { $regex: new RegExp(serviceName, "i") },
+      };
     }
     const filteredCenters = await userServices.filterCenters(filter);
     res.status(200).json({ success: true, serviceCenters: filteredCenters });
@@ -139,6 +143,26 @@ exports.getServicesCategories = async (req, res, next) => {
   try {
     const categories = await userServices.servicesCategories();
     res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getSubCategories = async (req, res, next) => {
+  try {
+    const categoryId = req.query.categoryId;
+    const subCategories = await userServices.subCategories(categoryId);
+    res.status(200).json({ success: true, subCategories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCategorizedServiceCenters = async (req, res, next) => {
+  try {
+    const serviceName = req.query.serviceName;
+    const serviceCenters = await userServices.findServiceCenters(serviceName);
+    res.status(200).json({ success: true, serviceCenters });
   } catch (err) {
     next(err);
   }

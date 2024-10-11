@@ -5,6 +5,62 @@ const validators = require("../middleware/validators");
 
 const router = express.Router();
 
+/*****************************************
+ * Category
+ *****************************************/
+
+router.post(
+  "/create/category",
+  isAuth.adminIsAuth,
+  adminController.postCreateCategory
+);
+
+router.put(
+  "/edit/category",
+  isAuth.adminIsAuth,
+  adminController.putEditCategory
+);
+
+router.get("/categories", isAuth.adminIsAuth, adminController.getAllCategories);
+
+router.get("/get/category", isAuth.adminIsAuth, adminController.getCategory);
+
+router.delete(
+  "/delete/category",
+  isAuth.adminIsAuth,
+  adminController.deleteCategory
+);
+
+/*****************************************
+ * Sub-Category
+ *****************************************/
+
+router.post(
+  "/create/sub/category",
+  isAuth.adminIsAuth,
+  adminController.postCreateSubCategory
+);
+
+router.get(
+  "/all/sub/categories",
+  isAuth.adminIsAuth,
+  adminController.getAllSubCategories
+);
+
+router.get("/sub/category", isAuth.adminIsAuth, adminController.getSubCategory);
+
+router.put(
+  "/edit/sub/category",
+  isAuth.adminIsAuth,
+  adminController.putEditSubCategory
+);
+
+router.delete(
+  "/delete/sub/category",
+  isAuth.adminIsAuth,
+  adminController.deleteSubcategory
+);
+
 /**********************************************************
  * Service Centers
  **********************************************************/
@@ -115,35 +171,30 @@ router.get(
 /**********************************************************
  * Service Centers Categories
  **********************************************************/
-router.post(
-  "/create/category",
-  isAuth.adminIsAuth,
-  adminController.postCreateCategory
-);
 
-router.get(
-  "/all/categories",
-  isAuth.adminIsAuth,
-  adminController.getAllCategories
-);
+// router.get(
+//   "/all/categories",
+//   isAuth.adminIsAuth,
+//   adminController.getAllCategories
+// );
 
-router.delete(
-  "/delete/category",
-  isAuth.adminIsAuth,
-  adminController.deleteCategory
-);
+// router.delete(
+//   "/delete/category",
+//   isAuth.adminIsAuth,
+//   adminController.deleteCategory
+// );
 
-router.put(
-  "/set/category/status",
-  isAuth.adminIsAuth,
-  adminController.putSetCategoryStatus
-);
+// router.put(
+//   "/set/category/status",
+//   isAuth.adminIsAuth,
+//   adminController.putSetCategoryStatus
+// );
 
-router.put(
-  "/edit/service/category",
-  isAuth.adminIsAuth,
-  adminController.putEditServiceCategory
-);
+// router.put(
+//   "/edit/service/category",
+//   isAuth.adminIsAuth,
+//   adminController.putEditServiceCategory
+// );
 
 /**********************************************************
  * Clients
