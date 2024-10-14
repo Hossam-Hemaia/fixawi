@@ -9,7 +9,6 @@ const { validationResult } = require("express-validator");
 
 exports.postCreateCategory = async (req, res, next) => {
   try {
-    console.log(req.body);
     const { categoryName, categoryNameEn } = req.body;
     const image = req.files[0];
     let cateImageUrl;
@@ -188,6 +187,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands,
       username,
       password,
@@ -227,6 +228,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands: brands,
       image: imageUrl,
       isActive: true,
@@ -296,6 +299,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands,
       isActive,
       username,
@@ -338,6 +343,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands: brands,
       image: imageUrl,
       isActive,
@@ -497,102 +504,86 @@ exports.patchApproveModifiedList = async (req, res, next) => {
     next(err);
   }
 };
-
 /**********************************************************
- * Service Centers Categories
+ * Cars
  **********************************************************/
-// exports.postCreateCategory = async (req, res, next) => {
-//   try {
-//     const { categoryTitle, categoryTitleEn, categoryDescription } = req.body;
-//     const files = req.files;
-//     let image;
-//     let imageUrl = "";
-//     if (files.length > 0) {
-//       image = files[0];
-//       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
-//     }
-//     const categoryData = {
-//       categoryTitle,
-//       categoryTitleEn,
-//       categoryDescription,
-//       imageUrl,
-//     };
-//     const category = await adminServices.createCategory(categoryData);
-//     if (!category) {
-//       const error = new Error("faild to create category!");
-//       error.statusCode = 422;
-//       throw error;
-//     }
-//     res.status(201).json({ success: true, message: "New Category Created" });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+exports.postCreateCar = async (req, res, next) => {
+  try {
+    const { brand, models } = req.body;
+    const image = req.files[0];
+    let carLogo;
+    if (image) {
+      carLogo = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    } else {
+      carLogo = "";
+    }
+    const carData = {
+      brand,
+      models: JSON.parse(models),
+      brandIcon: carLogo,
+    };
+    const car = await adminServices.createCar(carData);
+    if (car) {
+      return res
+        .status(201)
+        .json({ success: true, message: "New car brand added" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 
-// exports.getAllCategories = async (req, res, next) => {
-//   try {
-//     const categories = await adminServices.allCategories();
-//     res.status(200).json({ success: true, categories });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+exports.getCars = async (req, res, next) => {
+  try {
+    const cars = await adminServices.allCars();
+    res.status(200).json({ success: true, cars });
+  } catch (err) {
+    next(err);
+  }
+};
 
-// exports.deleteCategory = async (req, res, next) => {
-//   try {
-//     const categoryId = req.query.categoryId;
-//     await adminServices.removeCategory(categoryId);
-//     res
-//       .status(200)
-//       .json({ success: true, message: "Category has been deleted!" });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+exports.getCarDetails = async (req, res, next) => {
+  try {
+    const carId = req.query.carId;
+    const car = await adminServices.carDetails(carId);
+    res.status(200).json({ success: true, car });
+  } catch (err) {
+    next(err);
+  }
+};
 
-// exports.putSetCategoryStatus = async (req, res, next) => {
-//   try {
-//     const categoryId = req.body.categoryId;
-//     const isAvailable = req.body.status;
-//     await adminServices.setCategoryStatus(categoryId, isAvailable);
-//     res.status(200).json({
-//       success: true,
-//       message: `Category has been ${isAvailable ? "enabled" : "blocked"}`,
-//     });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+exports.putEditCar = async (req, res, next) => {
+  try {
+    const { brand, models, carId } = req.body;
+    const image = req.files[0];
+    let carLogo;
+    if (image) {
+      carLogo = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    } else {
+      carLogo = "";
+    }
+    console.log(carLogo);
+    const carData = {
+      brand,
+      models: JSON.parse(models),
+      brandIcon: carLogo,
+    };
+    await adminServices.editCar(carId, carData);
+    res.status(200).json({ success: true, message: "Car Updated" });
+  } catch (err) {
+    next(err);
+  }
+};
 
-// exports.putEditServiceCategory = async (req, res, next) => {
-//   try {
-//     const { categoryTitle, categoryTitleEn, categoryDescription, categoryId } =
-//       req.body;
-//     const files = req.files;
-//     let image;
-//     let imageUrl = "";
-//     if (files.length > 0) {
-//       image = files[0];
-//       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
-//     }
-//     const categoryData = {
-//       categoryTitle,
-//       categoryTitleEn,
-//       categoryDescription,
-//       imageUrl,
-//     };
-//     const category = await adminServices.editCategory(categoryId, categoryData);
-//     if (!category) {
-//       const error = new Error("faild to create category!");
-//       error.statusCode = 422;
-//       throw error;
-//     }
-//     res.status(201).json({ success: true, message: "Category Updated" });
-//   } catch (err) {
-//     next(err);
-//   }
-// };
-
+exports.deleteCar = async (req, res, next) => {
+  try {
+    const carId = req.query.carId;
+    await adminServices.deleteCar(carId);
+    res.status(200).json({ success: true, message: "car deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************************
  * Users
  **********************************************************/

@@ -48,14 +48,18 @@ exports.getNearServiceCenters = async (req, res, next) => {
 
 exports.filterServiceCenters = async (req, res, next) => {
   try {
-    const { lat, lng, maxDistance, carBrand, serviceName } = req.query;
+    const { lat, lng, maxDistance, carBrand, serviceNames } = req.query;
     if (!lat || !lng || lat === "" || lng === "") {
       const error = new Error("Location coordenates are required!");
       error.statusCode = 422;
       throw error;
     }
-    const distance = maxDistance || 5000;
-    const coords = [lng, lat];
+    let services = [];
+    if (serviceNames) {
+      services = JSON.parse(serviceNames);
+    }
+    const distance = maxDistance || 20000;
+    const coords = [lat, lng];
     const filter = {
       location: {
         $near: {
@@ -72,9 +76,9 @@ exports.filterServiceCenters = async (req, res, next) => {
     if (carBrand && carBrand !== "") {
       filter.carBrands = { $elemMatch: { $regex: new RegExp(carBrand, "i") } };
     }
-    if (serviceName && serviceName !== "") {
+    if (services && services.length > 0) {
       filter.serviceTypes = {
-        $elemMatch: { $regex: new RegExp(serviceName, "i") },
+        $elemMatch: { $in: services.map((name) => new RegExp(name, "i")) },
       };
     }
     const filteredCenters = await userServices.filterCenters(filter);

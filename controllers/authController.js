@@ -48,8 +48,7 @@ exports.postCreateUser = async (req, res, next) => {
       }
       res.status(200).json({
         success: true,
-        message:
-          "Welcom aboard!, your account has been created and needs verification",
+        message: "Welcom aboard!, your account has been created successfully",
       });
     }
   } catch (err) {

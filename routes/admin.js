@@ -167,34 +167,18 @@ router.get(
   isAuth.adminIsAuth,
   adminController.getPriceList
 );
-
 /**********************************************************
- * Service Centers Categories
- **********************************************************/
+ * Cars
+ ***********************************************************/
+router.post("/creat/car", isAuth.adminIsAuth, adminController.postCreateCar);
 
-// router.get(
-//   "/all/categories",
-//   isAuth.adminIsAuth,
-//   adminController.getAllCategories
-// );
+router.get("/all/cars", isAuth.adminIsAuth, adminController.getCars);
 
-// router.delete(
-//   "/delete/category",
-//   isAuth.adminIsAuth,
-//   adminController.deleteCategory
-// );
+router.get("/car/details", isAuth.adminIsAuth, adminController.getCarDetails);
 
-// router.put(
-//   "/set/category/status",
-//   isAuth.adminIsAuth,
-//   adminController.putSetCategoryStatus
-// );
+router.put("/edit/car", isAuth.adminIsAuth, adminController.putEditCar);
 
-// router.put(
-//   "/edit/service/category",
-//   isAuth.adminIsAuth,
-//   adminController.putEditServiceCategory
-// );
+router.delete("/delete/car", isAuth.adminIsAuth, adminController.deleteCar);
 
 /**********************************************************
  * Clients

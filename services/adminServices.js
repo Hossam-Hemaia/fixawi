@@ -2,7 +2,7 @@ const Admin = require("../models/admin");
 const PriceList = require("../models/priceList");
 const Category = require("../models/category");
 const SubCategory = require("../models/subCategory");
-// const ServiceCategory = require("../models/service_types");
+const Car = require("../models/car");
 const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
 
@@ -352,6 +352,57 @@ exports.usersVisits = async (page, itemsPerPage) => {
       .limit(itemsPerPage)
       .populate(["userId", "serviceCenterId"]);
     return visits;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/***********************Cars************************/
+exports.createCar = async (carData) => {
+  try {
+    const car = new Car(carData);
+    await car.save();
+    return car;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allCars = async () => {
+  try {
+    const cars = await Car.find();
+    return cars;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.carDetails = async (carId) => {
+  try {
+    const car = await Car.findById(carId);
+    return car;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.editCar = async (carId, carData) => {
+  try {
+    const updateData = {};
+    for (let key in carData) {
+      if (carData[key] !== "") {
+        updateData[key] = carData[key];
+      }
+    }
+    await Car.findByIdAndUpdate(carId, updateData);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.deleteCar = async (carId) => {
+  try {
+    await Car.findByIdAndDelete(carId);
   } catch (err) {
     throw err;
   }

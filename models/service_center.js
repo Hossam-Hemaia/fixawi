@@ -59,6 +59,12 @@ const serviceCenterSchema = new Schema(
     contacts: {
       type: String,
     },
+    email: {
+      type: String,
+    },
+    website: {
+      type: String,
+    },
     carBrands: [],
     image: {
       type: String,
