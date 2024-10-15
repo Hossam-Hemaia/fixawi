@@ -1,4 +1,5 @@
 const connectRedis = require("../config/redisConnect");
+const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const scServices = require("../services/scServices");
 const ratingServices = require("../services/ratingServices");
@@ -147,6 +148,15 @@ exports.getServicesCategories = async (req, res, next) => {
   try {
     const categories = await userServices.servicesCategories();
     res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getMainCategories = async (req, res, next) => {
+  try {
+    const mainCategories = await adminServices.allCategories();
+    res.status(200).json({ success: true, mainCategories });
   } catch (err) {
     next(err);
   }

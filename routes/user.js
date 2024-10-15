@@ -60,6 +60,12 @@ router.get(
 );
 
 router.get(
+  "/main/categories",
+  isAuth.userIsAuth,
+  userController.getMainCategories
+);
+
+router.get(
   "/user/service/sub/categories",
   isAuth.userIsAuth,
   userController.getSubCategories
