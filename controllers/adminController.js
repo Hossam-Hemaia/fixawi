@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const { validationResult } = require("express-validator");
+const utilities = require("../utils/utilities");
 
 /*****************************************
  * Category
@@ -657,6 +658,140 @@ exports.getUsersVisits = async (req, res, next) => {
         lastPage: Math.ceil(totalVisits / ITEMS_PER_PAGE),
       },
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Users
+ **********************************************************/
+exports.postCreateOffer = async (req, res, next) => {
+  try {
+    const {
+      offerTitle,
+      discountType,
+      discountAmount,
+      hasExpiry,
+      expiryDate,
+      hasUsageNumber,
+      usageNumber,
+    } = req.body;
+    const offerData = {
+      offerTitle,
+      discountType,
+      discountAmount,
+      hasExpiry,
+      expiryDate: utilities.getLocalDate(expiryDate),
+      hasUsageNumber,
+      usageNumber: hasUsageNumber ? usageNumber : 1,
+    };
+    const offer = await adminServices.createOffer(offerData);
+    if (offer) {
+      return res
+        .status(201)
+        .json({ success: true, message: "New offer created" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllOffers = async (req, res, next) => {
+  try {
+    const offers = await adminServices.allOffers();
+    res.status(200).json({ success: true, offers });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putSetExpireoffer = async (req, res, next) => {
+  try {
+    const offerId = req.body.offerId;
+    const status = req.body.status;
+    const offer = await adminServices.setOfferStatus(offerId, status);
+    if (offer) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Offer status updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditOffer = async (req, res, next) => {
+  try {
+    const {
+      offerTitle,
+      discountType,
+      discountAmount,
+      hasExpiry,
+      expiryDate,
+      hasUsageNumber,
+      usageNumber,
+      offerId,
+    } = req.body;
+    const offerData = {
+      offerTitle,
+      discountType,
+      discountAmount,
+      hasExpiry,
+      expiryDate: utilities.getLocalDate(expiryDate),
+      hasUsageNumber,
+      usageNumber: hasUsageNumber ? usageNumber : 1,
+    };
+    const offer = await adminServices.editOffer(offerId, offerData);
+    if (offer) {
+      return res.status(201).json({ success: true, message: "offer updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteOffer = async (req, res, next) => {
+  try {
+    const offerId = req.query.offerId;
+    await adminServices.deleteOffer(offerId);
+    res.status(200).json({ success: true, message: "offer deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.addServiceCenterOffer = async (req, res, next) => {
+  try {
+    const offerId = req.body.offerId;
+    const serviceCentersIds = req.body.serviceCentersIds;
+    await adminServices.addOffer(offerId, serviceCentersIds);
+    res
+      .status(200)
+      .json({ success: true, message: "Offers Added Successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getOfferServiceCenters = async (req, res, next) => {
+  try {
+    const offerId = req.query.offerId;
+    const serviceCenters = await adminServices.offerServiceCenters(offerId);
+    res.status(200).json({ success: true, serviceCenters });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.removeServiceCenterOffer = async (req, res, next) => {
+  try {
+    const offerId = req.body.offerId;
+    const serviceCentersIds = req.body.serviceCentersIds;
+    await adminServices.removeOffer(offerId, serviceCentersIds);
+    res
+      .status(200)
+      .json({ success: true, message: "Offers Removed Successfully" });
   } catch (err) {
     next(err);
   }

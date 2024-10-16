@@ -38,7 +38,7 @@ exports.getUserServiceCenter = async (serviceCenterId) => {
       password: 0,
       createdAt: 0,
       updatedAt: 0,
-    }).populate("ratingId");
+    }).populate(["ratingId", "offerId"]);
     return serviceCenter;
   } catch (err) {
     throw err;

@@ -91,6 +91,14 @@ const serviceCenterSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "rating",
     },
+    hasOffer: {
+      type: Boolean,
+      default: false,
+    },
+    offerId: {
+      type: Schema.Types.ObjectId,
+      ref: "offer",
+    },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );

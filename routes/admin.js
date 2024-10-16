@@ -189,4 +189,43 @@ router.get("/user", isAuth.adminIsAuth, adminController.getUser);
 
 router.put("/block/user", isAuth.adminIsAuth, adminController.putBlockUser);
 
+/**********************************************************
+ * Offers
+ **********************************************************/
+router.post(
+  "/create/offer",
+  isAuth.adminIsAuth,
+  adminController.postCreateOffer
+);
+
+router.get("/all/offers", isAuth.adminIsAuth, adminController.getAllOffers);
+
+router.put(
+  "/set/offer/status",
+  isAuth.adminIsAuth,
+  adminController.putSetExpireoffer
+);
+
+router.put("/edit/offer", isAuth.adminIsAuth, adminController.putEditOffer);
+
+router.delete("/delete/offer", isAuth.adminIsAuth, adminController.deleteOffer);
+
+router.patch(
+  "/add/service/center/offer",
+  isAuth.adminIsAuth,
+  adminController.addServiceCenterOffer
+);
+
+router.get(
+  "/offer/service/centers",
+  isAuth.adminIsAuth,
+  adminController.getOfferServiceCenters
+);
+
+router.patch(
+  "/remove/service/center/offer",
+  isAuth.adminIsAuth,
+  adminController.removeServiceCenterOffer
+);
+
 module.exports = router;

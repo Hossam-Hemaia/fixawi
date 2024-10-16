@@ -5,6 +5,7 @@ const SubCategory = require("../models/subCategory");
 const Car = require("../models/car");
 const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
+const Offer = require("../models/offers");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -403,6 +404,127 @@ exports.editCar = async (carId, carData) => {
 exports.deleteCar = async (carId) => {
   try {
     await Car.findByIdAndDelete(carId);
+  } catch (err) {
+    throw err;
+  }
+};
+
+/*******************offer*******************/
+exports.createOffer = async (offerData) => {
+  try {
+    const offer = new Offer(offerData);
+    await offer.save();
+    return offer;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allOffers = async () => {
+  try {
+    const offers = await Offer.find();
+    return offers;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setOfferStatus = async (offerId, status) => {
+  try {
+    const offer = await Offer.findById(offerId);
+    if (!status) {
+      const serviceCenters = await ServiceCenter.find({
+        hasOffer: true,
+        offerId: offerId,
+      });
+      for (let center of serviceCenters) {
+        if (center.offerId.toString() === offerId.toString()) {
+          center.hasOffer = false;
+          await center.save();
+        }
+      }
+    }
+    offer.expired = status;
+    await offer.save();
+    return offer;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.editOffer = async (offerId, offerData) => {
+  try {
+    const updateData = {};
+    for (let key in offerData) {
+      if (offerData[key] !== "") {
+        updateData[key] = offerData[key];
+      }
+    }
+    const offer = await Offer.findByIdAndUpdate(offerId, updateData);
+    return offer;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.deleteOffer = async (offerId) => {
+  try {
+    const serviceCenters = await ServiceCenter.find({
+      hasOffer: true,
+      offerId: offerId,
+    });
+    for (let center of serviceCenters) {
+      if (center.offerId.toString() === offerId.toString()) {
+        center.hasOffer = false;
+        await center.save();
+      }
+    }
+    await Offer.findByIdAndDelete(offerId);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.addOffer = async (offerId, serviceCentersIds) => {
+  try {
+    for (let id of serviceCentersIds) {
+      let serviceCenter = await ServiceCenter.findById(id);
+      if (serviceCenter) {
+        serviceCenter.hasOffer = true;
+        serviceCenter.offerId = offerId;
+        await serviceCenter.save();
+      }
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.offerServiceCenters = async (offerId) => {
+  try {
+    const serviceCenters = await ServiceCenter.find({
+      hasOffer: true,
+      offerId: offerId,
+    });
+    return serviceCenters;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeOffer = async (offerId, serviceCentersIds) => {
+  try {
+    for (let id of serviceCentersIds) {
+      let serviceCenter = await ServiceCenter.findById(id);
+      if (
+        serviceCenter &&
+        serviceCenter.offerId.toString() === offerId.toString()
+      ) {
+        serviceCenter.hasOffer = false;
+        serviceCenter.offerId = offerId;
+        await serviceCenter.save();
+      }
+    }
   } catch (err) {
     throw err;
   }
