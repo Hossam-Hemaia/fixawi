@@ -33,6 +33,59 @@ exports.putUpdateProfile = async (req, res, next) => {
   }
 };
 
+exports.getCarsBrands = async (req, res, next) => {
+  try {
+    const brands = await userServices.carsBrands();
+    res.status(200).json({ success: true, brands });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCarModels = async (req, res, next) => {
+  try {
+    const brandId = req.query.brandId;
+    const models = await userServices.carModels(brandId);
+    res.status(200).json({ success: true, models });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postAddUserCar = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const { carNumber, carBrand, carModel, modelYear, isDefaultCar } = req.body;
+    const carData = { carNumber, carBrand, carModel, modelYear, isDefaultCar };
+    await userServices.addUserCar(userId, carData);
+    res.status(200).json({ success: true, message: "Car added" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteUserCar = async (req, res, next) => {
+  try {
+    const carId = req.query.carId;
+    const userId = req.userId;
+    await userServices.removeUserCar(userId, carId);
+    res.status(200).json({ success: true, message: "Car removed" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.patchSetDefaultCar = async (req, res, next) => {
+  try {
+    const carId = req.body.carId;
+    const userId = req.userId;
+    await userServices.setUserDefaultCar(userId, carId);
+    res.status(200).json({ success: true, message: "Default Car Set" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getNearServiceCenters = async (req, res, next) => {
   try {
     const { lat, lng, maxDistance } = req.query;
@@ -227,6 +280,74 @@ exports.postVisitServiceCenter = async (req, res, next) => {
         time: estimatedTime,
       },
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postContactUs = async (req, res, next) => {
+  try {
+    const { fullName, phoneNumber, email, subject, message } = req.body;
+    const contactUsData = {
+      fullName,
+      phoneNumber,
+      email,
+      subject,
+      message,
+    };
+    const msg = await userServices.contactUs(contactUsData);
+    if (msg) {
+      return res.status(200).json({ success: true, message: "Message sent" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postAddCarMaintenance = async (req, res, next) => {
+  try {
+    const { carId, serviceName, notes, kilometer, date, remindingDate } =
+      req.body;
+    const userId = req.userId;
+    const maintenanceData = {
+      carId,
+      serviceName,
+      notes,
+      kilometer,
+      date: utilities.getLocalDate(date),
+      remindingDate: utilities.getLocalDate(remindingDate),
+    };
+    const maintenance = await userServices.addCarMaintenance(
+      userId,
+      maintenanceData
+    );
+    if (maintenance) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Maintenance reminder has been set" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserCarMaintenance = async (req, res, next) => {
+  try {
+    const carId = req.query.carId;
+    const userId = req.userId;
+    const maintenances = await userServices.carMaintenances(userId, carId);
+    res.status(200).json({ success: true, maintenances });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCarMaintenance = async (req, res, next) => {
+  try {
+    const maintenanceId = req.query.maintenanceId;
+    const userId = req.userId;
+    await userServices.removeCarMaintenance(userId, maintenanceId);
+    res.status(200).json({ success: true, message: "maintenance removed" });
   } catch (err) {
     next(err);
   }

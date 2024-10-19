@@ -11,6 +11,24 @@ router.put(
   userController.putUpdateProfile
 );
 
+router.post("/add/user/car", isAuth.userIsAuth, userController.postAddUserCar);
+
+router.delete(
+  "/remove/user/car",
+  isAuth.userIsAuth,
+  userController.deleteUserCar
+);
+
+router.patch(
+  "/set/user/default/car",
+  isAuth.userIsAuth,
+  userController.patchSetDefaultCar
+);
+
+router.get("/user/cars/brands", userController.getCarsBrands);
+
+router.get("/user/car/models", userController.getCarModels);
+
 router.get(
   "/near/service/centers",
   isAuth.userIsAuth,
@@ -75,6 +93,26 @@ router.get(
   "/categorized/service/centers",
   isAuth.userIsAuth,
   userController.getCategorizedServiceCenters
+);
+
+router.post("/contact/us", userController.postContactUs);
+
+router.post(
+  "/add/car/maintenance",
+  isAuth.userIsAuth,
+  userController.postAddCarMaintenance
+);
+
+router.get(
+  "/user/car/maintenance",
+  isAuth.userIsAuth,
+  userController.getUserCarMaintenance
+);
+
+router.delete(
+  "/remove/car/maintenance",
+  isAuth.userIsAuth,
+  userController.deleteCarMaintenance
 );
 
 module.exports = router;

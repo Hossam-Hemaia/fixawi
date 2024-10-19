@@ -459,6 +459,15 @@ exports.putEditPriceList = async (req, res, next) => {
   }
 };
 
+exports.getPriceLists = async (req, res, next) => {
+  try {
+    const priceLists = await adminServices.priceLists();
+    res.status(200).json({ success: true, priceLists });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getPriceList = async (req, res, next) => {
   try {
     const serviceCenterId = req.query.serviceCenterId;
@@ -792,6 +801,28 @@ exports.removeServiceCenterOffer = async (req, res, next) => {
     res
       .status(200)
       .json({ success: true, message: "Offers Removed Successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Contact Us
+ **********************************************************/
+exports.getContactUsMessages = async (req, res, next) => {
+  try {
+    const messages = await adminServices.contactUsMessages();
+    res.status(200).json({ success: true, messages });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteContactUsMessage = async (req, res, next) => {
+  try {
+    const msgId = req.query.msgId;
+    await adminServices.removeContactUsMessage(msgId);
+    res.status(200).json({ success: true, message: "Message removed" });
   } catch (err) {
     next(err);
   }

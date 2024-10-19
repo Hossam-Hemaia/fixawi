@@ -9,17 +9,8 @@ const utilities = require("../utils/utilities");
 
 exports.postCreateUser = async (req, res, next) => {
   try {
-    const {
-      fullName,
-      phoneNumber,
-      email,
-      authMethod,
-      carNumber,
-      carBrand,
-      carModel,
-      modelYear,
-      password,
-    } = req.body;
+    const { fullName, phoneNumber, email, authMethod, userCars, password } =
+      req.body;
     const error = validationResult(req);
     if (!error.isEmpty() && error.array()[0].msg !== "Invalid value") {
       const errorMsg = new Error(error.array()[0].msg);
@@ -32,10 +23,7 @@ exports.postCreateUser = async (req, res, next) => {
       phoneNumber,
       email,
       authMethod,
-      carNumber,
-      carBrand,
-      carModel,
-      modelYear,
+      userCars,
       password: hashedPassword,
     };
     const user = await userServices.createUser(userData);

@@ -150,6 +150,12 @@ router.put(
   adminController.putEditPriceList
 );
 
+router.get(
+  "/all/service/centers/lists",
+  isAuth.adminIsAuth,
+  adminController.getPriceLists
+);
+
 router.put(
   "/approve/whole/list",
   isAuth.adminIsAuth,
@@ -226,6 +232,21 @@ router.patch(
   "/remove/service/center/offer",
   isAuth.adminIsAuth,
   adminController.removeServiceCenterOffer
+);
+
+/**********************************************************
+ * Contact Us
+ **********************************************************/
+router.get(
+  "/contact/us/messages",
+  isAuth.adminIsAuth,
+  adminController.getContactUsMessages
+);
+
+router.delete(
+  "/delete/contact/us/msg",
+  isAuth.adminIsAuth,
+  adminController.deleteContactUsMessage
 );
 
 module.exports = router;

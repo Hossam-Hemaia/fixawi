@@ -6,6 +6,7 @@ const Car = require("../models/car");
 const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
 const Offer = require("../models/offers");
+const ContactUs = require("../models/contact_us");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -274,20 +275,25 @@ exports.joinRequests = async () => {
   }
 };
 
+/*********************Price List************************/
 exports.createList = async (serviceCenterId, priceListData) => {
   try {
     let priceList = await PriceList.findOne({ serviceCenterId });
-    if (priceList) {
-      await priceList.addToList(priceListData);
-      return true;
-    } else {
-      priceList = new PriceList({
-        serviceCenterId,
-        priceList: priceListData,
-      });
-      await priceList.save();
-      return priceList;
-    }
+    priceList = new PriceList({
+      serviceCenterId,
+      priceList: priceListData,
+    });
+    await priceList.save();
+    return priceList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.priceLists = async () => {
+  try {
+    const priceLists = await PriceList.find().populate("serviceCenterId");
+    return priceLists;
   } catch (err) {
     throw err;
   }
@@ -525,6 +531,23 @@ exports.removeOffer = async (offerId, serviceCentersIds) => {
         await serviceCenter.save();
       }
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.contactUsMessages = async () => {
+  try {
+    const messages = await ContactUs.find().sort({ createdAt: -1 });
+    return messages;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeContactUsMessage = async (msgId) => {
+  try {
+    await ContactUs.findByIdAndDelete(msgId);
   } catch (err) {
     throw err;
   }
