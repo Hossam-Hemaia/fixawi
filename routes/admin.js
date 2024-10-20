@@ -249,4 +249,27 @@ router.delete(
   adminController.deleteContactUsMessage
 );
 
+/**********************************************************
+ * Driver
+ **********************************************************/
+router.post(
+  "/create/truck/driver",
+  isAuth.adminIsAuth,
+  adminController.postCreateDriver
+);
+
+router.get("/all/drivers", isAuth.adminIsAuth, adminController.getAllDrivers);
+
+router.get(
+  "/driver/details",
+  isAuth.adminIsAuth,
+  adminController.getDriverDetails
+);
+
+router.delete(
+  "/delete/driver",
+  isAuth.adminIsAuth,
+  adminController.deleteDriver
+);
+
 module.exports = router;

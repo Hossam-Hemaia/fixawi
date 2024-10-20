@@ -827,3 +827,65 @@ exports.deleteContactUsMessage = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************************
+ * Driver
+ **********************************************************/
+exports.postCreateDriver = async (req, res, next) => {
+  try {
+    const {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      password,
+    } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const driverData = {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      password: hashedPassword,
+    };
+    const driver = await adminServices.createDriver(driverData);
+    if (driver) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Driver created successfully" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllDrivers = async (req, res, next) => {
+  try {
+    const drivers = await adminServices.allDrivers();
+    res.status(200).json({ success: true, drivers });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDriverDetails = async (req, res, next) => {
+  try {
+    const driverId = req.query.driverId;
+    const driver = await adminServices.driverDetails(driverId);
+    res.status(200).json({ success: true, driver });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteDriver = async (req, res, next) => {
+  try {
+    const driverId = req.query.driverId;
+    await adminServices.deleteDriver(driverId);
+    res.status(200).json({ success: true, message: "Driver removed" });
+  } catch (err) {
+    next(err);
+  }
+};

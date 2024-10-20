@@ -7,6 +7,7 @@ const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
 const Offer = require("../models/offers");
 const ContactUs = require("../models/contact_us");
+const Driver = require("../models/driver");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -536,6 +537,7 @@ exports.removeOffer = async (offerId, serviceCentersIds) => {
   }
 };
 
+/****************Contact Us*****************/
 exports.contactUsMessages = async () => {
   try {
     const messages = await ContactUs.find().sort({ createdAt: -1 });
@@ -548,6 +550,43 @@ exports.contactUsMessages = async () => {
 exports.removeContactUsMessage = async (msgId) => {
   try {
     await ContactUs.findByIdAndDelete(msgId);
+  } catch (err) {
+    throw err;
+  }
+};
+
+/*******************Driver*******************/
+exports.createDriver = async (driverData) => {
+  try {
+    const driver = new Driver(driverData);
+    await driver.save();
+    return driver;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allDrivers = async () => {
+  try {
+    const drivers = await Driver.find();
+    return drivers;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.driverDetails = async (driverId) => {
+  try {
+    const driver = await Driver.findById(driverId);
+    return driver;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.deleteDriver = async (driverId) => {
+  try {
+    await Driver.findByIdAndDelete(driverId);
   } catch (err) {
     throw err;
   }
