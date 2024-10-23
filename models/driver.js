@@ -20,6 +20,7 @@ const driverSchema = new Schema(
     },
     driverLogId: {
       type: Schema.Types.ObjectId,
+      ref: "driverLog",
     },
     isActive: {
       type: Boolean,

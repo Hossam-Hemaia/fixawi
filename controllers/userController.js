@@ -3,6 +3,8 @@ const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const scServices = require("../services/scServices");
 const ratingServices = require("../services/ratingServices");
+const orderServices = require("../services/orderServices");
+const driverServices = require("../services/driverServices");
 const utilities = require("../utils/utilities");
 
 exports.getUserProfile = async (req, res, next) => {
@@ -348,6 +350,74 @@ exports.deleteCarMaintenance = async (req, res, next) => {
     const userId = req.userId;
     await userServices.removeCarMaintenance(userId, maintenanceId);
     res.status(200).json({ success: true, message: "maintenance removed" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************
+ * Rescue Controllers
+ **********************************************/
+exports.getDeliveryData = async (req, res, next) => {
+  try {
+    const { fromPointLat, fromPointLng, toPointLat, toPointLng } = req.query;
+    const locations = {
+      fromPoint: { lat: fromPointLat, lng: fromPointLng },
+      toPoint: { lat: toPointLat, lng: toPointLng },
+    };
+    const data = await utilities.getDrivingRoute(locations, false);
+    const deliveryRoute = data.paths[0].points;
+    const distance = data.paths[0].distance / 1000;
+    const estimatedTime = data.paths[0].time / 1000 / 60;
+    const price = 100; // get estimated price according to pricing systemd
+    res.status(200).json({
+      route: deliveryRoute,
+      km: distance,
+      time: estimatedTime + " Mnts",
+      price: Number(price),
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCreateRescueOrder = async (req, res, next) => {
+  try {
+    const { fromPointLat, fromPointLng, toPointLat, toPointLng, rescuePrice } =
+      req.query;
+    const user = await userServices.findUserById(req.userId);
+    const fromPoint = {
+      lat: fromPointLat,
+      lng: fromPointLng,
+    };
+    const toPoint = {
+      lat: toPointLat,
+      lng: toPointLng,
+    };
+    const orderNumber = await orderServices.getNextOrderNumber();
+    const orderStatus = { state: "pending", date: new Date() };
+    const orderData = {
+      orderNumber,
+      fromPoint,
+      toPoint,
+      clientName: user.fullName,
+      rescuePrice,
+      paymentStatus: "Pending Payment",
+      orderStatus,
+      clientId: user._id,
+    };
+    const order = await orderServices.createOrder(orderData);
+    if (!order) {
+      const error = new Error("creating order failed!");
+      error.statusCode = 422;
+      throw error;
+    }
+    // find closest available driver
+    const coords = [fromPointLng, fromPointLat];
+    const driver = await driverServices.findClosestDriver(coords);
+    // send order to the driver socket
+    // write your code here
+    res.status(201).json({ success: true, order });
   } catch (err) {
     next(err);
   }

@@ -584,6 +584,21 @@ exports.driverDetails = async (driverId) => {
   }
 };
 
+exports.editDriver = async (driverId, driverData) => {
+  try {
+    const updateData = {};
+    for (let key in driverData) {
+      if (driverData[key] !== "") {
+        updateData[key] = driverData[key];
+      }
+    }
+    const driver = await Driver.findByIdAndUpdate(driverId, updateData);
+    return driver;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.deleteDriver = async (driverId) => {
   try {
     await Driver.findByIdAndDelete(driverId);

@@ -880,6 +880,37 @@ exports.getDriverDetails = async (req, res, next) => {
   }
 };
 
+exports.putEditDriver = async (req, res, next) => {
+  try {
+    const {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      password,
+      driverId,
+    } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const driverData = {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      password: hashedPassword,
+    };
+    const driver = await adminServices.editDriver(driverId, driverData);
+    if (driver) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Driver updated successfully" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.deleteDriver = async (req, res, next) => {
   try {
     const driverId = req.query.driverId;

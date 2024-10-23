@@ -115,4 +115,15 @@ router.delete(
   userController.deleteCarMaintenance
 );
 
+/*****************************************
+ * Winch Service Routes
+ *****************************************/
+router.get("/delivery/data", isAuth.userIsAuth, userController.getDeliveryData);
+
+router.post(
+  "/create/rescue/order",
+  isAuth.userIsAuth,
+  userController.postCreateRescueOrder
+);
+
 module.exports = router;

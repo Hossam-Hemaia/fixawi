@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const Driver = require("../models/driver");
 const validators = require("../middleware/validators");
 const authController = require("../controllers/authController");
 
@@ -89,6 +90,8 @@ router.post(
 router.post("/create/admin", authController.postCreateAdmin);
 
 router.post("/admin/login", authController.postAdminLogin);
+
+router.post("/driver/login", authController.postDriverLogin);
 
 router.post("/generate/access/token", authController.postGenerateAccessToken);
 

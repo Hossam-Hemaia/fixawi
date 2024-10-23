@@ -34,6 +34,7 @@
     "node-cron": "^3.0.3",
     "nodemailer": "^6.9.15",
     "redis": "^4.7.0",
+    "socket.io": "^4.8.0",
     "winston": "^3.14.2"
   }
 }

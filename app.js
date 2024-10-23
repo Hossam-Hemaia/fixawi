@@ -17,6 +17,8 @@ const adminRouter = require("./routes/admin");
 const scRouter = require("./routes/sc");
 const logger = require("./middleware/logger");
 
+const socketController = require("./controllers/socketController");
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "images");
@@ -75,4 +77,10 @@ connectRedis.initRedis();
 
 const server = app.listen(process.env.PORT, "127.0.0.1", () => {
   console.log("Listening on port " + process.env.PORT);
+});
+
+const io = require("./socket").initIo(server);
+io.on("connection", (socket) => {
+  console.log("New socket connect: " + socket.id);
+  socketController.updateSocket(socket);
 });

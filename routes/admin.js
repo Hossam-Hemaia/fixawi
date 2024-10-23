@@ -266,6 +266,12 @@ router.get(
   adminController.getDriverDetails
 );
 
+router.put(
+  "/edit/truck/driver",
+  isAuth.adminIsAuth,
+  adminController.putEditDriver
+);
+
 router.delete(
   "/delete/driver",
   isAuth.adminIsAuth,

@@ -5,6 +5,7 @@ const { google } = require("googleapis");
 const { OAuth2Client } = require("google-auth-library");
 const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
+const driverServices = require("../services/driverServices");
 const utilities = require("../utils/utilities");
 
 exports.postCreateUser = async (req, res, next) => {
@@ -113,6 +114,58 @@ exports.postLogin = async (req, res, next) => {
       });
       res.status(201).json({ success: true, user, token, refreshToken });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postDriverLogin = async (req, res, next) => {
+  try {
+    const { phoneNumber, location, password } = req.body;
+    const driver = await driverServices.getDriverByUsername(phoneNumber);
+    const passwordMatch = bcrypt.compare(password, driver.password);
+    if (!passwordMatch) {
+      throw new Error("Incorrect password!");
+    }
+    if (!driver.isActive) {
+      throw new Error(
+        "Driver account is not active, contact system administrator"
+      );
+    }
+    let driverData;
+    const coords = {
+      type: "Point",
+      coordinates: [location.lat, location.lng],
+    };
+    const { hasLog } = await driverServices.findDriverLog(driver._id);
+    if (hasLog) {
+      driverData = {
+        driverId: driver._id,
+        location: coords,
+        openDate: new Date(),
+        driverOnline: true,
+      };
+      await driverServices.updateDriverLog(driverData);
+    } else {
+      driverData = {
+        driverId: driver._id,
+        phoneNumber: driver.phoneNumber,
+        driverName: driver.driverName,
+        location: coords,
+        driverOnline: true,
+      };
+      await driverServices.createDriverLog(driverData);
+    }
+    const token = jwt.sign(
+      { driverId: driver._id.toString(), role: driver.role },
+      process.env.SECRET,
+      { expiresIn: "30d" }
+    );
+    const refreshToken = jwt.sign({}, process.env.REFRESH_TOKEN_SECRET, {
+      expiresIn: "1y",
+      audience: driver._id.toString(),
+    });
+    res.status(201).json({ success: true, driver, token, refreshToken });
   } catch (err) {
     next(err);
   }
