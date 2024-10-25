@@ -1,5 +1,6 @@
 const Driver = require("../models/driver");
 const DriverLog = require("../models/driverLog");
+const utilities = require("../utils/utilities");
 
 exports.getDriverByUsername = async (username) => {
   try {
@@ -78,6 +79,41 @@ exports.findClosestDriver = async (coords) => {
       driverOnline: true,
     });
     return nearestDrivers;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.sendOrder = async (username, order) => {
+  try {
+    const io = require("../socket").getIo();
+    const driverSocket = await utilities.getSocketId(username);
+    io.to(driverSocket).emit("order_assigned", order);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.assignDriver = async (driverId) => {
+  try {
+    const driverLog = await DriverLog.findOne({ driverId });
+    driverLog.hasOrder = true;
+    await driverLog.save();
+  } catch (err) {
+    throw new Error(err);
+  }
+};
+
+exports.suspendDriver = async (driverId) => {
+  try {
+    const driverLog = await DriverLog.findOne({ driverId: driverId });
+    driverLog.driverSuspended = true;
+    await driverLog.save();
+    setTimeout(async () => {
+      const driverLog = await DriverLog.findOne({ driverId: driverId });
+      driverLog.driverSuspended = false;
+      await driverLog.save();
+    }, 60 * 1000);
   } catch (err) {
     throw err;
   }

@@ -9,6 +9,8 @@ router.get("/service/categories", scController.getServicesCategories);
 
 router.post("/join/request", scController.postJoinRequest);
 
+router.get("/service/center/profile", isAuth.scIsAuth, )
+
 router.put(
   "/update/profile",
   [

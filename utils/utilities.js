@@ -108,3 +108,14 @@ exports.getLocalDate = (date) => {
   );
   return localDate;
 };
+
+exports.getSocketId = async (username) => {
+  try {
+    const cacheDB = rdsClient.getRedisConnection();
+    const user = await cacheDB.hGetAll(`${username}-s`);
+    const socketId = JSON.parse(user.socket);
+    return socketId;
+  } catch (err) {
+    throw err;
+  }
+};

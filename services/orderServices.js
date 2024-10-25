@@ -1,4 +1,6 @@
 const Order = require("../models/orders");
+const Driver = require("../models/driver");
+const utilities = require("../utils/utilities");
 
 exports.getNextOrderNumber = async () => {
   try {
@@ -20,5 +22,32 @@ exports.createOrder = async (orderData) => {
     return order;
   } catch (err) {
     throw err;
+  }
+};
+
+exports.findOrder = async (orderId) => {
+  try {
+    const order = await Order.findById(orderId).populate([
+      "clientId",
+      "driverId",
+    ]);
+    return order;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.assignOrder = async (orderId, driverId) => {
+  try {
+    const currentDate = utilities.getLocalDate(new Date());
+    const order = await Order.findById(orderId).populate("clientId");
+    const driver = await Driver.findById(driverId);
+    order.orderStatus.push({ state: "accepted", date: currentDate });
+    order.driverId = driverId;
+    order.companyName = driver.companyName;
+    await order.save();
+    return order;
+  } catch (err) {
+    throw new Error(err);
   }
 };

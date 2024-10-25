@@ -173,6 +173,12 @@ router.get(
   isAuth.adminIsAuth,
   adminController.getPriceList
 );
+
+router.delete(
+  "/remove/price/list",
+  isAuth.adminIsAuth,
+  adminController.deletePriceList
+);
 /**********************************************************
  * Cars
  ***********************************************************/

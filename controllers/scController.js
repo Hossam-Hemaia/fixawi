@@ -53,6 +53,16 @@ exports.getServicesCategories = async (req, res, next) => {
   }
 };
 
+exports.getServiceCenterProfile = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc._id;
+    const serviceCenter = await adminServices.serviceCenter(serviceCenterId);
+    res.status(200).json({ success: true, serviceCenter });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.putUpdateServiceCenterProfile = async (req, res, next) => {
   try {
     const {

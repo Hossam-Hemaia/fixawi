@@ -83,4 +83,6 @@ const io = require("./socket").initIo(server);
 io.on("connection", (socket) => {
   console.log("New socket connect: " + socket.id);
   socketController.updateSocket(socket);
+  socketController.driverAccepted(socket);
+  socketController.driverDeclined(socket);
 });

@@ -280,10 +280,15 @@ exports.joinRequests = async () => {
 exports.createList = async (serviceCenterId, priceListData) => {
   try {
     let priceList = await PriceList.findOne({ serviceCenterId });
-    priceList = new PriceList({
-      serviceCenterId,
-      priceList: priceListData,
-    });
+    if (priceList) {
+      priceList.priceList = priceListData;
+      await priceList.save();
+    } else {
+      priceList = new PriceList({
+        serviceCenterId,
+        priceList: priceListData,
+      });
+    }
     await priceList.save();
     return priceList;
   } catch (err) {
@@ -348,6 +353,14 @@ exports.showPriceList = async (serviceCenterId) => {
   try {
     const priceList = await PriceList.findOne({ serviceCenterId });
     return priceList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removePriceList = async (priceListId) => {
+  try {
+    await PriceList.findByIdAndDelete(priceListId);
   } catch (err) {
     throw err;
   }

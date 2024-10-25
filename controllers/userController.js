@@ -384,7 +384,7 @@ exports.getDeliveryData = async (req, res, next) => {
 exports.postCreateRescueOrder = async (req, res, next) => {
   try {
     const { fromPointLat, fromPointLng, toPointLat, toPointLng, rescuePrice } =
-      req.query;
+      req.body;
     const user = await userServices.findUserById(req.userId);
     const fromPoint = {
       lat: fromPointLat,
@@ -414,9 +414,10 @@ exports.postCreateRescueOrder = async (req, res, next) => {
     }
     // find closest available driver
     const coords = [fromPointLng, fromPointLat];
-    const driver = await driverServices.findClosestDriver(coords);
+    const drivers = await driverServices.findClosestDriver(coords);
     // send order to the driver socket
-    // write your code here
+    const driver = drivers[0];
+    await driverServices.sendOrder(driver.phoneNumber, order);
     res.status(201).json({ success: true, order });
   } catch (err) {
     next(err);

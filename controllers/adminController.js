@@ -514,6 +514,16 @@ exports.patchApproveModifiedList = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.deletePriceList = async (req, res, next) => {
+  try {
+    const priceListId = req.query.priceListId;
+    await adminServices.removePriceList(priceListId);
+    res.status(200).json({ success: true, message: "price list removed" });
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************************
  * Cars
  **********************************************************/

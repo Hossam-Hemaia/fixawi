@@ -33,16 +33,14 @@ const driverLogSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    rejectedOrders: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "order",
-      },
-    ],
+    driverSuspended: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );
 
-driverLogSchema.index({ location: "2dsphere" }, { unique: true });
+driverLogSchema.index({ location: "2dsphere" });
 
 module.exports = mongoose.model("driverLog", driverLogSchema);

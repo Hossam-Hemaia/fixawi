@@ -52,6 +52,15 @@ const driverSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "rating",
     },
+    declinedOrders: [
+      {
+        orderId: {
+          type: Schema.Types.ObjectId,
+          ref: "order",
+        },
+        reason: { type: String },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -135,7 +135,7 @@ exports.postDriverLogin = async (req, res, next) => {
     let driverData;
     const coords = {
       type: "Point",
-      coordinates: [location.lat, location.lng],
+      coordinates: [location.lng, location.lat],
     };
     const { hasLog } = await driverServices.findDriverLog(driver._id);
     if (hasLog) {
