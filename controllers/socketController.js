@@ -55,3 +55,50 @@ exports.driverDeclined = async (socket) => {
     throw new Error(err);
   }
 };
+
+exports.driverCurrentLocation = async (socket) => {
+  try {
+    const io = require("../socket").getIo();
+    socket.on("current_location", async (event) => {
+      const { clientPhoneNumber, location } = event;
+      const userSocket = await utilities.getSocketId(clientPhoneNumber);
+      io.to(userSocket).emit("driver_location", { location });
+    });
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.driverDeliveredOrder = async (socket) => {
+  try {
+    const io = require("../socket").getIo();
+    socket.on("order_finish", async (event) => {
+      const { orderId, driverId, status } = event;
+      await orderServices.updateOrderStatus(orderId, status);
+      if (status === "delivered") {
+        const order = await orderServices.findOrder(orderId);
+        await driverServices.releaseDriver(driverId);
+        const userSocket = await utilities.getSocketId(order.phoneNumber);
+        io.to(userSocket).emit("order_delivered", { order });
+      }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.disconnected = async (socket) => {
+  try {
+    socket.on("disconnect", async () => {
+      const username = socket.username;
+      const driver = await driverServices.getDriverByUsername(username);
+      const driverData = {
+        courierId: driver._id,
+        driverOnline: false,
+      };
+      await driverServices.updateDriverLog(driverData);
+    });
+  } catch (err) {
+    throw new Error(err);
+  }
+};

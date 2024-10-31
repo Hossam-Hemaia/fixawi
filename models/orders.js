@@ -17,6 +17,9 @@ const orderSchema = new Schema(
     clientName: {
       type: String,
     },
+    phoneNumber: {
+      type: String,
+    },
     rescuePrice: {
       type: Number,
     },

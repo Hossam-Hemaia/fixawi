@@ -40,6 +40,7 @@ priceListSchema.methods.modifyList = function (priceList) {
   try {
     this.priceList = priceList;
     this.save();
+    return this;
   } catch (err) {
     throw err;
   }

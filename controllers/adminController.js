@@ -362,7 +362,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
       password: hashedPassword,
       role: "service center",
     };
-    await adminServices.updateAdmin(serviceCenterId, scData);
+    await adminServices.updateScUser(serviceCenterId, scData);
     res.status(201).json({
       success: true,
       message: "Service Center Updated",

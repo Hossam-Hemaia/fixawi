@@ -118,3 +118,13 @@ exports.suspendDriver = async (driverId) => {
     throw err;
   }
 };
+
+exports.releaseDriver = async (driverId) => {
+  try {
+    const driverLog = await DriverLog.findOne({ driverId });
+    driverLog.hasOrder = false;
+    await driverLog.save();
+  } catch (err) {
+    throw new Error(err);
+  }
+};

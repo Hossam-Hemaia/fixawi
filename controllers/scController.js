@@ -1,4 +1,5 @@
 const { validationResult } = require("express-validator");
+const bcrypt = require("bcryptjs");
 const scServices = require("../services/scServices");
 const adminServices = require("../services/adminServices");
 
@@ -55,7 +56,7 @@ exports.getServicesCategories = async (req, res, next) => {
 
 exports.getServiceCenterProfile = async (req, res, next) => {
   try {
-    const serviceCenterId = req.sc._id;
+    const serviceCenterId = req.sc.serviceCenterId;
     const serviceCenter = await adminServices.serviceCenter(serviceCenterId);
     res.status(200).json({ success: true, serviceCenter });
   } catch (err) {
@@ -69,17 +70,21 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       lat,
       lng,
-      serviceType,
+      serviceCategoryIds,
+      visitType,
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands,
       username,
       password,
-      serviceCenterId,
     } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
     const error = validationResult(req);
     if (!error.isEmpty() && error.array()[0].msg !== "Invalid value") {
       const errorMsg = new Error(error.array()[0].msg);
@@ -103,18 +108,24 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
     } else {
       hashedPassword = password;
     }
+    const serviceCategories = JSON.parse(serviceCategoryIds);
     const brands = JSON.parse(carBrands);
     const serviceCenterData = {
       serviceCenterTitle,
       serviceCenterTitleEn,
       address,
+      area,
       location,
-      serviceType,
+      serviceCategoryIds: serviceCategories,
+      visitType,
       openAt,
       closeAt,
       contacts,
+      email,
+      website,
       carBrands: brands,
       image: imageUrl,
+      isApproved: false,
       username,
       password: hashedPassword,
     };
@@ -128,7 +139,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       password: hashedPassword,
       role: "service center",
     };
-    await adminServices.updateAdmin(serviceCenterId, scData);
+    await adminServices.updateAdmin(req.sc._id, scData);
     res.status(201).json({
       success: true,
       message: "Service Center Updated",
@@ -144,6 +155,7 @@ exports.postCreatePriceList = async (req, res, next) => {
     const priceList = req.body.priceList;
     const serviceCenterId = req.sc.serviceCenterId;
     const list = await adminServices.createList(serviceCenterId, priceList);
+    await scServices.setPriceListDisapproved(list._id);
     if (list) {
       return res
         .status(201)

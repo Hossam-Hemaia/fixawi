@@ -33,6 +33,23 @@ exports.updateAdmin = async (adminId, adminData) => {
   }
 };
 
+exports.updateScUser = async (scId, adminData) => {
+  try {
+    const updateData = {};
+    for (let key in adminData) {
+      if (adminData[key] !== "") {
+        updateData[key] = adminData[key];
+      }
+    }
+    const scUser = await Admin.findOne({ serviceCenterId: scId });
+    if (scUser) {
+      await Admin.findByIdAndUpdate(scUser._id, updateData);
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.getAdminByUsername = async (username) => {
   try {
     const admin = await Admin.findOne({ username });

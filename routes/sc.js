@@ -1,5 +1,6 @@
 const express = require("express");
 const scController = require("../controllers/scController");
+const adminController = require("../controllers/adminController");
 const isAuth = require("../middleware/isAuth");
 const validators = require("../middleware/validators");
 
@@ -9,7 +10,11 @@ router.get("/service/categories", scController.getServicesCategories);
 
 router.post("/join/request", scController.postJoinRequest);
 
-router.get("/service/center/profile", isAuth.scIsAuth, )
+router.get(
+  "/service/center/profile",
+  isAuth.scIsAuth,
+  scController.getServiceCenterProfile
+);
 
 router.put(
   "/update/profile",
@@ -39,6 +44,12 @@ router.get(
   "/service/center/price/list",
   isAuth.scIsAuth,
   scController.getPriceList
+);
+
+router.get(
+  "/service/sub/categories",
+  isAuth.scIsAuth,
+  adminController.getAllSubCategories
 );
 
 router.put(

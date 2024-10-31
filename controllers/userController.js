@@ -401,6 +401,7 @@ exports.postCreateRescueOrder = async (req, res, next) => {
       fromPoint,
       toPoint,
       clientName: user.fullName,
+      phoneNumber: user.phoneNumber,
       rescuePrice,
       paymentStatus: "Pending Payment",
       orderStatus,

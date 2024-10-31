@@ -14,6 +14,7 @@ exports.servicesCategories = async () => {
 
 exports.setPriceListDisapproved = async (priceListId) => {
   try {
+    console.log(priceListId);
     const priceList = await PriceList.findById(priceListId);
     priceList.priceListApporved = false;
     await priceList.save();

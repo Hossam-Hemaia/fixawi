@@ -51,3 +51,13 @@ exports.assignOrder = async (orderId, driverId) => {
     throw new Error(err);
   }
 };
+
+exports.updateOrderStatus = async (orderId, status)=>{
+  try{
+    const currentDate = utilities.getLocalDate(new Date());
+    const order = await Order.findById(orderId).populate("clientId");
+    order.orderStatus.push({ state: status, date: currentDate });
+  }catch(err){
+    throw err;
+  }
+}

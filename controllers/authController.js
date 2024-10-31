@@ -69,7 +69,7 @@ exports.postAdminLogin = async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const admin = await adminServices.getAdminByUsername(username);
-    const passMatch = bcrypt.compare(password, admin.password);
+    const passMatch = await bcrypt.compare(password, admin.password);
     if (!passMatch) {
       throw new Error("Incorrect password!");
     }
