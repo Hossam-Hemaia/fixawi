@@ -85,4 +85,7 @@ io.on("connection", (socket) => {
   socketController.updateSocket(socket);
   socketController.driverAccepted(socket);
   socketController.driverDeclined(socket);
+  socketController.driverCurrentLocation(socket);
+  socketController.driverDeliveredOrder(socket);
+  socketController.disconnected(socket);
 });
