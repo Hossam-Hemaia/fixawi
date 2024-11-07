@@ -8,6 +8,7 @@ const Visit = require("../models/visit");
 const Offer = require("../models/offers");
 const ContactUs = require("../models/contact_us");
 const Driver = require("../models/driver");
+const Settings = require("../models/settings");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -632,6 +633,36 @@ exports.editDriver = async (driverId, driverData) => {
 exports.deleteDriver = async (driverId) => {
   try {
     await Driver.findByIdAndDelete(driverId);
+  } catch (err) {
+    throw err;
+  }
+};
+/*******************Settings******************/
+exports.setAppSettings = async (settingsData) => {
+  try {
+    let settings = await Settings.findOne();
+    if (!settings) {
+      settings = new Settings(settingsData);
+      await settings.save();
+    } else {
+      const updateData = {};
+      for (let key in settingsData) {
+        if (settingsData[key] !== "") {
+          updateData[key] = settingsData[key];
+        }
+      }
+      await Settings.findByIdAndUpdate(settings._id, updateData);
+    }
+    return settings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.appSettings = async () => {
+  try {
+    const settings = await Settings.findOne();
+    return settings;
   } catch (err) {
     throw err;
   }

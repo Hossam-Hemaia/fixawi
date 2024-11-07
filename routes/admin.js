@@ -284,4 +284,16 @@ router.delete(
   adminController.deleteDriver
 );
 
+/**********************************************************
+ * Settings
+ **********************************************************/
+
+router.post(
+  "/set/app/settings",
+  isAuth.adminIsAuth,
+  adminController.postSetAppSettings
+);
+
+router.get("/app/settings", isAuth.adminIsAuth, adminController.getAppSettings);
+
 module.exports = router;

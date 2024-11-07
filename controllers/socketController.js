@@ -21,8 +21,11 @@ exports.driverAccepted = async (socket) => {
   socket.on("driver_accepted", async (event) => {
     const io = require("../socket").getIo();
     const { driverId, orderId } = event;
+    let user;
     const order = await orderServices.findOrder(orderId);
-    const user = await userServices.findUserById(order.clientId);
+    if (order) {
+      user = await userServices.findUserById(order.clientId);
+    }
     const userSocket = await utilities.getSocketId(user.phoneNumber);
     if (order.orderStatus[order.orderStatus.length - 1].state !== "canceled") {
       await driverServices.assignDriver(driverId);
@@ -48,8 +51,13 @@ exports.driverDeclined = async (socket) => {
       await driverServices.suspendDriver(driverId);
       io.to(userSocket).emit("driver_refused", {
         orderId: orderId,
-        message: "driver refused to receive the order",
+        message: "driver refused, sending to another driver",
       });
+      const coords = [order.fromPoint.lng, order.fromPoint.lat];
+      const drivers = await driverServices.findClosestDriver(coords);
+      // send order to the driver socket
+      const newDriver = drivers[0];
+      await driverServices.sendOrder(newDriver.phoneNumber, order);
     });
   } catch (err) {
     throw new Error(err);
@@ -60,9 +68,13 @@ exports.driverCurrentLocation = async (socket) => {
   try {
     const io = require("../socket").getIo();
     socket.on("current_location", async (event) => {
-      const { clientPhoneNumber, location } = event;
+      const { clientPhoneNumber, location, flag, orderId } = event;
       const userSocket = await utilities.getSocketId(clientPhoneNumber);
       io.to(userSocket).emit("driver_location", { location });
+      if (flag === "picking up") {
+        await orderServices.updateOrderStatus(orderId, "transporting");
+        io.to(userSocket).emit("transporting");
+      }
     });
   } catch (err) {
     throw err;
@@ -81,6 +93,44 @@ exports.driverDeliveredOrder = async (socket) => {
         const userSocket = await utilities.getSocketId(order.phoneNumber);
         io.to(userSocket).emit("order_delivered", { order });
       }
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.updateDriverCache = async (socket) => {
+  try {
+    const cacheDB = await rdsClient.getRedisConnection();
+    socket.on("update_cache", async (event) => {
+      const driverId = event.driverId;
+      await cacheDB.hSet(
+        `${driverId}-c`,
+        "cache",
+        JSON.stringify(event.driverCache)
+      );
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.getDriverCache = async (socket) => {
+  try {
+    socket.on("get_driver_cache", async (event) => {
+      const driverCache = await utilities.getDriverCache(event.driverId);
+      socket.emit("driver_cache", driverCache);
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.deleteDriverCache = async (socket) => {
+  try {
+    const cacheDB = await rdsClient.getRedisConnection();
+    socket.on("delete_driver_cache", async (event) => {
+      await cacheDB.del(`${event.driverId}-c`);
     });
   } catch (err) {
     console.log(err);

@@ -99,6 +99,13 @@ const serviceCenterSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "offer",
     },
+    fixawiFareType: {
+      type: String,
+      enum: ["ratio", "fixed amount", "subscription"],
+    },
+    fareValue: {
+      type: Number,
+    },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );

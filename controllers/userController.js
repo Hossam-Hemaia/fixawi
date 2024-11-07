@@ -360,7 +360,8 @@ exports.deleteCarMaintenance = async (req, res, next) => {
  **********************************************/
 exports.getDeliveryData = async (req, res, next) => {
   try {
-    const { fromPointLat, fromPointLng, toPointLat, toPointLng } = req.query;
+    const { fromPointLat, fromPointLng, toPointLat, toPointLng, service } =
+      req.query;
     const locations = {
       fromPoint: { lat: fromPointLat, lng: fromPointLng },
       toPoint: { lat: toPointLat, lng: toPointLng },
@@ -369,12 +370,21 @@ exports.getDeliveryData = async (req, res, next) => {
     const deliveryRoute = data.paths[0].points;
     const distance = data.paths[0].distance / 1000;
     const estimatedTime = data.paths[0].time / 1000 / 60;
-    const price = 100; // get estimated price according to pricing systemd
+    let price = 0;
+    let serviceDownPayment = 0;
+    if (service === "rescue") {
+      const { totalPrice, downPayment } = await utilities.getRescuePrice(
+        distance
+      );
+      price = totalPrice;
+      serviceDownPayment = downPayment;
+    }
     res.status(200).json({
       route: deliveryRoute,
-      km: distance,
+      km: distance.toFixed(2),
       time: estimatedTime + " Mnts",
-      price: Number(price),
+      price: Number(price.toFixed(2)),
+      downPayment: Number(serviceDownPayment),
     });
   } catch (err) {
     next(err);
@@ -383,8 +393,14 @@ exports.getDeliveryData = async (req, res, next) => {
 
 exports.postCreateRescueOrder = async (req, res, next) => {
   try {
-    const { fromPointLat, fromPointLng, toPointLat, toPointLng, rescuePrice } =
-      req.body;
+    const {
+      fromPointLat,
+      fromPointLng,
+      toPointLat,
+      toPointLng,
+      downPayment,
+      rescuePrice,
+    } = req.body;
     const user = await userServices.findUserById(req.userId);
     const fromPoint = {
       lat: fromPointLat,
@@ -402,6 +418,7 @@ exports.postCreateRescueOrder = async (req, res, next) => {
       toPoint,
       clientName: user.fullName,
       phoneNumber: user.phoneNumber,
+      downPayment,
       rescuePrice,
       paymentStatus: "Pending Payment",
       orderStatus,
@@ -420,6 +437,16 @@ exports.postCreateRescueOrder = async (req, res, next) => {
     const driver = drivers[0];
     await driverServices.sendOrder(driver.phoneNumber, order);
     res.status(201).json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserRescueOrders = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const orders = await orderServices.userRescueOrders(userId);
+    res.status(200).json({ success: true, orders });
   } catch (err) {
     next(err);
   }

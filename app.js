@@ -15,6 +15,7 @@ const authRouter = require("./routes/auth");
 const userRouter = require("./routes/user");
 const adminRouter = require("./routes/admin");
 const scRouter = require("./routes/sc");
+const driverRouter = require("./routes/driver");
 const logger = require("./middleware/logger");
 
 const socketController = require("./controllers/socketController");
@@ -63,6 +64,7 @@ app.use(process.env.API, authRouter);
 app.use(process.env.API, userRouter);
 app.use(process.env.API, adminRouter);
 app.use(process.env.API, scRouter);
+app.use(process.env.API, driverRouter);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -81,11 +83,14 @@ const server = app.listen(process.env.PORT, "127.0.0.1", () => {
 
 const io = require("./socket").initIo(server);
 io.on("connection", (socket) => {
-  console.log("New socket connect: " + socket.id);
+  console.log("New socket connected: " + socket.id);
   socketController.updateSocket(socket);
   socketController.driverAccepted(socket);
   socketController.driverDeclined(socket);
   socketController.driverCurrentLocation(socket);
   socketController.driverDeliveredOrder(socket);
+  socketController.updateDriverCache(socket);
+  socketController.getDriverCache(socket);
+  socketController.deleteDriverCache(socket);
   socketController.disconnected(socket);
 });

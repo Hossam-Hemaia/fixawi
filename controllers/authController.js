@@ -123,7 +123,7 @@ exports.postDriverLogin = async (req, res, next) => {
   try {
     const { phoneNumber, location, password } = req.body;
     const driver = await driverServices.getDriverByUsername(phoneNumber);
-    const passwordMatch = bcrypt.compare(password, driver.password);
+    const passwordMatch = await bcrypt.compare(password, driver.password);
     if (!passwordMatch) {
       throw new Error("Incorrect password!");
     }

@@ -1,6 +1,7 @@
 const nodemailer = require("nodemailer");
 const firebaseAdmin = require("firebase-admin");
 const rdsClient = require("../config/redisConnect");
+const Settings = require("../models/settings");
 const axios = require("axios");
 
 exports.tokenCreator = () => {
@@ -115,6 +116,35 @@ exports.getSocketId = async (username) => {
     const user = await cacheDB.hGetAll(`${username}-s`);
     const socketId = JSON.parse(user.socket);
     return socketId;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getDriverCache = async (driverId) => {
+  try {
+    const cacheDB = await rdsClient.getRedisConnection();
+    const driver = await cacheDB.hGetAll(`${driverId}-c`);
+    const driverCache = JSON.parse(driver.cache);
+    return driverCache;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getRescuePrice = async (distance) => {
+  try {
+    const settings = await Settings.findOne();
+    let totalPrice = 0;
+    const pricePerKm = distance * settings.rescuePricingPerKm;
+    let fixawiFees = 0;
+    if (settings.rescueFareSystem === "ratio") {
+      fixawiFees = pricePerKm * settings.fixawiRescueFare;
+      totalPrice = pricePerKm + fixawiFees;
+    } else {
+      totalPrice = pricePerKm + settings.fixawiRescueFare;
+    }
+    return { totalPrice, downPayment: settings.rescueServiceDownPayment };
   } catch (err) {
     throw err;
   }

@@ -126,4 +126,10 @@ router.post(
   userController.postCreateRescueOrder
 );
 
+router.get(
+  "/user/rescue/orders",
+  isAuth.userIsAuth,
+  userController.getUserRescueOrders
+);
+
 module.exports = router;

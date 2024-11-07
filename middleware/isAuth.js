@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const userServices = require("../services/userServices");
 const adminServices = require("../services/adminServices");
+const driverServices = require("../services/driverServices");
 
 exports.userIsAuth = async (req, res, next) => {
   let decodedToken;
@@ -87,5 +88,34 @@ exports.scIsAuth = async (req, res, next) => {
     next(error);
   }
   req.sc = sc;
+  next();
+};
+
+exports.driverIsAuth = async (req, res, next) => {
+  let decodedToken;
+  try {
+    const token = req.get("Authorization").split(" ")[1];
+    decodedToken = jwt.verify(token, process.env.SECRET);
+  } catch (err) {
+    err.statusCode = 403;
+    next(err);
+  }
+  if (!decodedToken) {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 401;
+    next(error);
+  }
+  if (decodedToken.role !== "driver") {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 403;
+    next(error);
+  }
+  const driver = await driverServices.findDriver(decodedToken.driverId);
+  if (!driver || driver.role !== "driver" || !driver.isActive) {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 403;
+    next(error);
+  }
+  req.driverId = driver._id;
   next();
 };

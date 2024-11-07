@@ -1,6 +1,7 @@
 const Driver = require("../models/driver");
 const DriverLog = require("../models/driverLog");
 const utilities = require("../utils/utilities");
+const settings = require("../models/settings");
 
 exports.getDriverByUsername = async (username) => {
   try {
@@ -107,13 +108,14 @@ exports.assignDriver = async (driverId) => {
 exports.suspendDriver = async (driverId) => {
   try {
     const driverLog = await DriverLog.findOne({ driverId: driverId });
+    const settings = await Settings.findOne();
     driverLog.driverSuspended = true;
     await driverLog.save();
     setTimeout(async () => {
       const driverLog = await DriverLog.findOne({ driverId: driverId });
       driverLog.driverSuspended = false;
       await driverLog.save();
-    }, 60 * 1000);
+    }, 60 * 60 * 1000 * settings.driverSuspensionTime);
   } catch (err) {
     throw err;
   }

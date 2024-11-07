@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const orderSchema = new Schema(
   {
     orderNumber: {
-      type: String,
+      type: Number,
     },
     fromPoint: {
       lat: { type: Number },
@@ -19,6 +19,9 @@ const orderSchema = new Schema(
     },
     phoneNumber: {
       type: String,
+    },
+    downPyament: {
+      type: Number,
     },
     rescuePrice: {
       type: Number,

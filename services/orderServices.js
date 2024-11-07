@@ -52,12 +52,33 @@ exports.assignOrder = async (orderId, driverId) => {
   }
 };
 
-exports.updateOrderStatus = async (orderId, status)=>{
-  try{
+exports.updateOrderStatus = async (orderId, status) => {
+  try {
     const currentDate = utilities.getLocalDate(new Date());
     const order = await Order.findById(orderId).populate("clientId");
     order.orderStatus.push({ state: status, date: currentDate });
-  }catch(err){
+    await order.save();
+  } catch (err) {
     throw err;
   }
-}
+};
+
+exports.userRescueOrders = async (userId) => {
+  try {
+    const orders = await Order.find({ clientId: userId }).sort({
+      createdAt: -1,
+    });
+    return orders;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.driverRescueOrders = async (driverId) => {
+  try {
+    const orders = await Order.find({ driverId }).sort({ createdAt: -1 });
+    return orders;
+  } catch (err) {
+    throw err;
+  }
+};

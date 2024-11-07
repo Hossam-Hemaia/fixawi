@@ -191,6 +191,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       email,
       website,
       carBrands,
+      fixawiFareType,
+      fareValue,
       username,
       password,
     } = req.body;
@@ -206,6 +208,16 @@ exports.postCreateServiceCenter = async (req, res, next) => {
     if (files.length > 0) {
       image = files[0];
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    }
+    if (
+      !fixawiFareType ||
+      fixawiFareType === "" ||
+      !fareValue ||
+      fareValue === ""
+    ) {
+      const error = new Error("You must set pricing options");
+      error.statusCode = 422;
+      throw error;
     }
     const location = {
       type: "Point",
@@ -233,6 +245,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       website,
       carBrands: brands,
       image: imageUrl,
+      fixawiFareType,
+      fareValue,
       isActive: true,
       isApproved: true,
       username,
@@ -304,6 +318,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       website,
       carBrands,
       isActive,
+      fixawiFareType,
+      fareValue,
       username,
       password,
       serviceCenterId,
@@ -320,6 +336,16 @@ exports.putEditServiceCenter = async (req, res, next) => {
     if (files.length > 0) {
       image = files[0];
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    }
+    if (
+      !fixawiFareType ||
+      fixawiFareType === "" ||
+      !fareValue ||
+      fareValue === ""
+    ) {
+      const error = new Error("You must set pricing options");
+      error.statusCode = 422;
+      throw error;
     }
     const location = {
       type: "Point",
@@ -349,6 +375,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       carBrands: brands,
       image: imageUrl,
       isActive,
+      fixawiFareType,
+      fareValue,
       username,
       password: hashedPassword,
     };
@@ -404,7 +432,6 @@ exports.approveServiceCenter = async (req, res, next) => {
     }
     const hashedPassword = await bcrypt.hash(password, 12);
     const serviceCenterData = {
-      isActive: true,
       isApproved,
       username,
       password: hashedPassword,
@@ -926,6 +953,48 @@ exports.deleteDriver = async (req, res, next) => {
     const driverId = req.query.driverId;
     await adminServices.deleteDriver(driverId);
     res.status(200).json({ success: true, message: "Driver removed" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Settings
+ **********************************************************/
+
+exports.postSetAppSettings = async (req, res, next) => {
+  try {
+    const {
+      driverSuspensionTime,
+      rescueServiceDownPayment,
+      bookingDownPayment,
+      rescuePricingPerKm,
+      rescueFareSystem,
+      fixawiRescueFare,
+    } = req.body;
+    const settingsData = {
+      driverSuspensionTime,
+      rescueServiceDownPayment,
+      bookingDownPayment,
+      rescuePricingPerKm,
+      rescueFareSystem,
+      fixawiRescueFare,
+    };
+    const settings = await adminServices.setAppSettings(settingsData);
+    if (settings) {
+      res
+        .status(201)
+        .json({ success: true, message: "settings has been saved" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAppSettings = async (req, res, next) => {
+  try {
+    const settings = await adminServices.appSettings();
+    res.status(200).json({ success: true, settings });
   } catch (err) {
     next(err);
   }
