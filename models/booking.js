@@ -8,14 +8,19 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "service_center",
     },
-    services: [
+    calendar: [
       {
-        serviceId: {
-          type: Schema.Types.ObjectId,
-          ref: "subCategory",
-        },
-        capacity: { type: Number },
-        timeAverage: { type: Number },
+        date: { type: Date },
+        time: { type: String },
+        clients: [
+          {
+            clientName: { type: String },
+            phone: { type: String },
+            carBrand: { type: String },
+            carModel: { type: String },
+          },
+        ],
+        slotIsFull: { type: Boolean, default: false },
       },
     ],
   },

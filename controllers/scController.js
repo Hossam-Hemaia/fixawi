@@ -198,3 +198,55 @@ exports.getVisits = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************************
+ * Booking Settings
+ **********************************************************/
+exports.postCreateBookingSettings = async (req, res, next) => {
+  try {
+    const { services } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
+    const bookingData = {
+      serviceCenterId,
+      services,
+    };
+    const bookingSettings = await scServices.createBookingSettings(bookingData);
+    if (bookingSettings) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Booking Settings Created" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBookingSettings = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    res.status(200).json({ success: true, bookingSettings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putUpdateBookingSettings = async (req, res, next) => {
+  try {
+    const { services, bookingSettingsId } = req.body;
+    const bookingSettingsData = {
+      services,
+    };
+    const bookingSettings = await scServices.updateBookingSettings(
+      bookingSettingsId,
+      bookingSettingsData
+    );
+    if (bookingSettings) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Booking Settings Updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

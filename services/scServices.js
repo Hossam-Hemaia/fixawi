@@ -2,6 +2,7 @@ const ServiceCenter = require("../models/service_center");
 const ServiceCategory = require("../models/service_types");
 const Visit = require("../models/visit");
 const PriceList = require("../models/priceList");
+const BookingSettings = require("../models/bookingSettings");
 
 exports.servicesCategories = async () => {
   try {
@@ -53,6 +54,38 @@ exports.visits = async (serviceCenterId) => {
       "serviceCenterId",
     ]);
     return visits;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.createBookingSettings = async (bookingSettings) => {
+  try {
+    const booking = new BookingSettings(bookingSettings);
+    booking.save();
+    return booking;
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.bookingSettings = async (serviceCenterId) => {
+  try {
+    const bookingSettings = await BookingSettings.findOne({
+      serviceCenterId,
+    }).populate("services.serviceId");
+    return bookingSettings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateBookingSettings = async (bookingSettingsId, bookingData) => {
+  try {
+    const bookingSettings = await BookingSettings.findById(bookingSettingsId);
+    bookingSettings.services = bookingData.services;
+    await bookingSettings.save();
+    return bookingSettings;
   } catch (err) {
     throw err;
   }

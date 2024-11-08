@@ -58,6 +58,30 @@ router.put(
   scController.putEditServiceCenterPriceList
 );
 
+/**********************************************************
+ * Invoices
+ **********************************************************/
 router.get("/service/center/visits", isAuth.scIsAuth, scController.getVisits);
+
+/**********************************************************
+ * Booking Settings
+ **********************************************************/
+router.post(
+  "/create/booking/plan",
+  isAuth.scIsAuth,
+  scController.postCreateBookingSettings
+);
+
+router.get(
+  "/booking/settings",
+  isAuth.scIsAuth,
+  scController.getBookingSettings
+);
+
+router.put(
+  "/update/booking/settings",
+  isAuth.scIsAuth,
+  scController.putUpdateBookingSettings
+);
 
 module.exports = router;
