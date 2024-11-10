@@ -11,6 +11,11 @@ exports.updateSocket = async (socket) => {
       socket.username = event.username;
       const username = event.username;
       await cacheDB.hSet(`${username}-s`, "socket", JSON.stringify(socket.id));
+      const driver = await driverServices.getDriverByUsername(username);
+      const driverLog = await driverServices.getDriverLog(driver.driverLogId);
+      socket.emit("driver_state", {
+        driverSuspended: driverLog.driverSuspended,
+      });
     });
   } catch (err) {
     console.log(err);
@@ -48,10 +53,13 @@ exports.driverDeclined = async (socket) => {
       const userSocket = await utilities.getSocketId(user.phoneNumber);
       driver.declinedOrders.push({ orderId, reason });
       await driver.save();
-      await driverServices.suspendDriver(driverId);
+      const driverLog = await driverServices.suspendDriver(driverId);
       io.to(userSocket).emit("driver_refused", {
         orderId: orderId,
         message: "driver refused, sending to another driver",
+      });
+      socket.emit("driver_state", {
+        driverSuspended: driverLog.driverSuspended,
       });
       const coords = [order.fromPoint.lng, order.fromPoint.lat];
       const drivers = await driverServices.findClosestDriver(coords);

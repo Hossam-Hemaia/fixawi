@@ -1,7 +1,7 @@
 const Driver = require("../models/driver");
 const DriverLog = require("../models/driverLog");
 const utilities = require("../utils/utilities");
-const settings = require("../models/settings");
+const Settings = require("../models/settings");
 
 exports.getDriverByUsername = async (username) => {
   try {
@@ -34,6 +34,15 @@ exports.findDriverLog = async (driverId) => {
     }
   } catch (err) {
     throw new Error(err);
+  }
+};
+
+exports.getDriverLog = async (logId) => {
+  try {
+    const driverLog = await DriverLog.findById(logId);
+    return driverLog;
+  } catch (err) {
+    throw err;
   }
 };
 
@@ -78,6 +87,7 @@ exports.findClosestDriver = async (coords) => {
       },
       hasOrder: false,
       driverOnline: true,
+      driverSuspended: false,
     });
     return nearestDrivers;
   } catch (err) {
@@ -116,6 +126,7 @@ exports.suspendDriver = async (driverId) => {
       driverLog.driverSuspended = false;
       await driverLog.save();
     }, 60 * 60 * 1000 * settings.driverSuspensionTime);
+    return driverLog;
   } catch (err) {
     throw err;
   }

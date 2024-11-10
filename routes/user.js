@@ -132,4 +132,19 @@ router.get(
   userController.getUserRescueOrders
 );
 
+/*****************************************
+ * Booking Routes
+ *****************************************/
+router.get(
+  "/show/booking/calendar",
+  isAuth.userIsAuth,
+  userController.getUserBookingCalendar
+);
+
+router.post(
+  "/create/new/booking",
+  isAuth.userIsAuth,
+  userController.postCreateBooking
+);
+
 module.exports = router;

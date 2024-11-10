@@ -63,6 +63,16 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    myBookings: [
+      {
+        date: { type: Date },
+        time: { type: Number },
+        turn: { type: Number },
+        service: { type: String },
+        serviceCenter: { type: String },
+        bookingId: { type: Schema.Types.ObjectId },
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -149,3 +149,41 @@ exports.getRescuePrice = async (distance) => {
     throw err;
   }
 };
+
+exports.getFutureDate = (date, numberOfDays) => {
+  try {
+    const singleDay = 24 * 60 * 60 * 1000;
+    let parsedCurrentDate = Date.parse(date);
+    for (let i = 0; i < numberOfDays; ++i) {
+      parsedCurrentDate += singleDay;
+    }
+    const futureDate = new Date(parsedCurrentDate);
+    return futureDate;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.makeBookingCalendar = (timeSlot, openingHour, closingHour, date) => {
+  const singleDay = 24 * 60 * 60 * 1000;
+  let parsedCurrentDate = Date.parse(date);
+  const calendar = [];
+  for (let i = 0; i < 7; ++i) {
+    let day = {
+      date: new Date(parsedCurrentDate),
+    };
+    let slots = [];
+    for (let time = openingHour; time <= closingHour; time += timeSlot) {
+      let slot = {};
+      slot.time = time;
+      slot.clients = [];
+      slot.slotIsFull = false;
+      slots.push(slot);
+    }
+    day.slots = slots;
+    calendar.push(day);
+    parsedCurrentDate += singleDay;
+  }
+  console.log(calendar);
+  return calendar;
+};

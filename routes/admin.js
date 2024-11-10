@@ -136,6 +136,27 @@ router.post(
 router.get("/users/visits", isAuth.adminIsAuth, adminController.getUsersVisits);
 
 /**********************************************************
+ * Booking Settings
+ **********************************************************/
+router.post(
+  "/create/sc/booking/settings",
+  isAuth.adminIsAuth,
+  adminController.postCreateBookingSettings
+);
+
+router.get(
+  "/sc/booking/settings",
+  isAuth.adminIsAuth,
+  adminController.getBookingSettings
+);
+
+router.put(
+  "/sc/update/booking/settings",
+  isAuth.adminIsAuth,
+  adminController.putUpdateBookingSettings
+);
+
+/**********************************************************
  * Price List
  **********************************************************/
 router.post(

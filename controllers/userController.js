@@ -433,9 +433,14 @@ exports.postCreateRescueOrder = async (req, res, next) => {
     // find closest available driver
     const coords = [fromPointLng, fromPointLat];
     const drivers = await driverServices.findClosestDriver(coords);
-    // send order to the driver socket
-    const driver = drivers[0];
-    await driverServices.sendOrder(driver.phoneNumber, order);
+    if (drivers.length > 0) {
+      const driver = drivers[0];
+      await driverServices.sendOrder(driver.phoneNumber, order);
+    } else {
+      const error = new Error("No drivers available!");
+      error.statusCode = 404;
+      throw error;
+    }
     res.status(201).json({ success: true, order });
   } catch (err) {
     next(err);
@@ -447,6 +452,78 @@ exports.getUserRescueOrders = async (req, res, next) => {
     const userId = req.userId;
     const orders = await orderServices.userRescueOrders(userId);
     res.status(200).json({ success: true, orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************
+ * Booking Controllers
+ **********************************************/
+exports.getUserBookingCalendar = async (req, res, next) => {
+  try {
+    const { serviceCenterId, serviceId } = req.query;
+    const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
+    const openingHour = serviceCenter.openAt;
+    const closingHour = serviceCenter.closeAt;
+    const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    const service = bookingSettings.services.find((service) => {
+      return service.serviceId._id.toString() === serviceId.toString();
+    });
+    const currentDate = utilities.getLocalDate(new Date());
+    const calendar = utilities.makeBookingCalendar(
+      service.averageTime,
+      openingHour,
+      closingHour,
+      currentDate
+    );
+    const bookedDays = await userServices.getBookedDays(
+      serviceCenterId,
+      serviceId,
+      currentDate
+    );
+    if (bookedDays.length <= 0) {
+      return res.status(200).json({ success: true, calendar: calendar });
+    } else {
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCreateBooking = async (req, res, next) => {
+  try {
+    const {
+      serviceCenterId,
+      serviceId,
+      date,
+      time,
+      carBrand,
+      carModel,
+      slotNumber,
+    } = req.body;
+    const userId = req.userId;
+    const user = await userServices.findUserById(userId);
+    const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    const service = bookingSettings.services.find((service) => {
+      return service.serviceId._id.toString() === serviceId.toString();
+    });
+    const bookingData = {
+      serviceCenterId,
+      serviceId,
+      serviceName: service.serviceId.subCategoryName,
+      slotCapacity: service.capacity,
+      date: utilities.getLocalDate(date),
+      time,
+      clientName: user.fullName,
+      phone: user.phoneNumber,
+      carBrand,
+      carModel,
+    };
+    const booking = await userServices.bookVisit(bookingData);
+    res
+      .status(201)
+      .json({ success: true, message: "Booking successful", booking });
   } catch (err) {
     next(err);
   }

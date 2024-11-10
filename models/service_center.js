@@ -51,10 +51,10 @@ const serviceCenterSchema = new Schema(
       default: 0,
     },
     openAt: {
-      type: String,
+      type: Number,
     },
     closeAt: {
-      type: String,
+      type: Number,
     },
     contacts: {
       type: String,
@@ -105,6 +105,9 @@ const serviceCenterSchema = new Schema(
     },
     fareValue: {
       type: Number,
+    },
+    closingDay: {
+      type: String,
     },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }

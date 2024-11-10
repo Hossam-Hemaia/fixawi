@@ -6,6 +6,7 @@ const Visit = require("../models/visit");
 const ContactUs = require("../models/contact_us");
 const Car = require("../models/car");
 const Maintenance = require("../models/maintenance");
+const Booking = require("../models/booking");
 const utilities = require("../utils/utilities");
 
 exports.carsBrands = async () => {
@@ -280,6 +281,64 @@ exports.removeCarMaintenance = async (userId, maintenanceId) => {
   try {
     const maintenance = await Maintenance.findOne({ userId });
     await maintenance.removeMaintenance(maintenanceId);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getBookedDays = async (serviceCenterId, serviceId, currentDate) => {
+  try {
+    const futureDate = utilities.getFutureDate(currentDate, 7);
+    const bookings = await Booking.find({
+      serviceCenterId,
+      serviceId,
+      "calendar.date": { $gte: currentDate, $lte: futureDate },
+    });
+    return bookings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.bookVisit = async (bookingData) => {
+  try {
+    const bookingDay = await Booking.findOne({
+      serviceCenterId: bookingData.serviceCenterId,
+      serviceId: bookingData.serviceId,
+      "calendar.date": bookingData.date,
+    });
+    let booking;
+    if (!bookingDay) {
+      booking = new Booking({
+        serviceCenterId: bookingData.serviceCenterId,
+        serviceId: bookingData.serviceId,
+        serviceName: bookingData.serviceName,
+        calendar: [
+          {
+            date: bookingData.date,
+            slots: [
+              {
+                time: bookingData.time,
+                clients: [
+                  {
+                    clientName: bookingData.clientName,
+                    phone: bookingData.phone,
+                    carBrand: bookingData.carBrand,
+                    carModel: bookingData.carModel,
+                  },
+                ],
+                slotIsFull: false,
+              },
+            ],
+          },
+        ],
+      });
+      await booking.save();
+      return booking;
+    } else {
+      booking = await bookingDay.createBooking(bookingData);
+    }
+    return booking;
   } catch (err) {
     throw err;
   }

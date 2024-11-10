@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const adminServices = require("../services/adminServices");
+const scServices = require("../services/scServices");
 const userServices = require("../services/userServices");
 const { validationResult } = require("express-validator");
 const utilities = require("../utils/utilities");
@@ -454,6 +455,58 @@ exports.approveServiceCenter = async (req, res, next) => {
       username,
       password,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Booking Settings
+ **********************************************************/
+exports.postCreateBookingSettings = async (req, res, next) => {
+  try {
+    const { serviceCenterId, services } = req.body;
+    const bookingData = {
+      serviceCenterId,
+      services,
+    };
+    const bookingSettings = await scServices.createBookingSettings(bookingData);
+    if (bookingSettings) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Booking Settings Created" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBookingSettings = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.query.serviceCenterId;
+    console.log(serviceCenterId);
+    const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    res.status(200).json({ success: true, bookingSettings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putUpdateBookingSettings = async (req, res, next) => {
+  try {
+    const { services, bookingSettingsId } = req.body;
+    const bookingSettingsData = {
+      services,
+    };
+    const bookingSettings = await scServices.updateBookingSettings(
+      bookingSettingsId,
+      bookingSettingsData
+    );
+    if (bookingSettings) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Booking Settings Updated" });
+    }
   } catch (err) {
     next(err);
   }

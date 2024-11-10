@@ -1,8 +1,15 @@
 const express = require("express");
 const isAuth = require("../middleware/isAuth");
 const driverController = require("../controllers/driverController");
+const userController = require("../controllers/userController");
 
 const router = express.Router();
+
+router.get(
+  "/driver/delivery/data",
+  isAuth.driverIsAuth,
+  userController.getDeliveryData
+);
 
 router.get(
   "/driver/orders",
