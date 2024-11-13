@@ -84,4 +84,13 @@ router.put(
   scController.putUpdateBookingSettings
 );
 
+/**********************************************************
+ * Bookings
+ **********************************************************/
+router.get(
+  "/bookings/calendar",
+  isAuth.scIsAuth,
+  scController.getBookingsCalendar
+);
+
 module.exports = router;

@@ -235,9 +235,9 @@ exports.allServiceCenters = async () => {
 
 exports.serviceCenter = async (serviceCenterId) => {
   try {
-    const serviceCenter = await ServiceCenter.findById(
-      serviceCenterId
-    ).populate("serviceCategoryIds");
+    const serviceCenter = await ServiceCenter.findById(serviceCenterId)
+      .populate("serviceCategoryIds")
+      .lean();
     return serviceCenter;
   } catch (err) {
     throw err;
@@ -419,6 +419,15 @@ exports.allCars = async () => {
 exports.carDetails = async (carId) => {
   try {
     const car = await Car.findById(carId);
+    return car;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getCarByCarName = async (carBrand) => {
+  try {
+    const car = await Car.findOne({ brand: carBrand });
     return car;
   } catch (err) {
     throw err;

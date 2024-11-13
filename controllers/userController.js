@@ -482,9 +482,14 @@ exports.getUserBookingCalendar = async (req, res, next) => {
       serviceId,
       currentDate
     );
+    const mergedCalendar = utilities.mergeBookedSlots(
+      bookedDays[0].calendar,
+      calendar
+    );
     if (bookedDays.length <= 0) {
       return res.status(200).json({ success: true, calendar: calendar });
     } else {
+      return res.status(200).json({ success: true, calendar: mergedCalendar });
     }
   } catch (err) {
     next(err);
@@ -504,6 +509,9 @@ exports.postCreateBooking = async (req, res, next) => {
     } = req.body;
     const userId = req.userId;
     const user = await userServices.findUserById(userId);
+    const serviceCenter = await scServices.getUserServiceCenter(
+      serviceCenterId
+    );
     const bookingSettings = await scServices.bookingSettings(serviceCenterId);
     const service = bookingSettings.services.find((service) => {
       return service.serviceId._id.toString() === serviceId.toString();
@@ -521,9 +529,77 @@ exports.postCreateBooking = async (req, res, next) => {
       carModel,
     };
     const booking = await userServices.bookVisit(bookingData);
-    res
-      .status(201)
-      .json({ success: true, message: "Booking successful", booking });
+    if (booking) {
+      const userBooking = {
+        date: bookingData.date,
+        time: bookingData.time,
+        turn: slotNumber,
+        service: bookingData.serviceName,
+        serviceId: bookingData.serviceId,
+        serviceCenter: serviceCenter.serviceCenterTitle,
+        serviceCenterId,
+      };
+      user.myBookings.push(userBooking);
+      await user.save();
+      res
+        .status(201)
+        .json({ success: true, message: "Booking successful", booking });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditUserBooking = async (req, res, next) => {
+  try {
+    const { bookingId, date, time, slotNumber } = req.body;
+    const userId = req.userId;
+    const user = await userServices.findUserById(userId);
+    const oldBookingData = user.myBookings.find((booking) => {
+      return booking._id.toString() === bookingId.toString();
+    });
+    oldBookingData.phone = user.phoneNumber;
+    const bookingSettings = await scServices.bookingSettings(
+      oldBookingData.serviceCenterId
+    );
+    const service = bookingSettings.services.find((service) => {
+      return (
+        service.serviceId._id.toString() === oldBookingData.serviceId.toString()
+      );
+    });
+    const bookingData = {
+      serviceCenterId: oldBookingData.serviceCenterId,
+      serviceId: oldBookingData.serviceId,
+      serviceName: service.serviceId.subCategoryName,
+      slotCapacity: service.capacity,
+      date: utilities.getLocalDate(date),
+      time,
+      clientName: user.fullName,
+      phone: user.phoneNumber,
+      carBrand: oldBookingData.carBrand,
+      carModel: oldBookingData.carModel,
+    };
+    const oldBookingRemoved = await userServices.removeBooking(oldBookingData);
+    if (oldBookingRemoved) {
+      const booking = await userServices.bookVisit(bookingData);
+      if (booking) {
+        const userBooking = {
+          date: bookingData.date,
+          time: bookingData.time,
+          turn: slotNumber,
+          service: bookingData.serviceName,
+          serviceId: bookingData.serviceId,
+          serviceCenter: oldBookingData.serviceCenter,
+          serviceCenterId: bookingData.serviceCenterId,
+        };
+        await user.deleteBooking(bookingId);
+        user.myBookings.push(userBooking);
+        await user.save();
+        res
+          .status(201)
+          .json({ success: true, message: "Booking successful", booking });
+      }
+    }
   } catch (err) {
     next(err);
   }

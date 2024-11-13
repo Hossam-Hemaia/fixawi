@@ -147,4 +147,10 @@ router.post(
   userController.postCreateBooking
 );
 
+router.put(
+  "/edit/user/booking",
+  isAuth.userIsAuth,
+  userController.putEditUserBooking
+);
+
 module.exports = router;

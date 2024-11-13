@@ -18,6 +18,7 @@ exports.postJoinRequest = async (req, res, next) => {
       closeAt,
       contacts,
       carBrands,
+      closingDay,
     } = req.body;
     const location = {
       type: "Point",
@@ -34,6 +35,7 @@ exports.postJoinRequest = async (req, res, next) => {
       closeAt,
       contacts,
       carBrands,
+      closingDay,
     };
     await adminServices.createServiceCenter(serviceCenterData);
     res.status(201).json({
@@ -81,6 +83,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       email,
       website,
       carBrands,
+      closingDay,
       username,
       password,
     } = req.body;
@@ -126,6 +129,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       carBrands: brands,
       image: imageUrl,
       isApproved: false,
+      closingDay,
       username,
       password: hashedPassword,
     };
@@ -246,6 +250,23 @@ exports.putUpdateBookingSettings = async (req, res, next) => {
         .status(200)
         .json({ success: true, message: "Booking Settings Updated" });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Booking Settings
+ **********************************************************/
+exports.getBookingsCalendar = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const date = req.query.date;
+    const bookingsCalendar = await scServices.bookingsCalendar(
+      serviceCenterId,
+      date
+    );
+    res.status(200).json({ success: true, bookings: bookingsCalendar });
   } catch (err) {
     next(err);
   }

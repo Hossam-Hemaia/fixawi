@@ -67,10 +67,11 @@ const userSchema = new Schema(
       {
         date: { type: Date },
         time: { type: Number },
-        turn: { type: Number },
+        turn: { type: Number }, // slot index + 1
         service: { type: String },
+        serviceId: { type: Schema.Types.ObjectId },
         serviceCenter: { type: String },
-        bookingId: { type: Schema.Types.ObjectId },
+        serviceCenterId: { type: Schema.Types.ObjectId },
       },
     ],
   },
@@ -125,6 +126,18 @@ userSchema.methods.setDefaultCar = function (carId) {
       }
     }
     this.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+userSchema.methods.deleteBooking = function (bookingId) {
+  try {
+    const bookings = this.myBookings;
+    const filteredBookings = bookings.filter((book) => {
+      return book._id.toString() !== bookingId.toString();
+    });
+    this.myBookings = filteredBookings;
   } catch (err) {
     throw err;
   }

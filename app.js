@@ -6,6 +6,7 @@ const cors = require("cors-express");
 const dotenv = require("dotenv");
 const multer = require("multer");
 const firebaseAdmin = require("firebase-admin");
+const slugify = require("slugify");
 const cron = require("node-cron");
 
 const connectDB = require("./config/dbConnect");
@@ -25,7 +26,7 @@ const fileStorage = multer.diskStorage({
     cb(null, "images");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + "-" + file.originalname);
+    cb(null, Date.now() + "-" + slugify(file.originalname));
   },
 });
 

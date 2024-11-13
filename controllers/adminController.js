@@ -194,6 +194,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       carBrands,
       fixawiFareType,
       fareValue,
+      closingDay,
       username,
       password,
     } = req.body;
@@ -248,6 +249,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       image: imageUrl,
       fixawiFareType,
       fareValue,
+      closingDay,
       isActive: true,
       isApproved: true,
       username,
@@ -290,6 +292,25 @@ exports.getServiceCenter = async (req, res, next) => {
   try {
     const serviceCenterId = req.query.serviceCenterId;
     const serviceCenter = await adminServices.serviceCenter(serviceCenterId);
+    const serviceTypes = serviceCenter.serviceTypes;
+    const serviceTypesAr = [];
+    const serviceTypesEn = [];
+    for (let service of serviceTypes) {
+      let isEnLanguage = utilities.textLang(service);
+      if (isEnLanguage) {
+        serviceTypesEn.push(service);
+      } else {
+        serviceTypesAr.push(service);
+      }
+    }
+    serviceCenter.servicesAr = serviceTypesAr;
+    serviceCenter.servicesEn = serviceTypesEn;
+    const cars = [];
+    for (let carBrand of serviceCenter.carBrands) {
+      let car = await adminServices.getCarByCarName(carBrand);
+      cars.push(car);
+    }
+    serviceCenter.cars = cars;
     if (!serviceCenter) {
       const error = new Error("Service center is not found");
       error.statusCode = 404;
@@ -321,6 +342,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
       isActive,
       fixawiFareType,
       fareValue,
+      closingDay,
       username,
       password,
       serviceCenterId,
@@ -378,6 +400,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
       isActive,
       fixawiFareType,
       fareValue,
+      closingDay,
       username,
       password: hashedPassword,
     };
@@ -617,9 +640,21 @@ exports.postCreateCar = async (req, res, next) => {
     } else {
       carLogo = "";
     }
+    const carModels = JSON.parse(models);
+    const modelsDetails = [];
+    if (req.files.length > 1) {
+      for (let i = 1; i < req.files.length; ++i) {
+        let modelData = {};
+        modelData.modelName = carModels[i - 1];
+        modelData.modelIcon = `${req.protocol}s://${req.get("host")}/${
+          req.files[i].path
+        }`;
+        modelsDetails.push(modelData);
+      }
+    }
     const carData = {
       brand,
-      models: JSON.parse(models),
+      models: modelsDetails,
       brandIcon: carLogo,
     };
     const car = await adminServices.createCar(carData);
@@ -662,10 +697,21 @@ exports.putEditCar = async (req, res, next) => {
     } else {
       carLogo = "";
     }
-    console.log(carLogo);
+    const carModels = JSON.parse(models);
+    const modelsDetails = [];
+    if (req.files.length > 1) {
+      for (let i = 1; i < req.files.length; ++i) {
+        let modelData = {};
+        modelData.modelName = carModels[i - 1];
+        modelData.modelIcon = `${req.protocol}s://${req.get("host")}/${
+          req.files[i].path
+        }`;
+        modelsDetails.push(modelData);
+      }
+    }
     const carData = {
       brand,
-      models: JSON.parse(models),
+      models: modelsDetails,
       brandIcon: carLogo,
     };
     await adminServices.editCar(carId, carData);

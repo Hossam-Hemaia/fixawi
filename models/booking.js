@@ -41,9 +41,30 @@ bookingSchema.methods.createBooking = function (bookingData) {
         cal.date.toLocaleDateString() === bookingData.date.toLocaleDateString()
       );
     });
-    console.log(dayIndex);
     if (dayIndex <= -1) {
-      throw new Error("day does not exist!");
+      const calendarDate = {
+        date: bookingData.date,
+        slots: [
+          {
+            time: bookingData.time,
+            clients: [
+              {
+                clientName: bookingData.clientName,
+                phone: bookingData.phone,
+                carBrand: bookingData.carBrand,
+                carModel: bookingData.carModel,
+              },
+            ],
+            slotIsFull: { type: Boolean, default: false },
+          },
+        ],
+      };
+      currentCalendar.push(calendarDate);
+      this.calendar = currentCalendar.sort((a, b) => {
+        return new Date(a.date) - new Date(b.date);
+      });
+      this.save();
+      return this;
     } else {
       const slots = currentCalendar[dayIndex].slots;
       const slotIndex = slots.findIndex((slot) => {
@@ -76,6 +97,32 @@ bookingSchema.methods.createBooking = function (bookingData) {
     }
   } catch (err) {
     throw err;
+  }
+};
+
+bookingSchema.methods.removeBooking = function (bookingData) {
+  const currentCalendar = this.calendar;
+  const dayIndex = currentCalendar.findIndex((cal) => {
+    return (
+      cal.date.toLocaleDateString() === bookingData.date.toLocaleDateString()
+    );
+  });
+  if (dayIndex > -1) {
+    const slotIndex = currentCalendar[dayIndex].slots.findIndex((slot) => {
+      return slot.time === bookingData.time;
+    });
+    if (slotIndex > -1) {
+      const filteredClients = currentCalendar[dayIndex].slots[
+        slotIndex
+      ].clients.filter((client) => {
+        return client.phone !== bookingData.phone;
+      });
+      currentCalendar[dayIndex].slots[slotIndex].clients = filteredClients;
+      currentCalendar[dayIndex].slots[slotIndex].slotIsFull = false;
+      this.calendar = currentCalendar;
+      this.save();
+      return this;
+    }
   }
 };
 

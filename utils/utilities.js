@@ -184,6 +184,40 @@ exports.makeBookingCalendar = (timeSlot, openingHour, closingHour, date) => {
     calendar.push(day);
     parsedCurrentDate += singleDay;
   }
-  console.log(calendar);
   return calendar;
+};
+
+exports.mergeBookedSlots = (bookedDays, calendar) => {
+  try {
+    for (let cal of calendar) {
+      let dayIndex = bookedDays.findIndex((d) => {
+        return d.date.toString() === cal.date.toString();
+      });
+      if (dayIndex > -1) {
+        for (let slot of bookedDays[dayIndex].slots) {
+          let slotIndex = cal.slots.findIndex((s) => {
+            return s.time === slot.time;
+          });
+          if (slotIndex > -1) {
+            cal.slots[slotIndex] = slot;
+          }
+        }
+      }
+    }
+    return calendar;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.textLang = (str) => {
+  if (!str) {
+    return;
+  }
+  const isEnglishLetters = /^[a-zA-Z0-9,_:-]+$/.test(str.split(" ").join(""));
+  if (isEnglishLetters) {
+    return true;
+  } else {
+    return false;
+  }
 };

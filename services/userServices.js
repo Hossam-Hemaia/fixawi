@@ -302,13 +302,12 @@ exports.getBookedDays = async (serviceCenterId, serviceId, currentDate) => {
 
 exports.bookVisit = async (bookingData) => {
   try {
-    const bookingDay = await Booking.findOne({
+    const bookingCalendar = await Booking.findOne({
       serviceCenterId: bookingData.serviceCenterId,
       serviceId: bookingData.serviceId,
-      "calendar.date": bookingData.date,
     });
     let booking;
-    if (!bookingDay) {
+    if (!bookingCalendar) {
       booking = new Booking({
         serviceCenterId: bookingData.serviceCenterId,
         serviceId: bookingData.serviceId,
@@ -336,9 +335,26 @@ exports.bookVisit = async (bookingData) => {
       await booking.save();
       return booking;
     } else {
-      booking = await bookingDay.createBooking(bookingData);
+      booking = await bookingCalendar.createBooking(bookingData);
     }
     return booking;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeBooking = async (oldBookingData) => {
+  try {
+    const bookingCalendar = await Booking.findOne({
+      serviceCenterId: oldBookingData.serviceCenterId,
+      serviceId: oldBookingData.serviceId,
+    });
+    const booking = await bookingCalendar.removeBooking(oldBookingData);
+    if (booking) {
+      return true;
+    } else {
+      return false;
+    }
   } catch (err) {
     throw err;
   }

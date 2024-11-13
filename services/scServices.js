@@ -3,6 +3,8 @@ const ServiceCategory = require("../models/service_types");
 const Visit = require("../models/visit");
 const PriceList = require("../models/priceList");
 const BookingSettings = require("../models/bookingSettings");
+const Booking = require("../models/booking");
+const utilities = require("../utils/utilities");
 
 exports.servicesCategories = async () => {
   try {
@@ -86,6 +88,20 @@ exports.updateBookingSettings = async (bookingSettingsId, bookingData) => {
     bookingSettings.services = bookingData.services;
     await bookingSettings.save();
     return bookingSettings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.bookingsCalendar = async (serviceCenterId, date) => {
+  try {
+    const localDate = utilities.getLocalDate(date);
+    const futureDate = utilities.getFutureDate(date, 7);
+    const bookingCalendar = await Booking.find({
+      serviceCenterId,
+      "calendar.date": { $gte: localDate, $lte: futureDate },
+    });
+    return bookingCalendar;
   } catch (err) {
     throw err;
   }
