@@ -157,6 +157,15 @@ router.put(
 );
 
 /**********************************************************
+ * Bookings
+ **********************************************************/
+router.get(
+  "/service/center/bookings",
+  isAuth.adminIsAuth,
+  adminController.getServiceCenterBookings
+);
+
+/**********************************************************
  * Price List
  **********************************************************/
 router.post(
@@ -316,5 +325,20 @@ router.post(
 );
 
 router.get("/app/settings", isAuth.adminIsAuth, adminController.getAppSettings);
+
+/**********************************************************
+ * Rescue Orders
+ **********************************************************/
+router.get(
+  "/all/rescue/orders",
+  isAuth.adminIsAuth,
+  adminController.getAllRescueOrders
+);
+
+router.patch(
+  "/set/order/payment/status",
+  isAuth.adminIsAuth,
+  adminController.patchSetOrderPayment
+);
 
 module.exports = router;

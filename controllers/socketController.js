@@ -10,12 +10,20 @@ exports.updateSocket = async (socket) => {
     socket.on("update_socket", async (event) => {
       socket.username = event.username;
       const username = event.username;
+      const role = event.role;
       await cacheDB.hSet(`${username}-s`, "socket", JSON.stringify(socket.id));
-      const driver = await driverServices.getDriverByUsername(username);
-      const driverLog = await driverServices.getDriverLog(driver.driverLogId);
-      socket.emit("driver_state", {
-        driverSuspended: driverLog.driverSuspended,
-      });
+      if (role === "driver") {
+        const driver = await driverServices.getDriverByUsername(username);
+        const driverLog = await driverServices.getDriverLog(driver.driverLogId);
+        const driverData = {
+          driverId: driver._id,
+          driverOnline: true,
+        };
+        await driverServices.updateDriverLog(driverData);
+        socket.emit("driver_state", {
+          driverSuspended: driverLog.driverSuspended,
+        });
+      }
     });
   } catch (err) {
     console.log(err);
@@ -35,7 +43,8 @@ exports.driverAccepted = async (socket) => {
     if (order.orderStatus[order.orderStatus.length - 1].state !== "canceled") {
       await driverServices.assignDriver(driverId);
       await orderServices.assignOrder(orderId, driverId);
-      io.to(userSocket).emit("driver_assigned", { order });
+      const driver = await driverServices.findDriver(driverId);
+      io.to(userSocket).emit("driver_assigned", { order, driver });
     } else {
       socket.emit("order_canceled", { order });
     }
@@ -78,11 +87,25 @@ exports.driverCurrentLocation = async (socket) => {
     socket.on("current_location", async (event) => {
       const { clientPhoneNumber, location, flag, orderId } = event;
       const userSocket = await utilities.getSocketId(clientPhoneNumber);
+      console.log("sending current location", userSocket);
       io.to(userSocket).emit("driver_location", { location });
       if (flag === "picking up") {
         await orderServices.updateOrderStatus(orderId, "transporting");
         io.to(userSocket).emit("transporting");
       }
+    });
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getOrderState = async (socket) => {
+  try {
+    socket.on("get_order_state", async (event) => {
+      const userId = event.userId;
+      console.log("order state: " + userId);
+      const order = await orderServices.findOrderByUserId(userId);
+      socket.emit("order_state", { order });
     });
   } catch (err) {
     throw err;
@@ -99,6 +122,7 @@ exports.driverDeliveredOrder = async (socket) => {
         const order = await orderServices.findOrder(orderId);
         await driverServices.releaseDriver(driverId);
         const userSocket = await utilities.getSocketId(order.phoneNumber);
+        console.log("order_finished", userSocket);
         io.to(userSocket).emit("order_delivered", { order });
       }
     });
@@ -151,7 +175,7 @@ exports.disconnected = async (socket) => {
       const username = socket.username;
       const driver = await driverServices.getDriverByUsername(username);
       const driverData = {
-        courierId: driver._id,
+        driverId: driver._id,
         driverOnline: false,
       };
       await driverServices.updateDriverLog(driverData);

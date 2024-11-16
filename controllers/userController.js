@@ -424,16 +424,17 @@ exports.postCreateRescueOrder = async (req, res, next) => {
       orderStatus,
       clientId: user._id,
     };
-    const order = await orderServices.createOrder(orderData);
-    if (!order) {
-      const error = new Error("creating order failed!");
-      error.statusCode = 422;
-      throw error;
-    }
     // find closest available driver
     const coords = [fromPointLng, fromPointLat];
     const drivers = await driverServices.findClosestDriver(coords);
+    let order;
     if (drivers.length > 0) {
+      order = await orderServices.createOrder(orderData);
+      if (!order) {
+        const error = new Error("creating order failed!");
+        error.statusCode = 422;
+        throw error;
+      }
       const driver = drivers[0];
       await driverServices.sendOrder(driver.phoneNumber, order);
     } else {
@@ -452,6 +453,20 @@ exports.getUserRescueOrders = async (req, res, next) => {
     const userId = req.userId;
     const orders = await orderServices.userRescueOrders(userId);
     res.status(200).json({ success: true, orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postPayRescueOrder = async (req, res, next) => {
+  try {
+    const orderId = req.body.orderId;
+    const order = await orderServices.payOrder(orderId);
+    if (order) {
+      res
+        .status(201)
+        .json({ success: true, message: "Order paid successfully" });
+    }
   } catch (err) {
     next(err);
   }

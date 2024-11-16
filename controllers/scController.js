@@ -129,7 +129,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       carBrands: brands,
       image: imageUrl,
       isApproved: false,
-      closingDay,
+      closingDay: JSON.parse(closingDay),
       username,
       password: hashedPassword,
     };

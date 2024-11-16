@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const adminServices = require("../services/adminServices");
 const scServices = require("../services/scServices");
 const userServices = require("../services/userServices");
+const orderServices = require("../services/orderServices");
 const { validationResult } = require("express-validator");
 const utilities = require("../utils/utilities");
 
@@ -249,7 +250,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       image: imageUrl,
       fixawiFareType,
       fareValue,
-      closingDay,
+      closingDay: JSON.parse(closingDay),
       isActive: true,
       isApproved: true,
       username,
@@ -400,7 +401,7 @@ exports.putEditServiceCenter = async (req, res, next) => {
       isActive,
       fixawiFareType,
       fareValue,
-      closingDay,
+      closingDay: JSON.parse(closingDay),
       username,
       password: hashedPassword,
     };
@@ -507,8 +508,8 @@ exports.postCreateBookingSettings = async (req, res, next) => {
 exports.getBookingSettings = async (req, res, next) => {
   try {
     const serviceCenterId = req.query.serviceCenterId;
-    console.log(serviceCenterId);
     const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    console.log(bookingSettings);
     res.status(200).json({ success: true, bookingSettings });
   } catch (err) {
     next(err);
@@ -530,6 +531,23 @@ exports.putUpdateBookingSettings = async (req, res, next) => {
         .status(200)
         .json({ success: true, message: "Booking Settings Updated" });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Booking
+ **********************************************************/
+exports.getServiceCenterBookings = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.query.serviceCenterId;
+    const date = req.query.date;
+    const bookingsCalendar = await scServices.bookingsCalendar(
+      serviceCenterId,
+      date
+    );
+    res.status(200).json({ success: true, bookings: bookingsCalendar });
   } catch (err) {
     next(err);
   }
@@ -809,7 +827,7 @@ exports.getUsersVisits = async (req, res, next) => {
 };
 
 /**********************************************************
- * Users
+ * Offers
  **********************************************************/
 exports.postCreateOffer = async (req, res, next) => {
   try {
@@ -1094,6 +1112,33 @@ exports.getAppSettings = async (req, res, next) => {
   try {
     const settings = await adminServices.appSettings();
     res.status(200).json({ success: true, settings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Rescue Orders
+ **********************************************************/
+exports.getAllRescueOrders = async (req, res, next) => {
+  try {
+    const orders = await orderServices.allOrders();
+    res.status(200).json({ success: true, orders });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.patchSetOrderPayment = async (req, res, next) => {
+  try {
+    const orderId = req.body.orderId;
+    const paymentStatus = req.body.paymentStatus;
+    const order = await orderServices.setPaymentStatus(orderId, paymentStatus);
+    if (order) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Order status updated" });
+    }
   } catch (err) {
     next(err);
   }

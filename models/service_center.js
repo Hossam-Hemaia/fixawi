@@ -106,9 +106,11 @@ const serviceCenterSchema = new Schema(
     fareValue: {
       type: Number,
     },
-    closingDay: {
-      type: String,
-    },
+    closingDay: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );

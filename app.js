@@ -90,6 +90,7 @@ io.on("connection", (socket) => {
   socketController.driverDeclined(socket);
   socketController.driverCurrentLocation(socket);
   socketController.driverDeliveredOrder(socket);
+  socketController.getOrderState(socket);
   socketController.updateDriverCache(socket);
   socketController.getDriverCache(socket);
   socketController.deleteDriverCache(socket);

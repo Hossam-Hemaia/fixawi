@@ -171,6 +171,22 @@ exports.postDriverLogin = async (req, res, next) => {
   }
 };
 
+exports.getVerifyUserPhoneNumber = async (req, res, next) => {
+  try {
+    const phoneNumber = req.query.phoneNumber;
+    const user = await userServices.getUserByUsername(phoneNumber);
+    if (user) {
+      throw new Error("This phone number is already registered");
+    } else {
+      return res
+        .status(200)
+        .json({ success: true, message: "phone number does not exist" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postverifyAccount = async (req, res, next) => {
   try {
     const { username, code } = req.body;

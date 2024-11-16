@@ -132,6 +132,12 @@ router.get(
   userController.getUserRescueOrders
 );
 
+router.post(
+  "/pay/rescue/order",
+  isAuth.userIsAuth,
+  userController.postPayRescueOrder
+);
+
 /*****************************************
  * Booking Routes
  *****************************************/

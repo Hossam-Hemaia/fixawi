@@ -95,6 +95,8 @@ router.post("/driver/login", authController.postDriverLogin);
 
 router.post("/generate/access/token", authController.postGenerateAccessToken);
 
+router.get("/verify/user/phone", authController.getVerifyUserPhoneNumber);
+
 router.post("/verify/account", authController.postverifyAccount);
 
 router.get("/resend/verification/code", authController.getNewVerificationCode);

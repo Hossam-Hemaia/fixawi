@@ -37,6 +37,21 @@ exports.findOrder = async (orderId) => {
   }
 };
 
+exports.findOrderByUserId = async (userId) => {
+  try {
+    const order = await Order.findOne({
+      clientId: userId,
+      paymentStatus: "Pending Payment",
+      "orderStatus.state": { $nin: ["canceled", "rejected"] },
+    })
+      .sort({ createdAt: -1 })
+      .populate("driverId");
+    return order;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.assignOrder = async (orderId, driverId) => {
   try {
     const currentDate = utilities.getLocalDate(new Date());
@@ -78,6 +93,38 @@ exports.driverRescueOrders = async (driverId) => {
   try {
     const orders = await Order.find({ driverId }).sort({ createdAt: -1 });
     return orders;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.payOrder = async (orderId) => {
+  try {
+    const order = await Order.findById(orderId);
+    order.paymentStatus = "Paid";
+    await order.save();
+    console.log(order);
+    return order;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allOrders = async () => {
+  try {
+    const orders = await Order.find().populate(["clientId", "driverId"]);
+    return orders;
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.setPaymentStatus = async (orderId, paymentStatus) => {
+  try {
+    const order = await Order.findById(orderId);
+    order.paymentStatus = paymentStatus;
+    await order.save();
+    return order;
   } catch (err) {
     throw err;
   }

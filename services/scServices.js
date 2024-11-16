@@ -75,7 +75,7 @@ exports.bookingSettings = async (serviceCenterId) => {
   try {
     const bookingSettings = await BookingSettings.findOne({
       serviceCenterId,
-    }).populate("services.serviceId");
+    }).populate({ path: "services.serviceId" });
     return bookingSettings;
   } catch (err) {
     throw err;

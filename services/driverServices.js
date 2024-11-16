@@ -68,6 +68,7 @@ exports.updateDriverLog = async (driverData) => {
         updateData[key] = driverData[key];
       }
     }
+    console.log(filter, updateData);
     await DriverLog.updateOne(filter, updateData);
   } catch (err) {
     throw new Error(err);
