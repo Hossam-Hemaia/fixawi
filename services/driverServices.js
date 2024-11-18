@@ -2,6 +2,7 @@ const Driver = require("../models/driver");
 const DriverLog = require("../models/driverLog");
 const utilities = require("../utils/utilities");
 const Settings = require("../models/settings");
+const orderServices = require("../services/orderServices");
 
 exports.getDriverByUsername = async (username) => {
   try {
@@ -99,8 +100,16 @@ exports.findClosestDriver = async (coords) => {
 exports.sendOrder = async (username, order) => {
   try {
     const io = require("../socket").getIo();
+    const orderId = order._id;
+    const settings = await Settings.findOne();
     const driverSocket = await utilities.getSocketId(username);
     io.to(driverSocket).emit("order_assigned", order);
+    setTimeout(async () => {
+      const order = await orderServices.findOrder(orderId);
+      if (order.orderStatus[order.orderStatus.length - 1].state === "pending") {
+        io.to(driverSocket).emit("order_dismissed", order);
+      }
+    }, settings.rescueOrderTimeout * 60 * 1000);
   } catch (err) {
     throw err;
   }

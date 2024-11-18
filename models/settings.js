@@ -7,6 +7,9 @@ const settingsSchema = new Schema(
     driverSuspensionTime: {
       type: Number,
     },
+    rescueOrderTimeout: {
+      type: Number,
+    },
     rescueServiceDownPayment: {
       type: Number,
     },

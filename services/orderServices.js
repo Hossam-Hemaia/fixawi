@@ -52,6 +52,21 @@ exports.findOrderByUserId = async (userId) => {
   }
 };
 
+exports.findLastPendingOrder = async (userId) => {
+  try {
+    const order = await Order.findOne({
+      clientId: userId,
+      paymentStatus: "Pending Payment",
+      "orderStatus.state": "pending",
+    })
+      .sort({ createdAt: -1 })
+      .populate("driverId");
+    return order;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.assignOrder = async (orderId, driverId) => {
   try {
     const currentDate = utilities.getLocalDate(new Date());
@@ -70,9 +85,13 @@ exports.assignOrder = async (orderId, driverId) => {
 exports.updateOrderStatus = async (orderId, status) => {
   try {
     const currentDate = utilities.getLocalDate(new Date());
-    const order = await Order.findById(orderId).populate("clientId");
+    const order = await Order.findById(orderId).populate([
+      "clientId",
+      "driverId",
+    ]);
     order.orderStatus.push({ state: status, date: currentDate });
     await order.save();
+    return order;
   } catch (err) {
     throw err;
   }

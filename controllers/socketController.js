@@ -103,7 +103,6 @@ exports.getOrderState = async (socket) => {
   try {
     socket.on("get_order_state", async (event) => {
       const userId = event.userId;
-      console.log("order state: " + userId);
       const order = await orderServices.findOrderByUserId(userId);
       socket.emit("order_state", { order });
     });

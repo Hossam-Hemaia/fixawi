@@ -1083,6 +1083,7 @@ exports.postSetAppSettings = async (req, res, next) => {
   try {
     const {
       driverSuspensionTime,
+      rescueOrderTimeout,
       rescueServiceDownPayment,
       bookingDownPayment,
       rescuePricingPerKm,
@@ -1091,6 +1092,7 @@ exports.postSetAppSettings = async (req, res, next) => {
     } = req.body;
     const settingsData = {
       driverSuspensionTime,
+      rescueOrderTimeout,
       rescueServiceDownPayment,
       bookingDownPayment,
       rescuePricingPerKm,

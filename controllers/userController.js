@@ -458,6 +458,43 @@ exports.getUserRescueOrders = async (req, res, next) => {
   }
 };
 
+exports.postResendRescueOrder = async (req, res, next) => {
+  try {
+    const orderId = req.body.orderId;
+    const order = await orderServices.findOrder(orderId);
+    const coords = [order.fromPoint.lng, order.fromPoint.lat];
+    const drivers = await driverServices.findClosestDriver(coords);
+    if (drivers.length > 0) {
+      const driver = drivers[0];
+      await driverServices.sendOrder(driver.phoneNumber, order);
+    } else {
+      const error = new Error("No drivers available!");
+      error.statusCode = 404;
+      throw error;
+    }
+    res.status(201).json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCancelRescueOrder = async (req, res, next) => {
+  try {
+    const orderId = req.body.orderId;
+    const order = await orderServices.updateOrderStatus(orderId, "canceled");
+    if (order.driverId) {
+      const io = require("../socket").getIo();
+      const driverSocket = await utilities.getSocketId(
+        order.driverId.phoneNumber
+      );
+      io.to(driverSocket).emit("order_canceled", order);
+    }
+    res.status(201).json({ success: true, message: "Order canceled" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postPayRescueOrder = async (req, res, next) => {
   try {
     const orderId = req.body.orderId;

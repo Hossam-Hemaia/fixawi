@@ -133,6 +133,18 @@ router.get(
 );
 
 router.post(
+  "/resend/rescue/order",
+  isAuth.userIsAuth,
+  userController.postResendRescueOrder
+);
+
+router.post(
+  "/cancel/rescue/order",
+  isAuth.userIsAuth,
+  userController.postCancelRescueOrder
+);
+
+router.post(
   "/pay/rescue/order",
   isAuth.userIsAuth,
   userController.postPayRescueOrder

@@ -6,6 +6,7 @@ const { OAuth2Client } = require("google-auth-library");
 const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const driverServices = require("../services/driverServices");
+const orderServices = require("../services/orderServices");
 const utilities = require("../utils/utilities");
 
 exports.postCreateUser = async (req, res, next) => {
@@ -112,7 +113,11 @@ exports.postLogin = async (req, res, next) => {
         expiresIn: "1y",
         audience: user._id.toString(),
       });
-      res.status(201).json({ success: true, user, token, refreshToken });
+      const lastOrder = await orderServices.findLastPendingOrder(user._id);
+      const lastOrderId = lastOrder ? lastOrder._id : "";
+      res
+        .status(201)
+        .json({ success: true, user, token, refreshToken, lastOrderId });
     }
   } catch (err) {
     next(err);
