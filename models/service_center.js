@@ -69,6 +69,7 @@ const serviceCenterSchema = new Schema(
     image: {
       type: String,
     },
+    documents: [{ type: String }],
     isActive: {
       type: Boolean,
       default: false,

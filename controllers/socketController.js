@@ -87,12 +87,23 @@ exports.driverCurrentLocation = async (socket) => {
     socket.on("current_location", async (event) => {
       const { clientPhoneNumber, location, flag, orderId } = event;
       const userSocket = await utilities.getSocketId(clientPhoneNumber);
-      console.log("sending current location", userSocket);
       io.to(userSocket).emit("driver_location", { location });
       if (flag === "picking up") {
         await orderServices.updateOrderStatus(orderId, "transporting");
-        io.to(userSocket).emit("transporting");
+        io.to(userSocket).emit("transporting", { orderId });
       }
+    });
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setUserConsent = async (socket) => {
+  try {
+    socket.on("user_consent", async (event) => {
+      const orderId = event.orderId;
+      const isAgreed = event.isAgreed;
+      await orderServices.setClientConsent(orderId, isAgreed);
     });
   } catch (err) {
     throw err;

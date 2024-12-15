@@ -38,6 +38,9 @@ const orderSchema = new Schema(
       type: String,
       default: "",
     },
+    clientConsent: {
+      type: Boolean,
+    },
     clientId: {
       type: Schema.Types.ObjectId,
       ref: "user",

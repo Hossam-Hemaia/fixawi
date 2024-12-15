@@ -132,6 +132,12 @@ router.get(
   userController.getUserRescueOrders
 );
 
+router.get(
+  "/rescue/order/details",
+  isAuth.userIsAuth,
+  userController.getUserRescueOrderDetails
+);
+
 router.post(
   "/resend/rescue/order",
   isAuth.userIsAuth,
@@ -148,6 +154,18 @@ router.post(
   "/pay/rescue/order",
   isAuth.userIsAuth,
   userController.postPayRescueOrder
+);
+
+router.post(
+  "/review/driver",
+  isAuth.userIsAuth,
+  userController.postReviewDriver
+);
+
+router.get(
+  "/all/driver/ratings",
+  isAuth.userIsAuth,
+  userController.getServiceCenterRatings
 );
 
 /*****************************************

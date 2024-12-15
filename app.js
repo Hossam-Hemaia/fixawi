@@ -33,7 +33,7 @@ const fileStorage = multer.diskStorage({
 const options = {
   allow: {
     origin: "*",
-    methods: "GET, POST, PUT, DELETE",
+    methods: "GET, POST, PUT, PATCH, DELETE",
     headers: "Content-Type, Authorization, Cookie",
   },
   max: {
@@ -89,6 +89,7 @@ io.on("connection", (socket) => {
   socketController.driverAccepted(socket);
   socketController.driverDeclined(socket);
   socketController.driverCurrentLocation(socket);
+  socketController.setUserConsent(socket);
   socketController.driverDeliveredOrder(socket);
   socketController.getOrderState(socket);
   socketController.updateDriverCache(socket);

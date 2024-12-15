@@ -248,6 +248,12 @@ router.put(
   adminController.putSetExpireoffer
 );
 
+router.get(
+  "/offer/details",
+  isAuth.adminIsAuth,
+  adminController.getOfferDetails
+);
+
 router.put("/edit/offer", isAuth.adminIsAuth, adminController.putEditOffer);
 
 router.delete("/delete/offer", isAuth.adminIsAuth, adminController.deleteOffer);
@@ -312,6 +318,12 @@ router.delete(
   "/delete/driver",
   isAuth.adminIsAuth,
   adminController.deleteDriver
+);
+
+router.get(
+  "/drivers/status",
+  isAuth.adminIsAuth,
+  adminController.getDriversStatus
 );
 
 /**********************************************************

@@ -82,6 +82,16 @@ exports.assignOrder = async (orderId, driverId) => {
   }
 };
 
+exports.setClientConsent = async (orderId, isAgreed) => {
+  try {
+    const order = await Order.findById(orderId);
+    order.clientConsent = isAgreed;
+    await order.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.updateOrderStatus = async (orderId, status) => {
   try {
     const currentDate = utilities.getLocalDate(new Date());
@@ -122,7 +132,6 @@ exports.payOrder = async (orderId) => {
     const order = await Order.findById(orderId);
     order.paymentStatus = "Paid";
     await order.save();
-    console.log(order);
     return order;
   } catch (err) {
     throw err;
@@ -134,13 +143,16 @@ exports.allOrders = async () => {
     const orders = await Order.find().populate(["clientId", "driverId"]);
     return orders;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
 exports.setPaymentStatus = async (orderId, paymentStatus) => {
   try {
     const order = await Order.findById(orderId);
+    if (!order.clientConsent) {
+      throw new Error("قام العميل بعدم تأكيد استلام السياره");
+    }
     order.paymentStatus = paymentStatus;
     await order.save();
     return order;

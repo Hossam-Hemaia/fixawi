@@ -31,7 +31,7 @@ exports.getServiceCenter = async (serviceCenterId) => {
     const serviceCenter = await ServiceCenter.findById(serviceCenterId);
     return serviceCenter;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
@@ -67,7 +67,7 @@ exports.createBookingSettings = async (bookingSettings) => {
     booking.save();
     return booking;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 

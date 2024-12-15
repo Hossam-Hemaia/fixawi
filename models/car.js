@@ -10,12 +10,7 @@ const carSchema = new Schema(
     brandIcon: {
       type: String,
     },
-    models: [
-      {
-        modelName: { type: String },
-        modelIcon: { type: String },
-      },
-    ],
+    models: [{ type: String }],
   },
   { timestamps: true }
 );

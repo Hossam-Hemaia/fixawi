@@ -7,6 +7,10 @@ const orderServices = require("../services/orderServices");
 const driverServices = require("../services/driverServices");
 const utilities = require("../utils/utilities");
 
+/**********************************************
+ * User Profile
+ **********************************************/
+
 exports.getUserProfile = async (req, res, next) => {
   try {
     const userId = req.userId;
@@ -88,6 +92,10 @@ exports.patchSetDefaultCar = async (req, res, next) => {
   }
 };
 
+/**********************************************
+ * Search Filtering
+ **********************************************/
+
 exports.getNearServiceCenters = async (req, res, next) => {
   try {
     const { lat, lng, maxDistance } = req.query;
@@ -143,6 +151,10 @@ exports.filterServiceCenters = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************
+ * Service Center
+ **********************************************/
 
 exports.postReviewServiceCenter = async (req, res, next) => {
   try {
@@ -458,6 +470,16 @@ exports.getUserRescueOrders = async (req, res, next) => {
   }
 };
 
+exports.getUserRescueOrderDetails = async (req, res, next) => {
+  try {
+    const orderId = req.query.orderId;
+    const order = await orderServices.findOrder(orderId);
+    res.status(200).json({ success: true, order });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postResendRescueOrder = async (req, res, next) => {
   try {
     const orderId = req.body.orderId;
@@ -500,15 +522,56 @@ exports.postPayRescueOrder = async (req, res, next) => {
     const orderId = req.body.orderId;
     const order = await orderServices.payOrder(orderId);
     if (order) {
-      res
-        .status(201)
-        .json({ success: true, message: "Order paid successfully" });
+      res.status(201).json({
+        success: true,
+        message: order.clientConsent
+          ? "Order paid successfully"
+          : "Order paid, but client did not confirm car transportation",
+      });
     }
   } catch (err) {
     next(err);
   }
 };
 
+exports.postReviewDriver = async (req, res, next) => {
+  try {
+    const driverId = req.body.driverId;
+    const rating = +req.body.rating;
+    const review = req.body.review;
+    const userId = req.userId;
+    const ratingId = req.body.ratingId;
+    const ratingData = {
+      driverId,
+      rating,
+      review,
+      userId,
+      ratingId,
+    };
+    const driverRatings = await ratingServices.findDriverRatings(driverId);
+    let rated;
+    if (driverRatings) {
+      rated = await ratingServices.setDriverRating(ratingData);
+    } else {
+      rated = await ratingServices.createDriverRating(ratingData);
+    }
+    res
+      .status(201)
+      .json({ success: true, message: "Your rating has been submitted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDriverRatings = async (req, res, next) => {
+  try {
+    const ratingId = req.query.ratingId;
+    const ratings = await ratingServices.getDriverRatings(ratingId);
+    res.status(200).json({ success: true, ratings });
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************
  * Booking Controllers
  **********************************************/

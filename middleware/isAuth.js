@@ -82,6 +82,7 @@ exports.scIsAuth = async (req, res, next) => {
   }
   const sc = await adminServices.getAdmin(decodedToken.adminId);
   const serviceCenter = await adminServices.serviceCenter(sc.serviceCenterId);
+  console.log(serviceCenter);
   if (!sc || sc.role !== "service center" || !serviceCenter.isActive) {
     const error = new Error("Authorization faild!");
     error.statusCode = 403;

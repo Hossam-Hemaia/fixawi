@@ -250,13 +250,18 @@ exports.updateServiceCenter = async (serviceCenterId, serviceCenterData) => {
     for (let key in serviceCenterData) {
       if (serviceCenterData[key] !== "") {
         updateData[key] = serviceCenterData[key];
+      } else if (
+        Array.isArray(serviceCenterData[key]) &&
+        serviceCenterData[key].length > 0
+      ) {
+        updateData[key] = serviceCenterData[key];
       }
     }
     await ServiceCenter.findByIdAndUpdate(serviceCenterId, updateData);
     const serviceCenter = await ServiceCenter.findById(serviceCenterId);
     return serviceCenter;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
@@ -272,7 +277,7 @@ exports.getServicesNames = async (categories) => {
     }
     return servicesNames;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 
@@ -442,6 +447,23 @@ exports.editCar = async (carId, carData) => {
         updateData[key] = carData[key];
       }
     }
+    // const car = await Car.findById(carId);
+    // let newModels = [];
+    // for (let model of carData.models) {
+    //   for (let carModel of car.models) {
+    //     if (model.modelName === carModel.modelName && model.modelIcon !== "") {
+    //       newModels.push(model);
+    //     } else if (
+    //       model.modelName !== carModel.modelName &&
+    //       model.modelIcon !== ""
+    //     ) {
+    //       newModels.push(model);
+    //     } else {
+    //       newModels.push(carModel);
+    //     }
+    //   }
+    // }
+    // updateData.models = newModels;
     await Car.findByIdAndUpdate(carId, updateData);
   } catch (err) {
     throw err;
@@ -493,6 +515,15 @@ exports.setOfferStatus = async (offerId, status) => {
     }
     offer.expired = status;
     await offer.save();
+    return offer;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.offerDetails = async (offerId) => {
+  try {
+    const offer = await Offer.findById(offerId);
     return offer;
   } catch (err) {
     throw err;

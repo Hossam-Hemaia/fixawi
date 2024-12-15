@@ -16,6 +16,15 @@ exports.getDriverByUsername = async (username) => {
   }
 };
 
+exports.driversLogs = async () => {
+  try {
+    const driversLogs = await DriverLog.find();
+    return driversLogs;
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.findDriver = async (driverId) => {
   try {
     const driver = await Driver.findById(driverId);

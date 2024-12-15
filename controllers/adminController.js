@@ -3,6 +3,7 @@ const adminServices = require("../services/adminServices");
 const scServices = require("../services/scServices");
 const userServices = require("../services/userServices");
 const orderServices = require("../services/orderServices");
+const driverServices = require("../services/driverServices");
 const { validationResult } = require("express-validator");
 const utilities = require("../utils/utilities");
 
@@ -212,6 +213,14 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       image = files[0];
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
     }
+    const documents = [];
+    if (files.length > 1) {
+      for (let i = 1; i < files.length; ++i) {
+        let doc = files[i];
+        let docUrl = `${req.protocol}s://${req.get("host")}/${doc.path}`;
+        documents.push(docUrl);
+      }
+    }
     if (
       !fixawiFareType ||
       fixawiFareType === "" ||
@@ -248,6 +257,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       website,
       carBrands: brands,
       image: imageUrl,
+      documents,
       fixawiFareType,
       fareValue,
       closingDay: JSON.parse(closingDay),
@@ -360,6 +370,14 @@ exports.putEditServiceCenter = async (req, res, next) => {
     if (files.length > 0) {
       image = files[0];
       imageUrl = `${req.protocol}s://${req.get("host")}/${image.path}`;
+    }
+    const documents = [];
+    if (files.length > 1) {
+      for (let i = 1; i < files.length; ++i) {
+        let doc = files[i];
+        let docUrl = `${req.protocol}s://${req.get("host")}/${doc.path}`;
+        documents.push(docUrl);
+      }
     }
     if (
       !fixawiFareType ||
@@ -659,20 +677,20 @@ exports.postCreateCar = async (req, res, next) => {
       carLogo = "";
     }
     const carModels = JSON.parse(models);
-    const modelsDetails = [];
-    if (req.files.length > 1) {
-      for (let i = 1; i < req.files.length; ++i) {
-        let modelData = {};
-        modelData.modelName = carModels[i - 1];
-        modelData.modelIcon = `${req.protocol}s://${req.get("host")}/${
-          req.files[i].path
-        }`;
-        modelsDetails.push(modelData);
-      }
-    }
+    // const modelsDetails = [];
+    // if (req.files.length > 1) {
+    //   for (let i = 1; i < req.files.length; ++i) {
+    //     let modelData = {};
+    //     modelData.modelName = carModels[i - 1];
+    //     modelData.modelIcon = `${req.protocol}s://${req.get("host")}/${
+    //       req.files[i].path
+    //     }`;
+    //     modelsDetails.push(modelData);
+    //   }
+    // }
     const carData = {
       brand,
-      models: modelsDetails,
+      models: carModels,
       brandIcon: carLogo,
     };
     const car = await adminServices.createCar(carData);
@@ -716,20 +734,20 @@ exports.putEditCar = async (req, res, next) => {
       carLogo = "";
     }
     const carModels = JSON.parse(models);
-    const modelsDetails = [];
-    if (req.files.length > 1) {
-      for (let i = 1; i < req.files.length; ++i) {
-        let modelData = {};
-        modelData.modelName = carModels[i - 1];
-        modelData.modelIcon = `${req.protocol}s://${req.get("host")}/${
-          req.files[i].path
-        }`;
-        modelsDetails.push(modelData);
-      }
-    }
+    // const modelsDetails = [];
+    // if (req.files.length > 1) {
+    //   for (let i = 1; i < req.files.length; ++i) {
+    //     let modelData = {};
+    //     modelData.modelName = carModels[i - 1];
+    //     modelData.modelIcon = req.files[i]
+    //       ? `${req.protocol}s://${req.get("host")}/${req.files[i].path}`
+    //       : "";
+    //     modelsDetails.push(modelData);
+    //   }
+    // }
     const carData = {
       brand,
-      models: modelsDetails,
+      models: carModels,
       brandIcon: carLogo,
     };
     await adminServices.editCar(carId, carData);
@@ -748,6 +766,7 @@ exports.deleteCar = async (req, res, next) => {
     next(err);
   }
 };
+
 /**********************************************************
  * Users
  **********************************************************/
@@ -884,6 +903,16 @@ exports.putSetExpireoffer = async (req, res, next) => {
   }
 };
 
+exports.getOfferDetails = async (req, res, next) => {
+  try {
+    const offerId = req.query.offerId;
+    const offer = await adminServices.offerDetails(offerId);
+    res.status(200).json({ success: true, offer });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.putEditOffer = async (req, res, next) => {
   try {
     const {
@@ -894,6 +923,7 @@ exports.putEditOffer = async (req, res, next) => {
       expiryDate,
       hasUsageNumber,
       usageNumber,
+      status,
       offerId,
     } = req.body;
     const offerData = {
@@ -905,6 +935,7 @@ exports.putEditOffer = async (req, res, next) => {
       hasUsageNumber,
       usageNumber: hasUsageNumber ? usageNumber : 1,
     };
+    const offerStatus = await adminServices.setOfferStatus(offerId, status);
     const offer = await adminServices.editOffer(offerId, offerData);
     if (offer) {
       return res.status(201).json({ success: true, message: "offer updated" });
@@ -1070,6 +1101,15 @@ exports.deleteDriver = async (req, res, next) => {
     const driverId = req.query.driverId;
     await adminServices.deleteDriver(driverId);
     res.status(200).json({ success: true, message: "Driver removed" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDriversStatus = async (req, res, next) => {
+  try {
+    const driversLogs = await driverServices.driversLogs();
+    res.status(200).json({ success: true, driversStatus: driversLogs });
   } catch (err) {
     next(err);
   }
