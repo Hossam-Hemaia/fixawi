@@ -4,6 +4,7 @@ const Visit = require("../models/visit");
 const PriceList = require("../models/priceList");
 const BookingSettings = require("../models/bookingSettings");
 const Booking = require("../models/booking");
+const Check = require("../models/check");
 const utilities = require("../utils/utilities");
 
 exports.servicesCategories = async () => {
@@ -102,6 +103,45 @@ exports.bookingsCalendar = async (serviceCenterId, date) => {
       "calendar.date": { $gte: localDate, $lte: futureDate },
     });
     return bookingCalendar;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.createCheckReport = async (checkData) => {
+  try {
+    const checkReport = new Check(checkData);
+    await checkReport.save();
+    return checkReport;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.checkReports = async (date) => {
+  try {
+    const localDate = utilities.getLocalDate(date);
+    const checkReports = await Check.find({
+      createdAt: { $gte: localDate },
+    }).sort({ createdAt: -1 });
+    return checkReports;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.checkReportDetails = async (checkReportId) => {
+  try {
+    const checkReport = await Check.findById(checkReportId);
+    return checkReport;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeCheckReport = async (checkReportId) => {
+  try {
+    await Check.findByIdAndDelete(checkReportId);
   } catch (err) {
     throw err;
   }

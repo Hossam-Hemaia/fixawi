@@ -93,4 +93,24 @@ router.get(
   scController.getBookingsCalendar
 );
 
+router.post(
+  "/create/check/report",
+  isAuth.scIsAuth,
+  scController.postCreateCheckReport
+);
+
+router.get("/check/reports", isAuth.scIsAuth, scController.getCheckReports);
+
+router.get(
+  "/check/report/details",
+  isAuth.scIsAuth,
+  scController.getCheckReport
+);
+
+router.delete(
+  "/delete/check/report",
+  isAuth.scIsAuth,
+  scController.deleteCheckReport
+);
+
 module.exports = router;

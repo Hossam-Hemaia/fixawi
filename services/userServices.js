@@ -320,6 +320,7 @@ exports.bookVisit = async (bookingData) => {
                 time: bookingData.time,
                 clients: [
                   {
+                    clientId: bookingData.clientId,
                     clientName: bookingData.clientName,
                     phone: bookingData.phone,
                     carBrand: bookingData.carBrand,

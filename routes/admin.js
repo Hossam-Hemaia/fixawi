@@ -294,6 +294,12 @@ router.delete(
 /**********************************************************
  * Driver
  **********************************************************/
+router.get(
+  "/drivers/join/requests",
+  isAuth.adminIsAuth,
+  adminController.getDriversJoinRequests
+);
+
 router.post(
   "/create/truck/driver",
   isAuth.adminIsAuth,

@@ -5,6 +5,11 @@ const userController = require("../controllers/userController");
 
 const router = express.Router();
 
+router.post(
+  "/submit/driver/application",
+  driverController.postSubmitDriverApplication
+);
+
 router.get(
   "/driver/delivery/data",
   isAuth.driverIsAuth,

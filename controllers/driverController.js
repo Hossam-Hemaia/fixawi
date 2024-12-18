@@ -1,4 +1,46 @@
+const bcrypt = require("bcryptjs");
 const orderServices = require("../services/orderServices");
+const adminServices = require("../services/adminServices");
+
+exports.postSubmitDriverApplication = async (req, res, next) => {
+  try {
+    const {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      password,
+    } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const files = req.files;
+    const docs = [];
+    if (files.length > 0) {
+      for (let file of files) {
+        let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
+        docs.push(docUrl);
+      }
+    }
+    const driverData = {
+      driverName,
+      phoneNumber,
+      licenseNumber,
+      companyName,
+      truckNumber,
+      driverDocs: docs,
+      password: hashedPassword,
+      isActive: false,
+    };
+    const driver = await adminServices.createDriver(driverData);
+    if (driver) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Driver created successfully" });
+    }
+  } catch (err) {
+    throw err;
+  }
+};
 
 exports.getDriverOrders = async (req, res, next) => {
   try {

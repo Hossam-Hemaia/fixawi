@@ -1,8 +1,7 @@
 const mongoose = require("mongoose");
-
 const Schema = mongoose.Schema;
 
-const invoiceSchema = new Schema(
+const checkSchema = new Schema(
   {
     serviceCenterId: {
       type: Schema.Types.ObjectId,
@@ -16,6 +15,9 @@ const invoiceSchema = new Schema(
     clientName: {
       type: String,
     },
+    phoneNumber: {
+      type: String,
+    },
     carBrand: {
       type: String,
     },
@@ -26,7 +28,7 @@ const invoiceSchema = new Schema(
       type: Date,
       default: new Date(),
     },
-    invoiceDetails: [
+    checkDetails: [
       {
         service: { type: String },
         quantity: { type: Number },
@@ -34,20 +36,11 @@ const invoiceSchema = new Schema(
         amount: { type: Number },
       },
     ],
-    subTotal: {
-      type: Number,
-    },
-    fixawiFee: {
-      type: Number,
-    },
-    SalesTaxAmount: {
-      type: Number,
-    },
-    invoiceTotal: {
+    total: {
       type: Number,
     },
   },
-  { timestamps: true, strictPopulate: false }
+  { timestamps: true }
 );
 
-module.exports = mongoose.model("invoice", invoiceSchema);
+module.exports = mongoose.model("check", checkSchema);

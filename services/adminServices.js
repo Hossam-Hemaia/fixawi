@@ -627,6 +627,17 @@ exports.removeContactUsMessage = async (msgId) => {
 };
 
 /*******************Driver*******************/
+exports.driversJoinRequests = async () => {
+  try {
+    const driversRequests = await Driver.find({
+      isActive: false,
+      isApproved: false,
+    }).sort({ createdAt: -1 });
+    return driversRequests;
+  } catch (err) {
+    throw err;
+  }
+};
 exports.createDriver = async (driverData) => {
   try {
     const driver = new Driver(driverData);

@@ -18,6 +18,7 @@ const bookingSchema = new Schema(
             time: { type: Number },
             clients: [
               {
+                clientId: { type: Schema.Types.ObjectId, ref: "user" },
                 clientName: { type: String },
                 phone: { type: String },
                 carBrand: { type: String },

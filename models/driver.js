@@ -18,6 +18,7 @@ const driverSchema = new Schema(
     truckNumber: {
       type: String,
     },
+    driverDocs: [],
     driverLogId: {
       type: Schema.Types.ObjectId,
       ref: "driverLog",
@@ -25,6 +26,10 @@ const driverSchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isApproved: {
+      type: Boolean,
+      default: false,
     },
     username: {
       type: String,

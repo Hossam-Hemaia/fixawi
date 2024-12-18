@@ -2,6 +2,8 @@ const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const scServices = require("../services/scServices");
 const adminServices = require("../services/adminServices");
+const userServices = require("../services/userServices");
+const utilities = require("../utils/utilities");
 
 exports.postJoinRequest = async (req, res, next) => {
   try {
@@ -271,3 +273,80 @@ exports.getBookingsCalendar = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************************
+ * Check Report
+ **********************************************************/
+
+exports.postCreateCheckReport = async (req, res, next) => {
+  try {
+    const {
+      userId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date,
+      checkDetails,
+      total,
+    } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
+    let clientId = userId;
+    if (!userId) {
+      user = await userServices.getUserByUsername(phoneNumber);
+      if (!user) {
+        throw new Error(
+          "User is not registered, please create new account and try again"
+        );
+      }
+      clientId = user._id;
+    }
+    const checkData = {
+      serviceCenterId,
+      userId: clientId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date: utilities.getNowLocalDate(date),
+      checkDetails,
+      total,
+    };
+    const checkReport = await scServices.createCheckReport(checkData);
+    res.status(200).json({ success: true, checkReport });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCheckReports = async (req, res, next) => {
+  try {
+    const date = req.query.date;
+    const checkReports = await scServices.checkReports(date);
+    res.status(200).json({ success: true, checkReports });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCheckReport = async (req, res, next) => {
+  try {
+    const checkReportId = req.query.checkReportId;
+    const checkReport = await scServices.checkReportDetails(checkReportId);
+    res.status(200).json({ success: true, checkReport });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCheckReport = async (req, res, next) => {
+  try {
+    const checkReportId = req.query.checkReportId;
+    await scServices.removeCheckReport(checkReportId);
+    res.status(200).json({ success: true, message: "check report deleted!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// delete check report

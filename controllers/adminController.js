@@ -1016,6 +1016,15 @@ exports.deleteContactUsMessage = async (req, res, next) => {
 /**********************************************************
  * Driver
  **********************************************************/
+exports.getDriversJoinRequests = async (req, res, next) => {
+  try {
+    const driversApplications = await adminServices.driversJoinRequests();
+    res.status(200).json({ success: true, driversApplications });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postCreateDriver = async (req, res, next) => {
   try {
     const {
@@ -1027,12 +1036,23 @@ exports.postCreateDriver = async (req, res, next) => {
       password,
     } = req.body;
     const hashedPassword = await bcrypt.hash(password, 12);
+    const files = req.files;
+    const docs = [];
+    if (files.length > 0) {
+      for (let file of files) {
+        let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
+        docs.push(docUrl);
+      }
+    }
     const driverData = {
       driverName,
       phoneNumber,
       licenseNumber,
       companyName,
       truckNumber,
+      driverDocs: docs,
+      isApproved: true,
+      isActive: true,
       password: hashedPassword,
     };
     const driver = await adminServices.createDriver(driverData);
@@ -1073,9 +1093,19 @@ exports.putEditDriver = async (req, res, next) => {
       licenseNumber,
       companyName,
       truckNumber,
+      isApproved,
+      isActive,
       password,
       driverId,
     } = req.body;
+    const files = req.files;
+    const docs = [];
+    if (files.length > 0) {
+      for (let file of files) {
+        let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
+        docs.push(docUrl);
+      }
+    }
     const hashedPassword = await bcrypt.hash(password, 12);
     const driverData = {
       driverName,
@@ -1083,6 +1113,9 @@ exports.putEditDriver = async (req, res, next) => {
       licenseNumber,
       companyName,
       truckNumber,
+      isApproved,
+      isActive,
+      driverDocs: docs.length > 0 ? docs : "",
       password: hashedPassword,
     };
     const driver = await adminServices.editDriver(driverId, driverData);
