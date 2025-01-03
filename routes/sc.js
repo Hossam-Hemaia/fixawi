@@ -93,6 +93,15 @@ router.get(
   scController.getBookingsCalendar
 );
 
+router.delete(
+  "/cancel/booking",
+  isAuth.scIsAuth,
+  scController.deleteClientBooking
+);
+
+/**********************************************************
+ * Check Reports
+ **********************************************************/
 router.post(
   "/create/check/report",
   isAuth.scIsAuth,

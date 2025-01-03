@@ -620,6 +620,7 @@ exports.postCreateBooking = async (req, res, next) => {
       time,
       carBrand,
       carModel,
+      malfunction,
       slotNumber,
     } = req.body;
     const userId = req.userId;
@@ -643,6 +644,7 @@ exports.postCreateBooking = async (req, res, next) => {
       phone: user.phoneNumber,
       carBrand,
       carModel,
+      malfunction,
     };
     const booking = await userServices.bookVisit(bookingData);
     if (booking) {
@@ -650,6 +652,7 @@ exports.postCreateBooking = async (req, res, next) => {
         date: bookingData.date,
         time: bookingData.time,
         turn: slotNumber,
+        malfunction,
         service: bookingData.serviceName,
         serviceId: bookingData.serviceId,
         serviceCenter: serviceCenter.serviceCenterTitle,
@@ -716,6 +719,31 @@ exports.putEditUserBooking = async (req, res, next) => {
           .status(201)
           .json({ success: true, message: "Booking successful", booking });
       }
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteUserBooking = async (req, res, next) => {
+  try {
+    const bookingId = req.query.bookingId;
+    const userId = req.userId;
+    const user = await userServices.findUserById(userId);
+    const oldBookingData = user.myBookings.find((booking) => {
+      return booking._id.toString() === bookingId.toString();
+    });
+    oldBookingData.clientName = user.fullName;
+    oldBookingData.phone = user.phoneNumber;
+    oldBookingData.canceledBy = "client";
+    const oldBookingRemoved = await userServices.removeBooking(oldBookingData);
+    if (oldBookingRemoved) {
+      await userServices.addCanceledBooking(oldBookingData);
+      await user.deleteBooking(bookingId);
+      await user.save();
+      return res
+        .status(200)
+        .json({ success: true, message: "Your booking is canceled" });
     }
   } catch (err) {
     next(err);

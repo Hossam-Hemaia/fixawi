@@ -88,6 +88,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       closingDay,
       username,
       password,
+      requireBookingFees,
     } = req.body;
     const serviceCenterId = req.sc.serviceCenterId;
     const error = validationResult(req);
@@ -134,6 +135,7 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
       closingDay: JSON.parse(closingDay),
       username,
       password: hashedPassword,
+      requireBookingFees,
     };
     const serviceCenter = await adminServices.updateServiceCenter(
       serviceCenterId,
@@ -274,6 +276,36 @@ exports.getBookingsCalendar = async (req, res, next) => {
   }
 };
 
+exports.deleteClientBooking = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const serviceId = req.query.serviceId;
+    const slotId = req.query.slotId;
+    const phone = req.query.phone;
+    const date = req.query.date;
+    const clientId = req.query.clientId;
+    const localDate = utilities.getLocalDate(date);
+    const bookingData = {
+      serviceCenterId,
+      serviceId,
+      slotId,
+      date: localDate,
+      phone,
+      clientId,
+      canceledBy: "service center",
+    };
+    const bookingDeleted = await scServices.cancelClientBooking(bookingData);
+    if (bookingDeleted) {
+      await userServices.removeBookingByServiceCenter(bookingData);
+      await userServices.addCanceledBooking(bookingData);
+      return res
+        .status(200)
+        .json({ success: true, message: "Booking Canceled" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************************
  * Check Report
  **********************************************************/

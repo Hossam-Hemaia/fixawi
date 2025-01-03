@@ -146,3 +146,16 @@ exports.removeCheckReport = async (checkReportId) => {
     throw err;
   }
 };
+
+exports.cancelClientBooking = async (bookingData)=>{
+  try{
+    const bookingCalendar = await Booking.findOne({
+      serviceCenterId: bookingData.serviceCenterId,
+      serviceId: bookingData.serviceId,
+    });
+    const canceledBooking = await bookingCalendar.cancelBooking(bookingData);
+    return canceledBooking;
+  }catch(err){
+    throw err;
+  }
+}

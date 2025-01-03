@@ -189,4 +189,10 @@ router.put(
   userController.putEditUserBooking
 );
 
+router.delete(
+  "/cancel/user/booking",
+  isAuth.userIsAuth,
+  userController.deleteUserBooking
+);
+
 module.exports = router;

@@ -7,6 +7,7 @@ const ContactUs = require("../models/contact_us");
 const Car = require("../models/car");
 const Maintenance = require("../models/maintenance");
 const Booking = require("../models/booking");
+const CanceledBooking = require("../models/canceledBookings");
 const utilities = require("../utils/utilities");
 
 exports.carsBrands = async () => {
@@ -167,7 +168,7 @@ exports.nearestServiceCenters = async (coords, maxDistance) => {
           $maxDistance: maxDistance,
         },
       },
-    });
+    }).sort({ isPremium: 1 });
     return nearestCenters;
   } catch (err) {
     throw err;
@@ -176,7 +177,9 @@ exports.nearestServiceCenters = async (coords, maxDistance) => {
 
 exports.filterCenters = async (filter) => {
   try {
-    const serviceCenters = await ServiceCenter.find(filter);
+    const serviceCenters = await ServiceCenter.find(filter).sort({
+      isPremium: 1,
+    });
     return serviceCenters;
   } catch (err) {
     throw err;
@@ -356,6 +359,38 @@ exports.removeBooking = async (oldBookingData) => {
     } else {
       return false;
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.addCanceledBooking = async (bookingData) => {
+  try {
+    const canceledBooking = new CanceledBooking({
+      serviceCenterId: bookingData.serviceCenterId,
+      serviceName: bookingData.serviceName,
+      date: bookingData.date,
+      time: bookingData.time,
+      clientName: bookingData.clientName,
+      phone: bookingData.phone,
+      canceledBy: bookingData.canceledBy,
+    });
+    await canceledBooking.save();
+    return canceledBooking;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeBookingByServiceCenter = async (bookingData) => {
+  try {
+    const user = await User.findById(bookingData.clientId);
+    const newBookings = user.myBookings.filter((booking) => {
+      return booking.date !== bookingData.date;
+    });
+    user.myBookings = newBookings;
+    await user.save();
+    return user;
   } catch (err) {
     throw err;
   }

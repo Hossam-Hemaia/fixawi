@@ -92,7 +92,8 @@ exports.deleteCategory = async (req, res, next) => {
 
 exports.postCreateSubCategory = async (req, res, next) => {
   try {
-    const { subCategoryName, subCategoryNameEn, mainCategoryId } = req.body;
+    const { subCategoryName, subCategoryNameEn, description, mainCategoryId } =
+      req.body;
     const image = req.files[0];
     let subCategoryImageUrl;
     if (image) {
@@ -106,6 +107,7 @@ exports.postCreateSubCategory = async (req, res, next) => {
       subCategoryName,
       subCategoryNameEn,
       subCategoryImage: subCategoryImageUrl,
+      description,
       mainCategoryId,
     };
     await adminServices.createSubCategory(subCategoryData);
@@ -143,6 +145,7 @@ exports.putEditSubCategory = async (req, res, next) => {
       subCategoryNameEn,
       mainCategoryId,
       subCategoryId,
+      description,
     } = req.body;
     const image = req.files[0];
     let imageUrl;
@@ -155,6 +158,7 @@ exports.putEditSubCategory = async (req, res, next) => {
       subCategoryName,
       subCategoryNameEn,
       mainCategoryId,
+      description,
       subCategoryImage: imageUrl,
     };
     await adminServices.editSubCategory(subCategoryData, subCategoryId);
@@ -199,6 +203,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       closingDay,
       username,
       password,
+      requireBookingFees,
+      isPremium,
     } = req.body;
     const error = validationResult(req);
     if (!error.isEmpty() && error.array()[0].msg !== "Invalid value") {
@@ -265,6 +271,8 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       isApproved: true,
       username,
       password: hashedPassword,
+      requireBookingFees,
+      isPremium,
     };
     const serviceCenter = await adminServices.createServiceCenter(
       serviceCenterData
@@ -356,6 +364,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       closingDay,
       username,
       password,
+      requireBookingFees,
+      isPremium,
       serviceCenterId,
     } = req.body;
     const error = validationResult(req);
@@ -422,6 +432,8 @@ exports.putEditServiceCenter = async (req, res, next) => {
       closingDay: JSON.parse(closingDay),
       username,
       password: hashedPassword,
+      requireBookingFees,
+      isPremium,
     };
     const serviceCenter = await adminServices.updateServiceCenter(
       serviceCenterId,

@@ -38,6 +38,9 @@ const serviceCenterSchema = new Schema(
     visitType: {
       type: String,
     },
+    requireBookingFees: {
+      type: Boolean,
+    },
     averageRating: {
       type: Number,
       default: 0,
@@ -112,6 +115,10 @@ const serviceCenterSchema = new Schema(
         type: String,
       },
     ],
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );
