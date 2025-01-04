@@ -583,6 +583,73 @@ exports.getServiceCenterBookings = async (req, res, next) => {
   }
 };
 
+exports.getAllCanceledBookings = async (req, res, next) => {
+  try {
+    const canceledBookings = await adminServices.allCanceledBookings();
+    res.status(200).json({ success: true, canceledBookings });
+  } catch (err) {
+    next();
+  }
+};
+
+exports.bookServiceCenterVisit = async (req, res, next) => {
+  try {
+    const {
+      clientId,
+      serviceCenterId,
+      serviceId,
+      date,
+      time,
+      carBrand,
+      carModel,
+      malfunction,
+      slotNumber,
+    } = req.body;
+    const user = await userServices.findUserById(clientId);
+    const serviceCenter = await scServices.getUserServiceCenter(
+      serviceCenterId
+    );
+    const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    const service = bookingSettings.services.find((service) => {
+      return service.serviceId._id.toString() === serviceId.toString();
+    });
+    const bookingData = {
+      serviceCenterId,
+      serviceId,
+      serviceName: service.serviceId.subCategoryName,
+      slotCapacity: service.capacity,
+      date: utilities.getLocalDate(date),
+      time,
+      clientId,
+      clientName: user.fullName,
+      phone: user.phoneNumber,
+      carBrand,
+      carModel,
+      malfunction,
+    };
+    const booking = await userServices.bookVisit(bookingData);
+    if (booking) {
+      const userBooking = {
+        date: bookingData.date,
+        time: bookingData.time,
+        turn: slotNumber,
+        malfunction,
+        service: bookingData.serviceName,
+        serviceId: bookingData.serviceId,
+        serviceCenter: serviceCenter.serviceCenterTitle,
+        serviceCenterId,
+      };
+      user.myBookings.push(userBooking);
+      await user.save();
+      res
+        .status(201)
+        .json({ success: true, message: "Booking successful", booking });
+    }
+  } catch (err) {
+    next();
+  }
+};
+
 /**********************************************************
  * Price List
  **********************************************************/

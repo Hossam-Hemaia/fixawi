@@ -9,6 +9,7 @@ const Offer = require("../models/offers");
 const ContactUs = require("../models/contact_us");
 const Driver = require("../models/driver");
 const Settings = require("../models/settings");
+const CanceledBooking = require("../models/canceledBookings");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -638,6 +639,7 @@ exports.driversJoinRequests = async () => {
     throw err;
   }
 };
+
 exports.createDriver = async (driverData) => {
   try {
     const driver = new Driver(driverData);
@@ -714,6 +716,18 @@ exports.appSettings = async () => {
   try {
     const settings = await Settings.findOne();
     return settings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/*******************Booking********************/
+exports.allCanceledBookings = async () => {
+  try {
+    const canceledBookings = await CanceledBooking.find().sort({
+      createdAt: -1,
+    });
+    return canceledBookings;
   } catch (err) {
     throw err;
   }

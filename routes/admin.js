@@ -1,5 +1,6 @@
 const express = require("express");
 const adminController = require("../controllers/adminController");
+const userController = require("../controllers/userController");
 const isAuth = require("../middleware/isAuth");
 const validators = require("../middleware/validators");
 
@@ -163,6 +164,24 @@ router.get(
   "/service/center/bookings",
   isAuth.adminIsAuth,
   adminController.getServiceCenterBookings
+);
+
+router.get(
+  "/all/canceled/bookings",
+  isAuth.adminIsAuth,
+  adminController.getAllCanceledBookings
+);
+
+router.get(
+  "/admin/booking/calendar",
+  isAuth.adminIsAuth,
+  userController.getUserBookingCalendar
+);
+
+router.post(
+  "/book/service/center/visit",
+  isAuth.adminIsAuth,
+  adminController.bookServiceCenterVisit
 );
 
 /**********************************************************

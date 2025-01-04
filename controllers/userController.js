@@ -597,13 +597,13 @@ exports.getUserBookingCalendar = async (req, res, next) => {
       serviceId,
       currentDate
     );
-    const mergedCalendar = utilities.mergeBookedSlots(
-      bookedDays[0].calendar,
-      calendar
-    );
     if (bookedDays.length <= 0) {
       return res.status(200).json({ success: true, calendar: calendar });
     } else {
+      const mergedCalendar = utilities.mergeBookedSlots(
+        bookedDays[0].calendar,
+        calendar
+      );
       return res.status(200).json({ success: true, calendar: mergedCalendar });
     }
   } catch (err) {
