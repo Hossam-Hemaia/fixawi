@@ -8,6 +8,7 @@ const Car = require("../models/car");
 const Maintenance = require("../models/maintenance");
 const Booking = require("../models/booking");
 const CanceledBooking = require("../models/canceledBookings");
+const Favorite = require("../models/favorite");
 const utilities = require("../utils/utilities");
 
 exports.carsBrands = async () => {
@@ -364,6 +365,15 @@ exports.removeBooking = async (oldBookingData) => {
   }
 };
 
+exports.userBookings = async (userId) => {
+  try {
+    const user = await User.findById(userId);
+    return user.myBookings;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.addCanceledBooking = async (bookingData) => {
   try {
     const canceledBooking = new CanceledBooking({
@@ -391,6 +401,49 @@ exports.removeBookingByServiceCenter = async (bookingData) => {
     user.myBookings = newBookings;
     await user.save();
     return user;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.addFavorite = async (userId, serviceCenterId) => {
+  try {
+    let userFavorites = await Favorite.findOne({ userId: userId });
+    if (!userFavorites) {
+      userFavorites = new Favorite({
+        userId,
+        serviceCenters: [serviceCenterId],
+      });
+      await userFavorites.save();
+    } else {
+      userFavorites.serviceCenters.push(serviceCenterId);
+      await userFavorites.save();
+    }
+    return userFavorites;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.myFavorites = async (userId) => {
+  try {
+    const myFavorites = await Favorite.findOne({ userId }).populate(
+      "serviceCenters"
+    );
+    return myFavorites;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeFromFavorites = async (userId, serviceCenterId) => {
+  try {
+    const favorites = await Favorite.findOne({ userId });
+    const newFavorites = favorites.serviceCenters.filter((id) => {
+      return id.toString() !== serviceCenterId.toString();
+    });
+    favorites.serviceCenters = newFavorites;
+    await favorites.save();
   } catch (err) {
     throw err;
   }

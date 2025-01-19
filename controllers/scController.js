@@ -197,6 +197,9 @@ exports.getPriceList = async (req, res, next) => {
   }
 };
 
+/**********************************************************
+ * Visits
+ **********************************************************/
 exports.getVisits = async (req, res, next) => {
   try {
     const serviceCenterId = req.sc.serviceCenterId;
@@ -207,9 +210,44 @@ exports.getVisits = async (req, res, next) => {
   }
 };
 
+exports.getVisitorDetails = async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    const visitId = req.query.visitId;
+    const user = await scServices.visitorDetails(userId);
+    await scServices.setVisitStatus(visitId, "visited");
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCancelVisit = async (req, res, next) => {
+  try {
+    const visitId = req.body.visitId;
+    const status = "canceled";
+    await scServices.setVisitStatus(visitId, status);
+    res.status(201).json({ success: true, message: "Visit canceled!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**********************************************************
  * Booking Settings
  **********************************************************/
+exports.getServicesDetails = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const serviceCenter = await scServices.getUserServiceCenter(
+      serviceCenterId
+    );
+    res.status(200).json({ success: true, serviceCenter });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postCreateBookingSettings = async (req, res, next) => {
   try {
     const { services } = req.body;

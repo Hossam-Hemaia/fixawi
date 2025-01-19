@@ -62,7 +62,10 @@ router.post(
             throw error;
           }
         } else if (value === "phone") {
-          user = await User.findOne({ phoneNumber: req.body.username });
+          user = await User.findOne(
+            { phoneNumber: req.body.username },
+            { myBookings: 0 }
+          );
           if (!user) {
             const error = new Error("incorrect phone number!");
             error.statusCode = 422;

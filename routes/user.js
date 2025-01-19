@@ -189,10 +189,33 @@ router.put(
   userController.putEditUserBooking
 );
 
+router.get(
+  "/user/bookings/details",
+  isAuth.userIsAuth,
+  userController.getBookingsDetails
+);
+
 router.delete(
   "/cancel/user/booking",
   isAuth.userIsAuth,
   userController.deleteUserBooking
+);
+
+/******************************************
+ * Favorites
+ ******************************************/
+router.post(
+  "/add/favorite",
+  isAuth.userIsAuth,
+  userController.postAddToFavorite
+);
+
+router.get("/my/favorites", isAuth.userIsAuth, userController.getMyFavorites);
+
+router.delete(
+  "/remove/favorite",
+  isAuth.userIsAuth,
+  userController.removeFromFavorite
 );
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const ServiceCenter = require("../models/service_center");
 const ServiceCategory = require("../models/service_types");
 const Visit = require("../models/visit");
+const User = require("../models/user");
 const PriceList = require("../models/priceList");
 const BookingSettings = require("../models/bookingSettings");
 const Booking = require("../models/booking");
@@ -43,7 +44,7 @@ exports.getUserServiceCenter = async (serviceCenterId) => {
       password: 0,
       createdAt: 0,
       updatedAt: 0,
-    }).populate(["ratingId", "offerId"]);
+    }).populate(["offerId", "serviceCategoryIds"]);
     return serviceCenter;
   } catch (err) {
     throw err;
@@ -57,6 +58,29 @@ exports.visits = async (serviceCenterId) => {
       "serviceCenterId",
     ]);
     return visits;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setVisitStatus = async (visitId, status) => {
+  try {
+    const visit = await Visit.findById(visitId);
+    visit.visitStatus = status;
+    await visit.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.visitorDetails = async (userId) => {
+  try {
+    const user = await User.findById(userId, {
+      fullName: 1,
+      phoneNumber: 1,
+      userCars: 1,
+    });
+    return user;
   } catch (err) {
     throw err;
   }
@@ -147,15 +171,15 @@ exports.removeCheckReport = async (checkReportId) => {
   }
 };
 
-exports.cancelClientBooking = async (bookingData)=>{
-  try{
+exports.cancelClientBooking = async (bookingData) => {
+  try {
     const bookingCalendar = await Booking.findOne({
       serviceCenterId: bookingData.serviceCenterId,
       serviceId: bookingData.serviceId,
     });
     const canceledBooking = await bookingCalendar.cancelBooking(bookingData);
     return canceledBooking;
-  }catch(err){
+  } catch (err) {
     throw err;
   }
-}
+};

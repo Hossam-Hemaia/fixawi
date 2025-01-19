@@ -110,6 +110,10 @@ const serviceCenterSchema = new Schema(
     fareValue: {
       type: Number,
     },
+    bookingFees: {
+      type: Number,
+      default: 0,
+    },
     closingDay: [
       {
         type: String,

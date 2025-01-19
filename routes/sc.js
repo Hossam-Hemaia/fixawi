@@ -59,13 +59,23 @@ router.put(
 );
 
 /**********************************************************
- * Invoices
+ * Visits
  **********************************************************/
 router.get("/service/center/visits", isAuth.scIsAuth, scController.getVisits);
+
+router.get("/visitor/details", isAuth.scIsAuth, scController.getVisitorDetails);
+
+router.post("/cancel/visit", isAuth.scIsAuth, scController.postCancelVisit);
 
 /**********************************************************
  * Booking Settings
  **********************************************************/
+router.get(
+  "/services/details",
+  isAuth.scIsAuth,
+  scController.getServicesDetails
+);
+
 router.post(
   "/create/booking/plan",
   isAuth.scIsAuth,

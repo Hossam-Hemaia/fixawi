@@ -163,11 +163,13 @@ exports.postReviewServiceCenter = async (req, res, next) => {
     const review = req.body.review;
     const userId = req.userId;
     const ratingId = req.body.ratingId;
+    const user = await userServices.findUserById(userId);
     const ratingData = {
       serviceCenterId,
       rating,
       review,
       userId,
+      userName: user.fullName,
       ratingId,
     };
     const serviceCenterRatings = await ratingServices.findRatings(
@@ -540,12 +542,14 @@ exports.postReviewDriver = async (req, res, next) => {
     const rating = +req.body.rating;
     const review = req.body.review;
     const userId = req.userId;
+    const user = await userServices.findUserById(userId);
     const ratingId = req.body.ratingId;
     const ratingData = {
       driverId,
       rating,
       review,
       userId,
+      userName: user.fullName,
       ratingId,
     };
     const driverRatings = await ratingServices.findDriverRatings(driverId);
@@ -745,6 +749,62 @@ exports.deleteUserBooking = async (req, res, next) => {
         .status(200)
         .json({ success: true, message: "Your booking is canceled" });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBookingsDetails = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const bookings = await userServices.userBookings(userId);
+    res.status(200).json({ success: true, myBookings: bookings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/******************************************
+ * FAVORITES
+ ******************************************/
+
+exports.postAddToFavorite = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.body.serviceCenterId;
+    const userId = req.userId;
+    const userFavorites = await userServices.addFavorite(
+      userId,
+      serviceCenterId
+    );
+    if (userFavorites) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Service Center added to favorites" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getMyFavorites = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const favorites = await userServices.myFavorites(userId);
+    res.status(200).json({ success: true, favorites });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.removeFromFavorite = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const serviceCenterId = req.query.serviceCenterId;
+    await userServices.removeFromFavorites(userId, serviceCenterId);
+    res.status(200).json({
+      success: true,
+      message: "Service center removed from favorites",
+    });
   } catch (err) {
     next(err);
   }

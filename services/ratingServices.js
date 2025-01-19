@@ -10,6 +10,7 @@ exports.createRating = async (ratingData) => {
       reviews: [
         {
           userId: ratingData.userId,
+          userName: ratingData.userName,
           rating: ratingData.rating,
           review: ratingData.review,
         },
@@ -50,6 +51,7 @@ exports.setRating = async (ratingData) => {
         serviceCenter.ratings / serviceCenter.reviewers;
       rating.reviews[ratingIndex] = {
         userId: ratingData.userId,
+        userName: ratingData.userName,
         rating: ratingData.rating,
         review: ratingData.review,
       };
@@ -63,6 +65,7 @@ exports.setRating = async (ratingData) => {
         serviceCenter.ratings / serviceCenter.reviewers;
       rating.reviews.push({
         userId: ratingData.userId,
+        userName: ratingData.userName,
         rating: ratingData.rating,
         review: ratingData.review,
       });
@@ -109,6 +112,7 @@ exports.createDriverRating = async (ratingData) => {
       reviews: [
         {
           userId: ratingData.userId,
+          userName: ratingData.userName,
           rating: ratingData.rating,
           review: ratingData.review,
         },
@@ -142,6 +146,7 @@ exports.setDriverRating = async (ratingData) => {
       driver.averageRating = driver.ratings / driver.reviewers;
       rating.reviews[ratingIndex] = {
         userId: ratingData.userId,
+        userName: ratingData.userName,
         rating: ratingData.rating,
         review: ratingData.review,
       };
@@ -154,6 +159,7 @@ exports.setDriverRating = async (ratingData) => {
       driver.averageRating = driver.ratings / driver.reviewers;
       rating.reviews.push({
         userId: ratingData.userId,
+        userName: ratingData.userName,
         rating: ratingData.rating,
         review: ratingData.review,
       });

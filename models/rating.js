@@ -11,6 +11,7 @@ const ratingSchema = new Schema(
     reviews: [
       {
         userId: { type: Schema.Types.ObjectId, ref: "user" },
+        userName: { type: String },
         rating: { type: Number },
         review: { type: String },
       },
