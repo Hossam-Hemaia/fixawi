@@ -10,6 +10,7 @@ const ContactUs = require("../models/contact_us");
 const Driver = require("../models/driver");
 const Settings = require("../models/settings");
 const CanceledBooking = require("../models/canceledBookings");
+const Check = require("../models/check");
 
 exports.createAdmin = async (adminData) => {
   try {
@@ -728,6 +729,34 @@ exports.allCanceledBookings = async () => {
       createdAt: -1,
     });
     return canceledBookings;
+  } catch (err) {
+    throw err;
+  }
+};
+
+/*******************Booking********************/
+exports.allCheckReports = async (startDate, endDate, page, itemsPerPage) => {
+  try {
+    const countDocs = await Check.countDocuments();
+    const checkReports = await Check.find({
+      date: { $gte: startDate, $lte: endDate },
+    })
+      .populate("serviceCenterId")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * itemsPerPage)
+      .limit(itemsPerPage);
+    return { totalDocs: countDocs, checkReports };
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setCheckReportStatus = async (checkReportId, status) => {
+  try {
+    const checkReport = await Check.findById(checkReportId);
+    checkReport.reportStatus = status;
+    await checkReport.save();
+    return checkReport;
   } catch (err) {
     throw err;
   }

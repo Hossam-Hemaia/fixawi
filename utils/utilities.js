@@ -110,6 +110,15 @@ exports.getLocalDate = (date) => {
   return localDate;
 };
 
+exports.getEndLocalDate = (date) => {
+  const dateBegin = new Date(date).setHours(23, 59, 59, 999);
+  const newDate = new Date(dateBegin);
+  const localDate = new Date(
+    newDate.getTime() - newDate.getTimezoneOffset() * 60000
+  );
+  return localDate;
+};
+
 exports.getNowLocalDate = (date) => {
   const dateBegin = new Date(date);
   const newDate = new Date(dateBegin);

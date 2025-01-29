@@ -1297,3 +1297,56 @@ exports.patchSetOrderPayment = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************************
+ * Check Reports
+ **********************************************************/
+exports.getAllCheckReports = async (req, res, next) => {
+  try {
+    const page = +req.query.page;
+    const dateFrom = req.query.dateFrom;
+    const dateTo = req.query.dateTo;
+    const ITEMS_PER_PAGE = 50;
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const { totalDocs, checkReports } = await adminServices.allCheckReports(
+      localStartDate,
+      localEndDate,
+      page,
+      ITEMS_PER_PAGE
+    );
+    res.status(200).json({
+      success: true,
+      data: {
+        checkReports,
+        itemsPerPage: ITEMS_PER_PAGE,
+        currentPage: page,
+        hasNextPage: page * ITEMS_PER_PAGE < totalDocs,
+        nextPage: page + 1,
+        hasPreviousPage: page > 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(totalDocs / ITEMS_PER_PAGE),
+      },
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postSetCheckReportStatus = async (req, res, next) => {
+  try {
+    const checkReportId = req.body.checkReportId;
+    const reportStatus = req.body.reportStatus;
+    const updatedReport = await adminServices.setCheckReportStatus(
+      checkReportId,
+      reportStatus
+    );
+    if (updatedReport) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Check report status updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

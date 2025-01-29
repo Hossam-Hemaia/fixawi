@@ -298,7 +298,7 @@ exports.putUpdateBookingSettings = async (req, res, next) => {
 };
 
 /**********************************************************
- * Booking Settings
+ * Booking
  **********************************************************/
 exports.getBookingsCalendar = async (req, res, next) => {
   try {
@@ -329,7 +329,7 @@ exports.deleteClientBooking = async (req, res, next) => {
       slotId,
       date: localDate,
       phone,
-      clientId,
+      userId: clientId,
       canceledBy: "service center",
     };
     const bookingDeleted = await scServices.cancelClientBooking(bookingData);
@@ -403,7 +403,17 @@ exports.getCheckReport = async (req, res, next) => {
   try {
     const checkReportId = req.query.checkReportId;
     const checkReport = await scServices.checkReportDetails(checkReportId);
-    res.status(200).json({ success: true, checkReport });
+    const serviceCenter = await scServices.getServiceCenter(
+      checkReport.serviceCenterId
+    );
+    res.status(200).json({
+      success: true,
+      checkReport,
+      fixawiFareType: serviceCenter.fixawiFareType,
+      fareValue: serviceCenter.fareValue,
+      salesTaxEnabled: serviceCenter.salesTaxesEnabled,
+      salesTaxRate: serviceCenter.salesTaxRate,
+    });
   } catch (err) {
     next(err);
   }
@@ -419,4 +429,69 @@ exports.deleteCheckReport = async (req, res, next) => {
   }
 };
 
-// delete check report
+/**********************************************************
+ * Invoice
+ **********************************************************/
+
+exports.getServiceCenterFees = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
+    res.status(200).json({
+      success: true,
+      fixawiFareType: serviceCenter.fixawiFareType,
+      fareValue: serviceCenter.fareValue,
+      salesTaxEnabled: serviceCenter.salesTaxesEnabled,
+      salesTaxRate: serviceCenter.salesTaxRate,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postCreateInvoice = async (req, res, next) => {
+  try {
+    const {
+      userId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date,
+      invoiceDetails,
+      subTotal,
+    } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
+    const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
+    let fixawiFare;
+    if (serviceCenter.fixawiFareType === "fixed amount") {
+      fixawiFare = serviceCenter.fareValue;
+    } else if (serviceCenter.fixawiFareType === "ratio") {
+      fixawiFare = subTotal * serviceCenter.fareValue;
+    } else if (serviceCenter.fixawiFareType === "subscription") {
+      fixawiFare = 0;
+    }
+    let salesTaxAmount = serviceCenter.salesTaxesEnabled
+      ? serviceCenter.salesTaxRate * subTotal
+      : 0;
+    let invoiceTotal = subTotal + fixawiFare + salesTaxAmount;
+    const invoiceData = {
+      serviceCenterId,
+      userId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date: utilities.getNowLocalDate(date),
+      invoiceDetails,
+      subTotal,
+      fixawiFare,
+      salesTaxAmount,
+      invoiceTotal,
+    };
+    const invoice = await scServices.createInvoice(invoiceData);
+    res.status(200).json({ success: true, invoice });
+  } catch (err) {
+    next(err);
+  }
+};

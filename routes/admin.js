@@ -378,4 +378,19 @@ router.patch(
   adminController.patchSetOrderPayment
 );
 
+/**********************************************************
+ * Check Reports
+ **********************************************************/
+router.get(
+  "/all/check/Reports",
+  isAuth.adminIsAuth,
+  adminController.getAllCheckReports
+);
+
+router.post(
+  "/set/check/report/status",
+  isAuth.adminIsAuth,
+  adminController.postSetCheckReportStatus
+);
+
 module.exports = router;

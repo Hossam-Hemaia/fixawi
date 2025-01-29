@@ -15,6 +15,10 @@ const canceledBookingSchema = new mongoose.Schema(
     time: {
       type: Number,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+    },
     clientName: {
       type: String,
     },

@@ -656,6 +656,8 @@ exports.postCreateBooking = async (req, res, next) => {
         date: bookingData.date,
         time: bookingData.time,
         turn: slotNumber,
+        carBrand,
+        carModel,
         malfunction,
         service: bookingData.serviceName,
         serviceId: bookingData.serviceId,
@@ -702,6 +704,7 @@ exports.putEditUserBooking = async (req, res, next) => {
       phone: user.phoneNumber,
       carBrand: oldBookingData.carBrand,
       carModel: oldBookingData.carModel,
+      malfunction: oldBookingData.malfunction,
     };
     const oldBookingRemoved = await userServices.removeBooking(oldBookingData);
     if (oldBookingRemoved) {
@@ -711,6 +714,9 @@ exports.putEditUserBooking = async (req, res, next) => {
           date: bookingData.date,
           time: bookingData.time,
           turn: slotNumber,
+          carBrand: oldBookingData.carBrand,
+          carModel: oldBookingData.carModel,
+          malfunction: oldBookingData.malfunction,
           service: bookingData.serviceName,
           serviceId: bookingData.serviceId,
           serviceCenter: oldBookingData.serviceCenter,
@@ -737,6 +743,7 @@ exports.deleteUserBooking = async (req, res, next) => {
     const oldBookingData = user.myBookings.find((booking) => {
       return booking._id.toString() === bookingId.toString();
     });
+    oldBookingData.userId = userId;
     oldBookingData.clientName = user.fullName;
     oldBookingData.phone = user.phoneNumber;
     oldBookingData.canceledBy = "client";
@@ -759,6 +766,16 @@ exports.getBookingsDetails = async (req, res, next) => {
     const userId = req.userId;
     const bookings = await userServices.userBookings(userId);
     res.status(200).json({ success: true, myBookings: bookings });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserCanceledBookings = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const canceledBookings = await userServices.userCanceledBookings(userId);
+    res.status(200).json({ success: true, canceledBookings });
   } catch (err) {
     next(err);
   }
@@ -805,6 +822,58 @@ exports.removeFromFavorite = async (req, res, next) => {
       success: true,
       message: "Service center removed from favorites",
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/******************************************
+ * Check Reports
+ ******************************************/
+exports.getMyCheckReports = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const checkReports = await userServices.myCheckReports(userId);
+    res.status(200).json({ success: true, checkReports });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getCheckReportDetails = async (req, res, next) => {
+  try {
+    const checkReportId = req.query.checkReportId;
+    const reportDetails = await userServices.getCheckReportDetails(
+      checkReportId
+    );
+    res.status(200).json({ success: true, reportDetails });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postConfirmCheckReport = async (req, res, next) => {
+  try {
+    const { checkReportId, checkDetails } = req.body;
+    const updatedCheckReport = await userServices.updateCheckReport(
+      checkReportId,
+      checkDetails
+    );
+    if (updatedCheckReport.reportStatus === "confirmed") {
+      return res
+        .status(201)
+        .json({ success: true, message: "Check Report Confirmed" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postDeclineCheckReport = async (req, res, next) => {
+  try {
+    const checkReportId = req.body.checkReportId;
+    await userServices.declineCheckReport(checkReportId);
+    res.status(201).json({ success: true, message: "Check report declined" });
   } catch (err) {
     next(err);
   }

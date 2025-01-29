@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const Schema = mongoose.Schema;
 
 const invoiceSchema = new Schema(
@@ -14,6 +13,9 @@ const invoiceSchema = new Schema(
       ref: "user",
     },
     clientName: {
+      type: String,
+    },
+    phoneNumber: {
       type: String,
     },
     carBrand: {
@@ -37,10 +39,11 @@ const invoiceSchema = new Schema(
     subTotal: {
       type: Number,
     },
-    fixawiFee: {
+    fixawiFare: {
       type: Number,
     },
-    SalesTaxAmount: {
+    salesTaxAmount: {
+      
       type: Number,
     },
     invoiceTotal: {

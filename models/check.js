@@ -39,6 +39,11 @@ const checkSchema = new Schema(
     total: {
       type: Number,
     },
+    reportStatus: {
+      type: String,
+      enum: ["pending confirmation", "confirmed", "invoiced", "declined"],
+      default: "pending confirmation",
+    },
   },
   { timestamps: true }
 );

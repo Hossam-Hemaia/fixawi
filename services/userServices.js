@@ -8,6 +8,7 @@ const Car = require("../models/car");
 const Maintenance = require("../models/maintenance");
 const Booking = require("../models/booking");
 const CanceledBooking = require("../models/canceledBookings");
+const Check = require("../models/check");
 const Favorite = require("../models/favorite");
 const utilities = require("../utils/utilities");
 
@@ -381,6 +382,7 @@ exports.addCanceledBooking = async (bookingData) => {
       serviceName: bookingData.serviceName,
       date: bookingData.date,
       time: bookingData.time,
+      userId: bookingData.userId,
       clientName: bookingData.clientName,
       phone: bookingData.phone,
       canceledBy: bookingData.canceledBy,
@@ -394,13 +396,22 @@ exports.addCanceledBooking = async (bookingData) => {
 
 exports.removeBookingByServiceCenter = async (bookingData) => {
   try {
-    const user = await User.findById(bookingData.clientId);
+    const user = await User.findById(bookingData.userId);
     const newBookings = user.myBookings.filter((booking) => {
       return booking.date !== bookingData.date;
     });
     user.myBookings = newBookings;
     await user.save();
     return user;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.userCanceledBookings = async (userId) => {
+  try {
+    const canceledBookings = await CanceledBooking.find({ userId });
+    return canceledBookings;
   } catch (err) {
     throw err;
   }
@@ -444,6 +455,60 @@ exports.removeFromFavorites = async (userId, serviceCenterId) => {
     });
     favorites.serviceCenters = newFavorites;
     await favorites.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.myCheckReports = async (userId) => {
+  try {
+    const checkReports = await Check.find({ userId })
+      .populate("serviceCenterId")
+      .sort({ createdAt: -1 });
+    return checkReports;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getCheckReportDetails = async (checkReportId) => {
+  try {
+    const checkReport = await Check.findById(checkReportId).populate(
+      "serviceCenterId"
+    );
+    return checkReport;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateCheckReport = async (checkReportId, checkDetails) => {
+  try {
+    const checkReport = await Check.findById(checkReportId);
+    let totalCost = 0;
+    for (let detail of checkDetails) {
+      totalCost += detail.amount;
+    }
+    checkReport.checkDetails = checkDetails;
+    checkReport.total = totalCost;
+    checkReport.reportStatus = "confirmed";
+    await checkReport.save();
+    return checkReport;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.declineCheckReport = async (checkReportId) => {
+  try {
+    const checkReport = await Check.findById(checkReportId);
+    if (checkReport.reportStatus === "confirmed") {
+      throw new Error(
+        "You cannot decline a confirmed report, please contact support"
+      );
+    }
+    checkReport.reportStatus = "declined";
+    await checkReport.save();
   } catch (err) {
     throw err;
   }

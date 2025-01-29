@@ -201,6 +201,12 @@ router.delete(
   userController.deleteUserBooking
 );
 
+router.get(
+  "/user/canceled/bookings",
+  isAuth.userIsAuth,
+  userController.getUserCanceledBookings
+);
+
 /******************************************
  * Favorites
  ******************************************/
@@ -216,6 +222,33 @@ router.delete(
   "/remove/favorite",
   isAuth.userIsAuth,
   userController.removeFromFavorite
+);
+
+/******************************************
+ * Check Reports
+ ******************************************/
+router.get(
+  "/my/check/reports",
+  isAuth.userIsAuth,
+  userController.getMyCheckReports
+);
+
+router.get(
+  "/check/report/details",
+  isAuth.userIsAuth,
+  userController.getCheckReportDetails
+);
+
+router.post(
+  "/confirm/check/report",
+  isAuth.userIsAuth,
+  userController.postConfirmCheckReport
+);
+
+router.post(
+  "/decline/check/report",
+  isAuth.userIsAuth,
+  userController.postDeclineCheckReport
 );
 
 module.exports = router;

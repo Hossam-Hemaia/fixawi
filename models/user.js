@@ -68,6 +68,8 @@ const userSchema = new Schema(
         date: { type: Date },
         time: { type: Number },
         turn: { type: Number }, // slot index + 1
+        carBrand: { type: String },
+        carModel: { type: String },
         malfunction: { type: String },
         service: { type: String },
         serviceId: { type: Schema.Types.ObjectId },

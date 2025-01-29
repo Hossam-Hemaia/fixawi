@@ -132,4 +132,16 @@ router.delete(
   scController.deleteCheckReport
 );
 
+/**********************************************************
+ * Invoice
+ **********************************************************/
+
+router.get("/service/center/fees", isAuth.scIsAuth, scController.getServiceCenterFees)
+
+router.post(
+  "/create/invoice",
+  isAuth.scIsAuth,
+  scController.postCreateInvoice
+);
+
 module.exports = router;

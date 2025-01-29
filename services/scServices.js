@@ -6,6 +6,7 @@ const PriceList = require("../models/priceList");
 const BookingSettings = require("../models/bookingSettings");
 const Booking = require("../models/booking");
 const Check = require("../models/check");
+const Invoice = require("../models/invoice");
 const utilities = require("../utils/utilities");
 
 exports.servicesCategories = async () => {
@@ -179,6 +180,16 @@ exports.cancelClientBooking = async (bookingData) => {
     });
     const canceledBooking = await bookingCalendar.cancelBooking(bookingData);
     return canceledBooking;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.createInvoice = async (invoiceData) => {
+  try {
+    const invoice = new Invoice(invoiceData);
+    await invoice.save();
+    return invoice;
   } catch (err) {
     throw err;
   }
