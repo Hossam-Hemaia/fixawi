@@ -878,3 +878,32 @@ exports.postDeclineCheckReport = async (req, res, next) => {
     next(err);
   }
 };
+
+/******************************************
+ * Invoices
+ ******************************************/
+
+exports.getMyInvoices = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const invoices = await userServices.myInvoices(userId);
+    res.status(200).json({ success: true, invoices });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postPayInvoice = async (req, res, next) => {
+  try {
+    const invoiceId = req.body.invoiceId;
+    const paymentMethod = req.body.paymentMethod;
+    const paidInvoice = await userServices.payInvoice(invoiceId, paymentMethod);
+    if (paidInvoice) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Invoice paid successfully" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};

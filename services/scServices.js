@@ -194,3 +194,44 @@ exports.createInvoice = async (invoiceData) => {
     throw err;
   }
 };
+
+exports.serviceCenterInvoices = async (dateFrom, dateTo, serviceCenterId) => {
+  try {
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const invoices = await Invoice.find({
+      date: { $gte: localStartDate, $lte: localEndDate },
+      serviceCenterId: serviceCenterId,
+    });
+    return invoices;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.invoiceDetails = async (invoiceId) => {
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    return invoice;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.editInvoice = async (invoiceData) => {
+  try {
+    const updateData = {};
+    for (let key in invoiceData) {
+      if (invoiceData[key] !== "") {
+        updateData[key] = invoiceData[key];
+      }
+    }
+    const invoice = await Invoice.findByIdAndUpdate(
+      invoiceData.invoiceId,
+      updateData
+    );
+    return invoice;
+  } catch (err) {
+    throw err;
+  }
+};

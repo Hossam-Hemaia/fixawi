@@ -9,6 +9,7 @@ const Maintenance = require("../models/maintenance");
 const Booking = require("../models/booking");
 const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
+const Invoice = require("../models/invoice");
 const Favorite = require("../models/favorite");
 const utilities = require("../utils/utilities");
 
@@ -509,6 +510,27 @@ exports.declineCheckReport = async (checkReportId) => {
     }
     checkReport.reportStatus = "declined";
     await checkReport.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.myInvoices = async (userId) => {
+  try {
+    const invoices = await Invoice.find({ userId }).sort({ createdAt: -1 });
+    return invoices;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.payInvoice = async (invoiceId, paymentMethod) => {
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    invoice.paymentMethod = paymentMethod;
+    invoice.paymentStatus = "paid";
+    await invoice.save();
+    return invoice;
   } catch (err) {
     throw err;
   }

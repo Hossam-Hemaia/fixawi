@@ -43,11 +43,20 @@ const invoiceSchema = new Schema(
       type: Number,
     },
     salesTaxAmount: {
-      
       type: Number,
+      default: 0.14,
     },
     invoiceTotal: {
       type: Number,
+    },
+    paymentStatus: {
+      type: String,
+      enum: ["pending payment", "paid", "canceled"],
+      default: "pending payment",
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "card"],
     },
   },
   { timestamps: true, strictPopulate: false }

@@ -251,4 +251,12 @@ router.post(
   userController.postDeclineCheckReport
 );
 
+/******************************************
+ * Invoices
+ ******************************************/
+
+router.get("/my/invoices", isAuth.userIsAuth, userController.getMyInvoices);
+
+router.post("/pay/invoice", isAuth.userIsAuth, userController.postPayInvoice);
+
 module.exports = router;

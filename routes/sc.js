@@ -136,12 +136,22 @@ router.delete(
  * Invoice
  **********************************************************/
 
-router.get("/service/center/fees", isAuth.scIsAuth, scController.getServiceCenterFees)
-
-router.post(
-  "/create/invoice",
+router.get(
+  "/service/center/fees",
   isAuth.scIsAuth,
-  scController.postCreateInvoice
+  scController.getServiceCenterFees
 );
+
+router.post("/create/invoice", isAuth.scIsAuth, scController.postCreateInvoice);
+
+router.get(
+  "/service/center/invoices",
+  isAuth.scIsAuth,
+  scController.getServiceCenterInvoices
+);
+
+router.get("/invoice/details", isAuth.scIsAuth, scController.getInvoiceDetails);
+
+router.put("/edit/invoice", isAuth.scIsAuth, scController.putEditInvoice);
 
 module.exports = router;

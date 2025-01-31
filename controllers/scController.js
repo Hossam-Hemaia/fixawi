@@ -495,3 +495,81 @@ exports.postCreateInvoice = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getServiceCenterInvoices = async (req, res, next) => {
+  try {
+    const { dateFrom, dateTo } = req.query;
+    const serviceCenterId = req.sc.serviceCenterId;
+    const invoices = await scServices.serviceCenterInvoices(
+      dateFrom,
+      dateTo,
+      serviceCenterId
+    );
+    res.status(200).json({ success: true, invoices });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getInvoiceDetails = async (req, res, next) => {
+  try {
+    const invoiceId = req.query.invoiceId;
+    const invoice = await scServices.invoiceDetails(invoiceId);
+    res.status(200).json({ success: true, invoice });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditInvoice = async (req, res, next) => {
+  try {
+    const {
+      invoiceId,
+      userId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date,
+      invoiceDetails,
+      subTotal,
+    } = req.body;
+    const oldInvoice = await scServices.invoiceDetails(invoiceId);
+    if (oldInvoice.paymentStatus === "paid") {
+      throw new Error("Editing paid invoice is not premitted");
+    }
+    const serviceCenterId = req.sc.serviceCenterId;
+    const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
+    let fixawiFare;
+    if (serviceCenter.fixawiFareType === "fixed amount") {
+      fixawiFare = serviceCenter.fareValue;
+    } else if (serviceCenter.fixawiFareType === "ratio") {
+      fixawiFare = subTotal * serviceCenter.fareValue;
+    } else if (serviceCenter.fixawiFareType === "subscription") {
+      fixawiFare = 0;
+    }
+    let salesTaxAmount = serviceCenter.salesTaxesEnabled
+      ? serviceCenter.salesTaxRate * subTotal
+      : 0;
+    let invoiceTotal = subTotal + fixawiFare + salesTaxAmount;
+    const invoiceData = {
+      invoiceId,
+      serviceCenterId,
+      userId,
+      clientName,
+      phoneNumber,
+      carBrand,
+      carModel,
+      date: utilities.getNowLocalDate(date),
+      invoiceDetails,
+      subTotal,
+      fixawiFare,
+      salesTaxAmount,
+      invoiceTotal,
+    };
+    await scServices.editInvoice(invoiceData);
+    res.status(200).json({ success: true, message: "invoice updated" });
+  } catch (err) {
+    next(err);
+  }
+};
