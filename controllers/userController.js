@@ -550,11 +550,11 @@ exports.postReviewDriver = async (req, res, next) => {
       review,
       userId,
       userName: user.fullName,
-      ratingId,
     };
     const driverRatings = await ratingServices.findDriverRatings(driverId);
     let rated;
     if (driverRatings) {
+      ratingData.ratingId = driverRatings._id;
       rated = await ratingServices.setDriverRating(ratingData);
     } else {
       rated = await ratingServices.createDriverRating(ratingData);

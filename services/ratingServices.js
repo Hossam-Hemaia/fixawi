@@ -134,7 +134,7 @@ exports.createDriverRating = async (ratingData) => {
 exports.setDriverRating = async (ratingData) => {
   try {
     const rating = await DriverRating.findById(ratingData.ratingId);
-    const driver = await ServiceCenter.findById(ratingData.driverId);
+    const driver = await Driver.findById(ratingData.driverId);
     const ratingIndex = rating.reviews.findIndex((rev) => {
       return rev.userId.toString() === ratingData.userId.toString();
     });

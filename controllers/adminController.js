@@ -924,6 +924,19 @@ exports.getUsersVisits = async (req, res, next) => {
   }
 };
 
+exports.getUserDetails = async (req, res, next) => {
+  try {
+    const phoneNumber = req.query.phoneNumber;
+    const user = await userServices.getUserByUsername(phoneNumber);
+    if (!user) {
+      throw new Error("User is not found!, please create user account");
+    }
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**********************************************************
  * Offers
  **********************************************************/
@@ -1346,6 +1359,24 @@ exports.postSetCheckReportStatus = async (req, res, next) => {
         .status(201)
         .json({ success: true, message: "Check report status updated" });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Invoices
+ **********************************************************/
+
+exports.postServiceCenterInvoices = async (req, res, next) => {
+  try {
+    const { serviceCenterId, dateFrom, dateTo } = req.query;
+    const invoices = await scServices.serviceCenterInvoices(
+      dateFrom,
+      dateTo,
+      serviceCenterId
+    );
+    res.status(200).json({ success: true, invoices });
   } catch (err) {
     next(err);
   }

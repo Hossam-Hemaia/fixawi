@@ -250,6 +250,8 @@ router.get("/user", isAuth.adminIsAuth, adminController.getUser);
 
 router.put("/block/user", isAuth.adminIsAuth, adminController.putBlockUser);
 
+router.get("/user/details", isAuth.adminIsAuth, adminController.getUserDetails);
+
 /**********************************************************
  * Offers
  **********************************************************/
@@ -391,6 +393,16 @@ router.post(
   "/set/check/report/status",
   isAuth.adminIsAuth,
   adminController.postSetCheckReportStatus
+);
+
+/**********************************************************
+ * Invoices
+ **********************************************************/
+
+router.get(
+  "/admin/service/center/invoices",
+  isAuth.adminIsAuth,
+  adminController.postServiceCenterInvoices
 );
 
 module.exports = router;

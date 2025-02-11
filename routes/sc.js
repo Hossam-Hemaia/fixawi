@@ -121,7 +121,7 @@ router.post(
 router.get("/check/reports", isAuth.scIsAuth, scController.getCheckReports);
 
 router.get(
-  "/check/report/details",
+  "/sc/check/report/details",
   isAuth.scIsAuth,
   scController.getCheckReport
 );

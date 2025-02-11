@@ -168,6 +168,8 @@ router.get(
   userController.getServiceCenterRatings
 );
 
+
+
 /*****************************************
  * Booking Routes
  *****************************************/
