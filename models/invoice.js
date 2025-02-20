@@ -3,6 +3,9 @@ const Schema = mongoose.Schema;
 
 const invoiceSchema = new Schema(
   {
+    invoiceNumber: {
+      type: Number,
+    },
     serviceCenterId: {
       type: Schema.Types.ObjectId,
       ref: "service_center",

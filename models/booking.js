@@ -24,6 +24,7 @@ const bookingSchema = new Schema(
                 carBrand: { type: String },
                 carModel: { type: String },
                 malfuncion: { type: String },
+                promotionId: { type: Schema.Types.ObjectId, ref: "promotion" },
               },
             ],
             slotIsFull: { type: Boolean, default: false },

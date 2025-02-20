@@ -1,5 +1,6 @@
 const express = require("express");
 const adminController = require("../controllers/adminController");
+const scController = require("../controllers/scController");
 const userController = require("../controllers/userController");
 const isAuth = require("../middleware/isAuth");
 const validators = require("../middleware/validators");
@@ -295,6 +296,29 @@ router.patch(
   "/remove/service/center/offer",
   isAuth.adminIsAuth,
   adminController.removeServiceCenterOffer
+);
+
+/**********************************************************
+ * Promotions
+ **********************************************************/
+router.get(
+  "/pending/promotions",
+  isAuth.adminIsAuth,
+  adminController.getPendingPromotions
+);
+
+router.put(
+  "/set/promotion/approval",
+  isAuth.adminIsAuth,
+  adminController.putSetPromotionApproval
+);
+
+router.get("/promotions", isAuth.adminIsAuth, adminController.getPromotions);
+
+router.delete(
+  "/remove/promotion",
+  isAuth.adminIsAuth,
+  scController.deletePromotion
 );
 
 /**********************************************************

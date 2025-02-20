@@ -576,6 +576,19 @@ exports.getDriverRatings = async (req, res, next) => {
     next(err);
   }
 };
+
+/**********************************************
+ * Promotions
+ **********************************************/
+
+exports.getClientPromotions = async (req, res, next) => {
+  try {
+    const promotions = await userServices.clientPromotions();
+    res.status(200).json({ success: true, promotions });
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************
  * Booking Controllers
  **********************************************/
@@ -626,6 +639,7 @@ exports.postCreateBooking = async (req, res, next) => {
       carModel,
       malfunction,
       slotNumber,
+      promotionId,
     } = req.body;
     const userId = req.userId;
     const user = await userServices.findUserById(userId);
@@ -649,6 +663,7 @@ exports.postCreateBooking = async (req, res, next) => {
       carBrand,
       carModel,
       malfunction,
+      promotionId,
     };
     const booking = await userServices.bookVisit(bookingData);
     if (booking) {

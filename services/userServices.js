@@ -6,6 +6,7 @@ const Visit = require("../models/visit");
 const ContactUs = require("../models/contact_us");
 const Car = require("../models/car");
 const Maintenance = require("../models/maintenance");
+const Promotion = require("../models/promotion");
 const Booking = require("../models/booking");
 const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
@@ -291,7 +292,21 @@ exports.removeCarMaintenance = async (userId, maintenanceId) => {
     throw err;
   }
 };
+/********************Promotions*********************/
+exports.clientPromotions = async () => {
+  try {
+    const currentDate = utilities.getLocalDate(new Date());
+    const promotions = await Promotion.find({
+      approved: true,
+      expiryDate: { $gt: currentDate },
+    });
+    return promotions;
+  } catch (err) {
+    next(err);
+  }
+};
 
+/********************Bookings********************/
 exports.getBookedDays = async (serviceCenterId, serviceId, currentDate) => {
   try {
     const futureDate = utilities.getFutureDate(currentDate, 7);
@@ -331,6 +346,10 @@ exports.bookVisit = async (bookingData) => {
                     phone: bookingData.phone,
                     carBrand: bookingData.carBrand,
                     carModel: bookingData.carModel,
+                    malfunction: bookingData.malfunction,
+                    ...(bookingData.promotionId && {
+                      promotionId: bookingData.promotionId,
+                    }),
                   },
                 ],
                 slotIsFull: false,

@@ -168,7 +168,14 @@ router.get(
   userController.getServiceCenterRatings
 );
 
-
+/*****************************************
+ * Promotions
+ *****************************************/
+router.get(
+  "/client/promotions",
+  isAuth.userIsAuth,
+  userController.getClientPromotions
+);
 
 /*****************************************
  * Booking Routes

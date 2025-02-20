@@ -227,16 +227,16 @@ exports.postCreateServiceCenter = async (req, res, next) => {
         documents.push(docUrl);
       }
     }
-    if (
-      !fixawiFareType ||
-      fixawiFareType === "" ||
-      !fareValue ||
-      fareValue === ""
-    ) {
-      const error = new Error("You must set pricing options");
-      error.statusCode = 422;
-      throw error;
-    }
+    // if (
+    //   !fixawiFareType ||
+    //   fixawiFareType === "" ||
+    //   !fareValue ||
+    //   fareValue === ""
+    // ) {
+    //   const error = new Error("You must set pricing options");
+    //   error.statusCode = 422;
+    //   throw error;
+    // }
     const location = {
       type: "Point",
       coordinates: [lat, lng],
@@ -245,7 +245,10 @@ exports.postCreateServiceCenter = async (req, res, next) => {
     const serviceTypes = await adminServices.getServicesNames(
       serviceCategories
     );
-    const hashedPassword = await bcrypt.hash(password, 12);
+    let hashedPassword = "";
+    if (username !== "" && password !== "") {
+      hashedPassword = await bcrypt.hash(password, 12);
+    }
     const brands = JSON.parse(carBrands);
     const serviceCenterData = {
       serviceCenterTitle,
@@ -277,7 +280,7 @@ exports.postCreateServiceCenter = async (req, res, next) => {
     const serviceCenter = await adminServices.createServiceCenter(
       serviceCenterData
     );
-    if (serviceCenter) {
+    if (serviceCenter && username !== "" && password !== "") {
       const scData = {
         fullName: serviceCenter.serviceCenterTitle,
         username,
@@ -288,9 +291,14 @@ exports.postCreateServiceCenter = async (req, res, next) => {
       await adminServices.createAdmin(scData);
       return res.status(201).json({
         success: true,
-        message: "Service Center Created",
+        message: "Service center created",
         username,
         password,
+      });
+    } else {
+      return res.status(201).json({
+        success: true,
+        message: "Service center created without access credentials",
       });
     }
   } catch (err) {
@@ -1078,6 +1086,45 @@ exports.removeServiceCenterOffer = async (req, res, next) => {
     res
       .status(200)
       .json({ success: true, message: "Offers Removed Successfully" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Promotions
+ **********************************************************/
+
+exports.getPromotions = async (req, res, next) => {
+  try {
+    const promotions = await adminServices.promotions();
+    res.status(200).json({ success: true, promotions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putSetPromotionApproval = async (req, res, next) => {
+  try {
+    const { promotionId, approvalStatus } = req.body;
+    const promotion = await adminServices.setPromotionApproval(
+      promotionId,
+      approvalStatus
+    );
+    if (promotion) {
+      return res
+        .status(200)
+        .json({ success: true, message: "Prmotion status updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getPendingPromotions = async (req, res, next) => {
+  try {
+    const promotions = await adminServices.pendingPromotions();
+    res.status(200).json({ success: true, promotions });
   } catch (err) {
     next(err);
   }

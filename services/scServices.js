@@ -3,6 +3,7 @@ const ServiceCategory = require("../models/service_types");
 const Visit = require("../models/visit");
 const User = require("../models/user");
 const PriceList = require("../models/priceList");
+const Promotion = require("../models/promotion");
 const BookingSettings = require("../models/bookingSettings");
 const Booking = require("../models/booking");
 const Check = require("../models/check");
@@ -87,8 +88,75 @@ exports.visitorDetails = async (userId) => {
   }
 };
 
+exports.createPromotion = async (promotionData) => {
+  try {
+    const promotion = new Promotion(promotionData);
+    await promotion.save();
+    return promotion;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allPromotions = async (serviceCenterId) => {
+  try {
+    const promotions = await Promotion.find({ serviceCenterId });
+    return promotions;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.promotionDetails = async (promotionId) => {
+  try {
+    const promotion = await Promotion.findById(promotionId);
+    return promotion;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updatePromotion = async (promotionId, promotionData) => {
+  try {
+    const updateData = {};
+    for (let key in promotionData) {
+      if (promotionData[key] !== "") {
+        updateData[key] = promotionData[key];
+      }
+    }
+    const updatedPromotion = await Promotion.findByIdAndUpdate(
+      promotionId,
+      updateData
+    );
+    if (updatedPromotion.approved) {
+      updatedPromotion.approved = false;
+      await updatedPromotion.save();
+    }
+    return updatedPromotion;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removePromotion = async (promotionId) => {
+  try {
+    await Promotion.findByIdAndDelete(promotionId);
+    return true;
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.createBookingSettings = async (bookingSettings) => {
   try {
+    const oldBookingSettings = await BookingSettings.findOne({
+      serviceCenterId: bookingSettings.serviceCenterId,
+    });
+    if (oldBookingSettings) {
+      throw new Error(
+        "You already created booking settings, please update it instead"
+      );
+    }
     const booking = new BookingSettings(bookingSettings);
     booking.save();
     return booking;
@@ -187,7 +255,21 @@ exports.cancelClientBooking = async (bookingData) => {
 
 exports.createInvoice = async (invoiceData) => {
   try {
+    const today = new Date();
+    const datePrefix = `${today.getFullYear()}${(today.getMonth() + 1)
+      .toString()
+      .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
+    // Count invoices created today
+    const count = await Invoice.countDocuments({
+      date: {
+        $gte: new Date(today.setHours(0, 0, 0, 0)), // Start of the day
+        $lt: new Date(today.setHours(23, 59, 59, 999)), // End of the day
+      },
+    });
+    // Increment count for the new invoice
+    const invoiceNumber = `${datePrefix}${count + 1}`;
     const invoice = new Invoice(invoiceData);
+    invoice.invoiceNumber = invoiceNumber;
     await invoice.save();
     return invoice;
   } catch (err) {

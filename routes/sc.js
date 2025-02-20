@@ -68,6 +68,36 @@ router.get("/visitor/details", isAuth.scIsAuth, scController.getVisitorDetails);
 router.post("/cancel/visit", isAuth.scIsAuth, scController.postCancelVisit);
 
 /**********************************************************
+ * Promotions
+ **********************************************************/
+
+router.post(
+  "/create/promotion",
+  isAuth.scIsAuth,
+  scController.postCreatePromotion
+);
+
+router.get("/all/promotions", isAuth.scIsAuth, scController.getAllPromotions);
+
+router.get(
+  "/promotion/details",
+  isAuth.scIsAuth,
+  scController.getPromotionDetails
+);
+
+router.put(
+  "/update/promotion",
+  isAuth.scIsAuth,
+  scController.putUpdatePromotion
+);
+
+router.delete(
+  "/delete/promotion",
+  isAuth.scIsAuth,
+  scController.deletePromotion
+);
+
+/**********************************************************
  * Booking Settings
  **********************************************************/
 router.get(

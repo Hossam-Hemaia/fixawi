@@ -157,6 +157,10 @@ exports.putUpdateServiceCenterProfile = async (req, res, next) => {
   }
 };
 
+/**********************************************************
+ * Price List
+ **********************************************************/
+
 exports.postCreatePriceList = async (req, res, next) => {
   try {
     //admin should be notified
@@ -228,6 +232,99 @@ exports.postCancelVisit = async (req, res, next) => {
     const status = "canceled";
     await scServices.setVisitStatus(visitId, status);
     res.status(201).json({ success: true, message: "Visit canceled!" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**********************************************************
+ * Promotions
+ **********************************************************/
+
+exports.postCreatePromotion = async (req, res, next) => {
+  try {
+    const {
+      promotionTitle,
+      promotionDetails,
+      promotionConditions,
+      expiryDate,
+    } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
+    const promotionData = {
+      promotionTitle,
+      promotionDetails,
+      promotionConditions,
+      expiryDate: utilities.getLocalDate(expiryDate),
+      serviceCenterId,
+    };
+    const promotion = await scServices.createPromotion(promotionData);
+    if (promotion) {
+      return res.status(201).json({
+        success: true,
+        message: "Promotion created, waiting for admin approval",
+      });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllPromotions = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const promotions = await scServices.allPromotions(serviceCenterId);
+    res.status(200).json({ success: true, promotions });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getPromotionDetails = async (req, res, next) => {
+  try {
+    const promotionId = req.query.promotionId;
+    const promotion = await scServices.promotionDetails(promotionId);
+    res.status(200).json({ success: true, promotion });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putUpdatePromotion = async (req, res, next) => {
+  try {
+    const {
+      promotionTitle,
+      promotionDetails,
+      promotionConditions,
+      expiryDate,
+      promotionId,
+    } = req.body;
+    const serviceCenterId = req.sc.serviceCenterId;
+    const promotionData = {
+      promotionTitle,
+      promotionDetails,
+      promotionConditions,
+      expiryDate: utilities.getLocalDate(expiryDate),
+      serviceCenterId,
+    };
+    const promotion = await scServices.updatePromotion(
+      promotionId,
+      promotionData
+    );
+    if (promotion) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Promotion Updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deletePromotion = async (req, res, next) => {
+  try {
+    const promotionId = req.query.promotionId;
+    await scServices.removePromotion(promotionId);
+    res.status(200).json({ success: true, message: "Promotion deleted" });
   } catch (err) {
     next(err);
   }

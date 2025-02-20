@@ -6,6 +6,7 @@ const Car = require("../models/car");
 const ServiceCenter = require("../models/service_center");
 const Visit = require("../models/visit");
 const Offer = require("../models/offers");
+const Promotion = require("../models/promotion");
 const ContactUs = require("../models/contact_us");
 const Driver = require("../models/driver");
 const Settings = require("../models/settings");
@@ -605,6 +606,39 @@ exports.removeOffer = async (offerId, serviceCentersIds) => {
         await serviceCenter.save();
       }
     }
+  } catch (err) {
+    throw err;
+  }
+};
+/******************Promotions***************/
+exports.pendingPromotions = async () => {
+  try {
+    const promotions = await Promotion.find({ approved: false })
+      .populate("serviceCenterId")
+      .sort({ createdAt: -1 });
+    return promotions;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setPromotionApproval = async (promotionId, status) => {
+  try {
+    const promotion = await Promotion.findById(promotionId);
+    promotion.approved = status;
+    await promotion.save();
+    return promotion;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.promotions = async () => {
+  try {
+    const promotions = await Promotion.find()
+      .populate("serviceCenterId")
+      .sort({ createdAt: -1 });
+    return promotions;
   } catch (err) {
     throw err;
   }
