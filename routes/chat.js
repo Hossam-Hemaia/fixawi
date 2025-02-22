@@ -6,19 +6,9 @@ const router = express.Router();
 
 router.post("/upload", isAuth.userIsAuth, chatController.postUploadFiles);
 
-router.get(
-  "/old/chat/history",
-  isAuth.userIsAuth,
-  chatController.getOlderChatHistory
-);
+router.post("/close/chat", isAuth.agentIsAuth, chatController.postCloseChat);
 
-router.get("/notifications/count", chatController.getNotificationsCount);
+router.get("/next/chat", isAuth.agentIsAuth, chatController.getNextChat);
 
-router.get("/notifications/history", chatController.getNotifications);
-
-router.post(
-  "/update/notification/status",
-  chatController.postChangeNotificationStatus
-);
 
 module.exports = router;

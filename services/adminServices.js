@@ -15,6 +15,10 @@ const Check = require("../models/check");
 
 exports.createAdmin = async (adminData) => {
   try {
+    const adminUsername = await Admin.findOne({ username: adminData.username });
+    if (adminUsername) {
+      throw new error("This username is taken");
+    }
     const admin = new Admin(adminData);
     await admin.save();
     return admin;

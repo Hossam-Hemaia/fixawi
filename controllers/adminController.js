@@ -1301,6 +1301,8 @@ exports.postSetAppSettings = async (req, res, next) => {
       rescuePricingPerKm,
       rescueFareSystem,
       fixawiRescueFare,
+      chatQueue,
+      chatWelcomingMsg,
     } = req.body;
     const settingsData = {
       driverSuspensionTime,
@@ -1310,6 +1312,8 @@ exports.postSetAppSettings = async (req, res, next) => {
       rescuePricingPerKm,
       rescueFareSystem,
       fixawiRescueFare,
+      chatQueue,
+      chatWelcomingMsg,
     };
     const settings = await adminServices.setAppSettings(settingsData);
     if (settings) {

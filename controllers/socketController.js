@@ -2,6 +2,7 @@ const rdsClient = require("../config/redisConnect");
 const orderServices = require("../services/orderServices");
 const driverServices = require("../services/driverServices");
 const userServices = require("../services/userServices");
+const chatServices = require("../services/chatServices");
 const utilities = require("../utils/utilities");
 
 exports.updateSocket = async (socket) => {
@@ -23,6 +24,14 @@ exports.updateSocket = async (socket) => {
         socket.emit("driver_state", {
           driverSuspended: driverLog.driverSuspended,
         });
+      }
+      if (role === "call center") {
+        const callAgentId = event.userId;
+        const queueData = {
+          callAgentId,
+          username,
+        };
+        await chatServices.createQueue(queueData);
       }
     });
   } catch (err) {
@@ -196,40 +205,50 @@ exports.disconnected = async (socket) => {
 };
 
 /***************Chat Sockets*****************/
-
-exports.updateNotificationSocket = async (socket) => {
-  try {
-    const cacheDB = rdsClient.getRedisConnection();
-    socket.on("update_socket", async (event) => {
-      await cacheDB.hSet(
-        `${event.userId}-sock`,
-        "socket",
-        JSON.stringify(socket.id)
-      );
-    });
-  } catch (err) {
-    throw err;
-  }
-};
-
 exports.userHandShake = async (socket) => {
   try {
-    const cacheDB = rdsClient.getRedisConnection();
     socket.on("hand_shake", async (event) => {
-      console.log("shaking hands with user " + event.userId);
-      await chatServices.updateUserConnectionStatus(event);
-      await cacheDB.hSet(
-        `${event.userId}-s`,
-        "socket",
-        JSON.stringify(socket.id)
-      );
-      socket.userData = {
+      const callAgent = await chatServices.getAvailableAgent();
+      const msg = await chatServices.getWelcomMsg(event.userId);
+      const chatData = {
         userId: event.userId,
+        username: event.username,
+        agentId: callAgent?.callAgentId,
+        agentUsername: callAgent?.username,
+        queueEntryTime: utilities.getNowLocalDate(new Date()),
+        messages: [
+          {
+            sender: "system",
+            timestamp: utilities.getNowLocalDate(new Date()),
+            message: msg.welcoming,
+          },
+        ],
       };
-      socket.broadcast.emit("user_status", {
-        userOnline: "1",
-        userId: Number(event.userId),
-      });
+      const chat = await chatServices.createChat(event.isNewChat, chatData);
+      if (!callAgent) {
+        const waitingData = {
+          username: event.username,
+          userId: event.userId,
+          chatId: chat._id,
+        };
+        await chatServices.createWaiting(waitingData);
+        socket.emit("welcom_message", {
+          message: msg.welcoming,
+          chatId: chat._id,
+        });
+      } else {
+        socket.emit("welcom_message", {
+          message: msg.welcoming,
+          chatId: chat._id,
+        });
+        const agentSocket = await utilities.getSocketId(callAgent.username);
+        socket
+          .to(agentSocket)
+          .emit("start_chat", { chatId: chat._id, clientName: msg.fullName });
+        chat.chatStartTime = utilities.getNowLocalDate(new Date());
+        await chatServices.addClientToAgentQueue(callAgent._id);
+        await chat.save();
+      }
     });
   } catch (err) {
     throw err;
@@ -241,102 +260,74 @@ exports.sendMessage = (socket) => {
     socket.on("send_message", async (event) => {
       console.log("sending message");
       const date = new Date();
-      const localDate = utilities.getLocalDate(date).toLocaleString();
-      let chatId;
-      if (event.chatId === "" || !chatId) {
-        chatId = await chatServices.findCahtId(event.userId, event.partnerId);
-      } else {
-        chatId = event.chatId;
-      }
+      const chatId = event.chatId;
+      const msg = event.message;
+      const sender = event.sender;
       const msgInfo = {
-        chatId,
-        fromUserId: event.userId,
-        toPartnerId: event.partnerId,
-        message: event.message,
-        mediaUrl: event.mediaUrl,
-        date: localDate,
+        sender,
+        timestamp: utilities.getNowLocalDate(date),
+        message: msg,
       };
-      await chatServices.addToChatHistory(msgInfo);
-      const unreadCount = await chatServices.getIsReadCount(
-        chatId,
-        event.userId
+      const chat = await chatServices.addToChatHistory(chatId, msgInfo);
+      const partnerSocketId = await utilities.getSocketId(
+        sender === "user" ? chat.username : chat.agentUsername
       );
-      msgInfo.unreadCount = unreadCount;
-      await chatServices.updateIsRead(chatId, event.partnerId);
-      const receiverSocketId = await chatServices.getUserSocket(
-        event.partnerId
-      );
-      socket
-        .to(receiverSocketId)
-        .emit("message_received", msgInfo, async (ack) => {
-          if (!ack) {
-            const notificationSocket = await chatServices.getNotificationSocket(
-              msgInfo.toPartnerId
-            );
-            socket.to(notificationSocket).emit("notification_sent", {
-              message: "You received new chat message!",
-            });
-            await chatServices.saveNotification(
-              msgInfo.toPartnerId,
-              "You received new chat message!"
-            );
-          }
-        });
+      socket.to(partnerSocketId).emit("receive_message", { message: msg });
     });
   } catch (err) {
     throw new Error(err);
   }
 };
 
-exports.userSeenMessages = (socket) => {
-  try {
-    socket.on("scroll_bottom", async (event) => {
-      const userId = event.userId;
-      const partnerId = event.partnerId;
-      const chatId = await chatServices.findCahtId(userId, partnerId);
-      await chatServices.updateIsRead(chatId, partnerId);
-      const unreadCount = await chatServices.getIsReadCount(
-        chatId,
-        event.partnerId
-      );
-      socket.emit("messages_seen", {});
-    });
-  } catch (err) {
-    throw err;
-  }
-};
+// exports.userSeenMessages = (socket) => {
+//   try {
+//     socket.on("scroll_bottom", async (event) => {
+//       const userId = event.userId;
+//       const partnerId = event.partnerId;
+//       const chatId = await chatServices.findCahtId(userId, partnerId);
+//       await chatServices.updateIsRead(chatId, partnerId);
+//       const unreadCount = await chatServices.getIsReadCount(
+//         chatId,
+//         event.partnerId
+//       );
+//       socket.emit("messages_seen", {});
+//     });
+//   } catch (err) {
+//     throw err;
+//   }
+// };
 
-exports.userDisconnect = async (socket) => {
-  try {
-    socket.on("disconnect", async () => {
-      const data = {
-        userId: Number(socket.userData.userId),
-        status: 0,
-      };
-      await chatServices.updateUserConnectionStatus(data);
-      await chatServices.deleteUserSocket(data.userId);
-      socket.broadcast.emit("user_status", {
-        userOnline: "0",
-        userId: data.userId,
-      });
-    });
-  } catch (err) {
-    throw new Error(err);
-  }
-};
+// exports.userDisconnect = async (socket) => {
+//   try {
+//     socket.on("disconnect", async () => {
+//       const data = {
+//         userId: Number(socket.userData.userId),
+//         status: 0,
+//       };
+//       await chatServices.updateUserConnectionStatus(data);
+//       await chatServices.deleteUserSocket(data.userId);
+//       socket.broadcast.emit("user_status", {
+//         userOnline: "0",
+//         userId: data.userId,
+//       });
+//     });
+//   } catch (err) {
+//     throw new Error(err);
+//   }
+// };
 
-exports.sendNotification = async (socket) => {
-  try {
-    socket.on("send_notification", async (event) => {
-      const userId = event.userId;
-      const message = event.message;
-      const notificationSocket = await chatServices.getNotificationSocket(
-        userId
-      );
-      socket.to(notificationSocket).emit("notification_sent", { message });
-      await chatServices.saveNotification(userId, message);
-    });
-  } catch (err) {
-    throw err;
-  }
-};
+// exports.sendNotification = async (socket) => {
+//   try {
+//     socket.on("send_notification", async (event) => {
+//       const userId = event.userId;
+//       const message = event.message;
+//       const notificationSocket = await chatServices.getNotificationSocket(
+//         userId
+//       );
+//       socket.to(notificationSocket).emit("notification_sent", { message });
+//       await chatServices.saveNotification(userId, message);
+//     });
+//   } catch (err) {
+//     throw err;
+//   }
+// };

@@ -17,6 +17,7 @@ const userRouter = require("./routes/user");
 const adminRouter = require("./routes/admin");
 const scRouter = require("./routes/sc");
 const driverRouter = require("./routes/driver");
+const chatRouter = require("./routes/chat");
 const logger = require("./middleware/logger");
 
 const socketController = require("./controllers/socketController");
@@ -66,6 +67,7 @@ app.use(process.env.API, userRouter);
 app.use(process.env.API, adminRouter);
 app.use(process.env.API, scRouter);
 app.use(process.env.API, driverRouter);
+app.use(process.env.API, chatRouter);
 
 app.use((error, req, res, next) => {
   console.log(error);
@@ -96,4 +98,7 @@ io.on("connection", (socket) => {
   socketController.getDriverCache(socket);
   socketController.deleteDriverCache(socket);
   socketController.disconnected(socket);
+  /**************************************************/
+  socketController.userHandShake(socket);
+  socketController.sendMessage(socket);
 });

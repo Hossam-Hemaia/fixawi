@@ -48,18 +48,19 @@ exports.postCreateUser = async (req, res, next) => {
 
 exports.postCreateAdmin = async (req, res, next) => {
   try {
-    const { fullName, username, password } = req.body;
+    const { fullName, username, password, role } = req.body;
     const hashedPassword = await bcrypt.hash(password, 12);
     const adminData = {
       fullName,
       username,
       password: hashedPassword,
+      role,
     };
     const admin = await adminServices.createAdmin(adminData);
     if (admin) {
       return res
         .status(201)
-        .json({ success: true, message: "New admin created" });
+        .json({ success: true, message: "New system user created" });
     }
   } catch (err) {
     next(err);

@@ -1,410 +1,177 @@
-exports.updateUserConnectionStatus = async (data) => {
+const Queue = require("../models/queue");
+const Settings = require("../models/settings");
+const WaitingList = require("../models/waitingList");
+const Admin = require("../models/admin");
+const User = require("../models/user");
+const Chat = require("../models/chat");
+
+exports.createQueue = async (userData) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    await connection.execute(
-      `UPDATE LOGIN_TABLE SET CONNECTIONSTATUS = ${data.status} WHERE ID = ${data.userId}`
-    );
-    await connection.tpcCommit();
-  } catch (err) {
-    throw new Error(err);
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
+    const settings = await Settings.findOne();
+    const queueData = {
+      callAgentId: userData.callAgentId,
+      username: userData.username,
+      maxQueue: settings.chatQueue,
+    };
+    let queue = await Queue.findOne({ callAgentId: queueData.callAgentId });
+    if (!queue) {
+      queue = new Queue(queueData);
+      await queue.save();
     }
-  }
-};
-
-exports.getUserSocket = async (userId) => {
-  try {
-    const cacheDB = rdsClient.getRedisConnection();
-    const user = await cacheDB.hGetAll(`${userId}-s`);
-    const socketId = JSON.parse(user.socket);
-    return socketId;
+    return queue;
   } catch (err) {
-    throw new Error(err);
+    throw err;
   }
 };
 
-exports.getNotificationSocket = async (userId) => {
+exports.getAvailableAgent = async () => {
   try {
-    const cacheDB = rdsClient.getRedisConnection();
-    const user = await cacheDB.hGetAll(`${userId}-sock`);
-    const socketId = JSON.parse(user.socket);
-    return socketId;
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-
-exports.deleteUserSocket = async (userId) => {
-  try {
-    const cacheDB = rdsClient.getRedisConnection();
-    await cacheDB.del(`${userId}-s`);
-  } catch (err) {
-    throw new Error(err);
-  }
-};
-
-exports.findCahtId = async (userId, partnerId) => {
-  try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    const chatIdTbl = await connection.execute(
-      `SELECT CHAT_ID FROM CHAT_IDENTIFIER
-       WHERE (PARTNER1_ID = ${userId} AND PARTNER2_ID = ${partnerId})
-       OR (PARTNER1_ID = ${partnerId} AND PARTNER2_ID = ${userId})`
-    );
-    if (chatIdTbl.rows.length < 1) {
-      const chatId = crypto.randomBytes(6).toString("hex");
-      await connection.execute(`INSERT INTO CHAT_IDENTIFIER (CHAT_ID, PARTNER1_ID, PARTNER2_ID)
-      VALUES('${chatId}', ${userId}, ${partnerId})`);
-      await connection.tpcCommit();
-      return chatId;
+    const settings = await Settings.findOne();
+    const agent = await Queue.findOne({
+      currentChats: { $lt: settings.chatQueue },
+    }).populate("callAgentId");
+    if (!agent) {
+      return false;
     } else {
-      return chatIdTbl.rows[0][0];
+      return agent;
     }
-  } catch (err) {
-    throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
-  }
-};
-
-exports.addToTempHistory = async (chatId, msgInfo) => {
-  try {
-    const cacheDB = rdsClient.getRedisConnection();
-    await cacheDB.rPush(`${chatId}`, JSON.stringify(msgInfo));
   } catch (err) {
     throw err;
   }
 };
 
-exports.addToChatHistory = async (chatInfo) => {
+exports.createWaiting = async (waitingData) => {
   try {
-    console.log(chatInfo);
-    // const cacheDB = rdsClient.getRedisConnection();
-    // const tempChatHistory = await cacheDB.lRange(`${chatId}`, 0, -1);
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    // if (tempChatHistory.length < 1 || !tempChatHistory) {
-    //   return;
-    // }
-    // for (let i = 0; i < tempChatHistory.length; ++i) {
-    //   let chatInfo = JSON.parse(tempChatHistory[i]);
-    await connection.execute(
-      `INSERT INTO CHATHISTORY (FROM_USERID, TO_PARTNERID, MESSAGE, MEDIAURL, DATE_TIME, CHAT_ID)
-         VALUES (${chatInfo.fromUserId}, ${chatInfo.toPartnerId}, '${chatInfo.message}', 
-         '${chatInfo.mediaUrl}', '${chatInfo.date}', '${chatInfo.chatId}')`
-    );
-    await connection.tpcCommit();
-    // }
-    // await cacheDB.del(`${chatId}`);
-  } catch (err) {
-    throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
-  }
-};
-
-exports.getLatestChatHistory = async (chatId) => {
-  try {
-    const cacheDB = rdsClient.getRedisConnection();
-    const tempChatHistory = await cacheDB.lRange(`${chatId}`, 0, -1);
-    const initialChatHistory = [];
-    for (let i = 0; i < tempChatHistory.length; ++i) {
-      let chatInfo = JSON.parse(tempChatHistory[i]);
-      initialChatHistory.push(chatInfo);
-    }
-    return initialChatHistory;
+    const waitingUser = new WaitingList(waitingData);
+    await waitingUser.save();
   } catch (err) {
     throw err;
   }
 };
 
-exports.updateIsRead = async (chatId, userId) => {
+exports.getWelcomMsg = async (userId) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    const updateSql = `
-      UPDATE CHATHISTORY
-      SET IS_READ = 1
-      WHERE CHAT_ID = :chatId
-      AND FROM_USERID = :userId
-    `;
-    const updateBinds = {
-      chatId: chatId,
-      userId: userId,
-    };
-    await connection.execute(updateSql, updateBinds);
-    await connection.tpcCommit();
+    const settings = await Settings.findOne();
+    const user = await User.findById(userId);
+    return { welcoming: settings.chatWelcomingMsg, fullName: user.fullName };
   } catch (err) {
     throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
   }
 };
 
-exports.getOlderChatHistory = async (chatId, pageNumber, pageSize) => {
+exports.createChat = async (isNewChat, chatData) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    // Update all unread messages to read messages first
-    const updateSql = `
-      UPDATE CHATHISTORY
-      SET IS_READ = 1
-      WHERE CHAT_ID = :chatId
-    `;
-    const updateBinds = {
-      chatId: chatId,
-    };
-    await connection.execute(updateSql, updateBinds);
-    await connection.tpcCommit();
-    const offset = (pageNumber - 1) * pageSize;
-    // Your SQL query with OFFSET and FETCH clauses
-    const sql = `
-      SELECT CHAT_ID AS "chatId",
-      FROM_USERID AS "fromUserId",
-      TO_PARTNERID AS "toPartnerId",
-      MESSAGE AS "message",
-      MEDIAURL AS "mediaUrl",
-      DATE_TIME AS "date",
-      IS_READ 
-      FROM CHATHISTORY
-      WHERE CHAT_ID = :chatid
-      ORDER BY CREATED DESC
-      OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
-    `;
-    // Bind parameters
-    const binds = {
-      chatid: chatId,
-      offset: offset,
-      pageSize: pageSize,
-    };
-    // Execute the query
-    const result = await connection.execute(sql, binds, {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    });
-    // Process the result and return it
-    return result.rows.reverse();
-  } catch (err) {
-    throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
-  }
-};
-
-exports.getIsReadCount = async (chatId, userId) => {
-  try {
-    if (chatId === "") {
-      return;
-    }
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    const sql = `SELECT CHAT_ID, FROM_USERID,
-    COUNT(CASE WHEN IS_READ = 0 THEN 1 END) AS UNREAD_MESSAGE_COUNT
-    FROM CHATHISTORY
-    WHERE CHAT_ID = :chatId
-    AND FROM_USERID = :userId
-    GROUP BY CHAT_ID, FROM_USERID`;
-    const binds = {
-      chatId: chatId,
-      userId: userId,
-    };
-    const userUnread = await connection.execute(sql, binds, {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    });
-    if (userUnread.rows.length > 0) {
-      return userUnread.rows[0];
+    let chat;
+    if (!isNewChat) {
+      chat = await Chat.findOne({ userId: chatData.userId }).sort({
+        createdAt: -1,
+      });
     } else {
-      return;
+      chat = new Chat(chatData);
+      await chat.save();
     }
+    return chat;
   } catch (err) {
     throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
   }
 };
 
-exports.saveNotification = async (userId, message) => {
+exports.addClientToAgentQueue = async (queueId) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    await connection.execute(
-      `INSERT INTO NOTIFICATIONS (USERID, MESSAGE) VALUES('${userId}', '${message}')`
-    );
-    await connection.tpcCommit();
+    const agentQueue = await Queue.findById(queueId);
+    agentQueue.currentChats += 1;
+    await agentQueue.save();
   } catch (err) {
     throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
   }
 };
 
-exports.getUnseenNotifications = async (userId) => {
+exports.addToChatHistory = async (chatId, msgInfo) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    const notificationsCount = await connection.execute(
-      `SELECT USERID,
-      COUNT(CASE WHEN NOTIFICATION_STATU = 0 THEN 1 END) AS UNREAD_NOTIFICATIONS_COUNT
-      FROM NOTIFICATIONS
-      WHERE USERID = :userId
-      GROUP BY USERID`,
-      { userId: userId },
-      {
-        outFormat: oracledb.OUT_FORMAT_OBJECT,
-      }
-    );
-    return notificationsCount.rows;
+    const chat = await Chat.findById(chatId);
+    chat.messages.push(msgInfo);
+    await chat.save();
+    return chat;
   } catch (err) {
     throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
-    }
   }
 };
 
-exports.getNotificationsHistory = async (userId, pageNumber, pageSize) => {
+exports.getFirstAgentMsg = async (chatId) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    const offset = (pageNumber - 1) * pageSize;
-    // Your SQL query with OFFSET and FETCH clauses
-    const sql = `
-      SELECT * 
-      FROM NOTIFICATIONS
-      WHERE USERID = :userId
-      ORDER BY CREATED ASC
-      OFFSET :offset ROWS FETCH NEXT :pageSize ROWS ONLY
-    `;
-    // Bind parameters
-    const binds = {
-      userId: userId,
-      offset: offset,
-      pageSize: pageSize,
-    };
-    // Execute the query
-    const result = await connection.execute(sql, binds, {
-      outFormat: oracledb.OUT_FORMAT_OBJECT,
-    });
-    // Process the result and return it
-    return result.rows.reverse();
-  } catch (err) {
-    throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
+    const chat = await Chat.findById(chatId);
+    let msg;
+    for (let m of chat.messages) {
+      if (m.sender === "agent") {
+        msg = m;
+        break;
       }
     }
+    return msg.timestamp;
+  } catch (err) {
+    throw err;
   }
 };
 
-exports.updateNotificationStatus = async (userId) => {
+exports.closeChat = async (agentId, chatId, chatData) => {
   try {
-    const connection = await dbConnect.init(
-      process.env.erp_username,
-      process.env.erp_passowrd
-    );
-    await connection.execute(
-      `UPDATE NOTIFICATIONS SET NOTIFICATION_STATU = 1 WHERE USERID = '${userId}'`
-    );
-    await connection.tpcCommit();
+    await Chat.findByIdAndUpdate(chatId, chatData);
+    const queue = await Queue.findOne({ callAgentId: agentId });
+    queue.currentChats -= 1;
+    await queue.save();
   } catch (err) {
     throw err;
-  } finally {
-    // Release the connection back to the pool
-    if (connection) {
-      try {
-        await connection.close();
-        console.log("Connection released back to the pool.");
-      } catch (closeError) {
-        console.error("Error releasing connection:", closeError);
-      }
+  }
+};
+
+exports.getAgentData = async (agentId) => {
+  try {
+    const agent = await Admin.findById(agentId);
+    if (!agent) {
+      throw new Error("this agent does not exist");
     }
+    return agent;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.nextChat = async () => {
+  try {
+    const chat = await WaitingList.findOne();
+    const user = await User.findById(chat.userId);
+    if (!chat) {
+      return false;
+    } else {
+      return { chat, user };
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateChat = async (chatId, chatData) => {
+  try {
+    await Chat.findByIdAndUpdate(chatId, chatData);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeFromWaiting = async (waitingId) => {
+  try {
+    await WaitingList.findByIdAndDelete(waitingId);
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.addClientToAgentQueue = async (agentId) => {
+  try {
+    const queue = await Queue.findOne({ callAgentId: agentId });
+    queue.currentChats += 1;
+    await queue.save();
+  } catch (err) {
+    throw err;
   }
 };

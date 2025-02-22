@@ -119,3 +119,32 @@ exports.driverIsAuth = async (req, res, next) => {
   req.driverId = driver._id;
   next();
 };
+
+exports.agentIsAuth = async (req, res, next) => {
+  let decodedToken;
+  try {
+    const token = req.get("Authorization").split(" ")[1];
+    decodedToken = jwt.verify(token, process.env.SECRET);
+  } catch (err) {
+    err.statusCode = 403;
+    next(err);
+  }
+  if (!decodedToken) {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 401;
+    next(error);
+  }
+  if (decodedToken.role !== "call center") {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 403;
+    next(error);
+  }
+  const callAgent = await adminServices.getAdmin(decodedToken.adminId);
+  if (!callAgent || callAgent.role !== "call center") {
+    const error = new Error("Authorization faild!");
+    error.statusCode = 403;
+    next(error);
+  }
+  req.agentId = callAgent._id;
+  next();
+};

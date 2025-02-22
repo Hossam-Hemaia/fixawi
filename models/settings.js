@@ -26,6 +26,12 @@ const settingsSchema = new Schema(
     fixawiRescueFare: {
       type: Number,
     },
+    chatQueue: {
+      type: Number,
+    },
+    chatWelcomingMsg: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

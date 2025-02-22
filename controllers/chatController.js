@@ -1,4 +1,5 @@
 const chatServices = require("../services/chatServices");
+const utilities = require("../utils/utilities");
 
 exports.postUploadFiles = async (req, res, next) => {
   try {
@@ -17,56 +18,49 @@ exports.postUploadFiles = async (req, res, next) => {
   }
 };
 
-exports.getOlderChatHistory = async (req, res, next) => {
+exports.postCloseChat = async (req, res, next) => {
   try {
-    const userId = req.query.userId;
-    const partnerId = req.query.partnerId;
-    const chatId = await chatServices.findCahtId(userId, partnerId);
-    const page = req.query.page;
-    const chatHistory = await chatServices.getOlderChatHistory(
-      chatId,
-      page,
-      25
-    );
-    res.status(200).json({ success: true, history: chatHistory });
+    const { chatId, resolutionStatus, issueCategory, satisfactionScore } =
+      req.body;
+    const agentId = req.agentId;
+    const firstAgentMsgTime = await chatServices.getFirstAgentMsg(chatId);
+    const chatData = {
+      chatEndTime: utilities.getNowLocalDate(new Date()),
+      resolutionStatus,
+      issueCategory,
+      satisfactionScore,
+      firstResponseTime: firstAgentMsgTime,
+    };
+    await chatServices.closeChat(agentId, chatId, chatData);
+    res.status(201).json({ success: true, message: "Chat closed" });
   } catch (err) {
     next(err);
   }
 };
 
-exports.getNotificationsCount = async (req, res, next) => {
+exports.getNextChat = async (req, res, next) => {
   try {
-    const userId = req.query.userId;
-    const notificationsCount = await chatServices.getUnseenNotifications(
-      userId
-    );
-    res.status(200).json({ success: true, count: notificationsCount });
-  } catch (err) {
-    throw err;
-  }
-};
-
-exports.getNotifications = async (req, res, next) => {
-  try {
-    const userId = req.query.userId;
-    const page = req.query.page;
-    const notificationsHistory = await chatServices.getNotificationsHistory(
-      userId,
-      page,
-      20
-    );
-    res.status(200).json({ success: true, history: notificationsHistory });
+    const agentId = req.agentId;
+    const nextChat = await chatServices.nextChat();
+    const agent = await chatServices.getAgentData(agentId);
+    if (nextChat) {
+      const chatData = {
+        agentId,
+        agentUsername: agent.username,
+        chatStartTime: utilities.getNowLocalDate(new Date()),
+      };
+      await chatServices.updateChat(nextChat.chat.chatId, chatData);
+      await chatServices.removeFromWaiting(nextChat.chat._id);
+      await chatServices.addClientToAgentQueue(agentId);
+      return res.status(200).json({
+        success: true,
+        chatId: nextChat.chat.chatId,
+        clientName: nextChat.user.fullName,
+      });
+    } else {
+      return res.status(200).json({ success: true, message: "Empty queue" });
+    }
   } catch (err) {
     next(err);
-  }
-};
-
-exports.postChangeNotificationStatus = async (req, res, next) => {
-  try {
-    const userId = req.body.userId;
-    await chatServices.updateNotificationStatus(userId);
-    res.status(201).json({ success: true });
-  } catch (err) {
-    throw err;
   }
 };
