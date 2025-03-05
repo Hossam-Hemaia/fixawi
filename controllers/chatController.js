@@ -50,16 +50,53 @@ exports.getNextChat = async (req, res, next) => {
         chatStartTime: utilities.getNowLocalDate(new Date()),
       };
       await chatServices.updateChat(nextChat.chat.chatId, chatData);
-      await chatServices.removeFromWaiting(nextChat.chat._id);
+      let waitingCount = await chatServices.removeFromWaiting(
+        nextChat.chat._id
+      );
+      const io = require("../socket").getIo();
+      io.emit("waiting_queue", { waitingCount });
       await chatServices.addClientToAgentQueue(agentId);
       return res.status(200).json({
         success: true,
         chatId: nextChat.chat.chatId,
         clientName: nextChat.user.fullName,
+        userId: nextChat.user._id,
       });
     } else {
       return res.status(200).json({ success: true, message: "Empty queue" });
     }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserChatHistory = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const chat = await chatServices.chatHistory(userId);
+    res.status(200).json({ success: true, chat });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getAllChats = async (req, res, next) => {
+  try {
+    const { dateFrom, dateTo } = req.query;
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const chats = await chatServices.allChats(localStartDate, localEndDate);
+    res.status(200).json({ success: true, chats });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getClientChats = async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    const chats = await chatServices.userChats(userId);
+    res.status(200).json({ success: true, chats });
   } catch (err) {
     next(err);
   }

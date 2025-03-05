@@ -13,6 +13,7 @@ const Settings = require("../models/settings");
 const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
 
+/***************System Users*************/
 exports.createAdmin = async (adminData) => {
   try {
     const adminUsername = await Admin.findOne({ username: adminData.username });
@@ -76,6 +77,46 @@ exports.getAdmin = async (adminId) => {
   }
 };
 
+exports.systemUsers = async () => {
+  try {
+    const users = await Admin.find();
+    return users;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.systemUserDetails = async (userId) => {
+  try {
+    const user = await Admin.findById(userId);
+    return user;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.updateSystemUser = async (userId, userData) => {
+  try {
+    const updateData = {};
+    for (let key in userData) {
+      if (userData[key] !== "") {
+        updateData[key] = userData[key];
+      }
+    }
+    const user = await Admin.findByIdAndUpdate(userId, updateData);
+    return user;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.removeSystemUser = async (userId)=>{
+  try{
+    await Admin.findByIdAndDelete(userId);
+  }catch(err){
+    throw err;
+  }
+}
 /*************Categories**************/
 exports.createMainCategory = async (categoryData) => {
   try {

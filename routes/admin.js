@@ -243,6 +243,33 @@ router.put("/edit/car", isAuth.adminIsAuth, adminController.putEditCar);
 router.delete("/delete/car", isAuth.adminIsAuth, adminController.deleteCar);
 
 /**********************************************************
+ * System Users
+ **********************************************************/
+router.get(
+  "/all/system/users",
+  isAuth.adminIsAuth,
+  adminController.getAllSystemUsers
+);
+
+router.get(
+  "/system/user/details",
+  isAuth.adminIsAuth,
+  adminController.getSystemUserDetails
+);
+
+router.put(
+  "/edit/system/user",
+  isAuth.adminIsAuth,
+  adminController.putEditSystemUser
+);
+
+router.delete(
+  "/delete/system/user",
+  isAuth.adminIsAuth,
+  adminController.deleteSystemUser
+);
+
+/**********************************************************
  * Clients
  **********************************************************/
 router.get("/all/users", isAuth.adminIsAuth, adminController.getAllUsers);

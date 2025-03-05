@@ -855,7 +855,61 @@ exports.deleteCar = async (req, res, next) => {
 };
 
 /**********************************************************
- * Users
+ * System Users
+ **********************************************************/
+exports.getAllSystemUsers = async (req, res, next) => {
+  try {
+    const systemUsers = await adminServices.systemUsers();
+    res.status(200).json({ success: true, systemUsers });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getSystemUserDetails = async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    const user = await adminServices.systemUserDetails(userId);
+    res.status(200).json({ success: true, user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.putEditSystemUser = async (req, res, next) => {
+  try {
+    const { userId, fullName, username, password, role, isBlocked } = req.body;
+    let hashedPassword;
+    if (password !== "") {
+      hashedPassword = await bcrypt.hash(password, 12);
+    }
+    const userData = {
+      fullName,
+      username,
+      password: hashedPassword,
+      role,
+      isBlocked,
+    };
+    const updatedUser = await adminServices.updateSystemUser(userId, userData);
+    if (updatedUser) {
+      return res.status(200).json({ success: true, message: "User Updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteSystemUser = async (req, res, next) => {
+  try {
+    const userId = req.query.userId;
+    await adminServices.removeSystemUser(userId);
+    res.status(200).json({ success: true, message: "User deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+/**********************************************************
+ * Clients
  **********************************************************/
 exports.getAllUsers = async (req, res, next) => {
   try {

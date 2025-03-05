@@ -52,7 +52,7 @@ exports.adminIsAuth = async (req, res, next) => {
     next(error);
   }
   const admin = await adminServices.getAdmin(decodedToken.adminId);
-  if (!admin || admin.role !== "admin") {
+  if (!admin || admin.role !== "admin" || admin.isBlocked) {
     const error = new Error("Authorization faild!");
     error.statusCode = 403;
     next(error);
@@ -140,7 +140,7 @@ exports.agentIsAuth = async (req, res, next) => {
     next(error);
   }
   const callAgent = await adminServices.getAdmin(decodedToken.adminId);
-  if (!callAgent || callAgent.role !== "call center") {
+  if (!callAgent || callAgent.role !== "call center" || callAgent.isBlocked) {
     const error = new Error("Authorization faild!");
     error.statusCode = 403;
     next(error);

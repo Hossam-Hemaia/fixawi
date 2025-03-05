@@ -44,6 +44,8 @@ exports.createWaiting = async (waitingData) => {
   try {
     const waitingUser = new WaitingList(waitingData);
     await waitingUser.save();
+    const waitingCount = await WaitingList.countDocuments();
+    return waitingCount;
   } catch (err) {
     throw err;
   }
@@ -107,7 +109,7 @@ exports.getFirstAgentMsg = async (chatId) => {
         break;
       }
     }
-    return msg.timestamp;
+    return msg?.timestamp || "";
   } catch (err) {
     throw err;
   }
@@ -161,6 +163,8 @@ exports.updateChat = async (chatId, chatData) => {
 exports.removeFromWaiting = async (waitingId) => {
   try {
     await WaitingList.findByIdAndDelete(waitingId);
+    const waitingCount = await WaitingList.countDocuments();
+    return waitingCount;
   } catch (err) {
     throw err;
   }
@@ -171,6 +175,39 @@ exports.addClientToAgentQueue = async (agentId) => {
     const queue = await Queue.findOne({ callAgentId: agentId });
     queue.currentChats += 1;
     await queue.save();
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.chatHistory = async (userId) => {
+  try {
+    const chats = await Chat.find({ userId }).sort({ createdAt: -1 });
+    const histories = [];
+    for (let chat of chats) {
+      histories.push(...chat.messages);
+    }
+    return histories;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.allChats = async (startDate, endDate) => {
+  try {
+    const chats = await Chat.find({
+      createdAt: { $gte: startDate, $lte: endDate },
+    }).populate(["agentId", "userId"]);
+    return chats;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.userChats = async (userId) => {
+  try {
+    const userChats = await Chat.find({ userId });
+    return userChats;
   } catch (err) {
     throw err;
   }

@@ -26,6 +26,7 @@ exports.updateSocket = async (socket) => {
         });
       }
       if (role === "call center") {
+        console.log("adding agent to queue");
         const callAgentId = event.userId;
         const queueData = {
           callAgentId,
@@ -208,6 +209,7 @@ exports.disconnected = async (socket) => {
 exports.userHandShake = async (socket) => {
   try {
     socket.on("hand_shake", async (event) => {
+      console.log("client hand shaking: " + event);
       const callAgent = await chatServices.getAvailableAgent();
       const msg = await chatServices.getWelcomMsg(event.userId);
       const chatData = {
@@ -231,20 +233,24 @@ exports.userHandShake = async (socket) => {
           userId: event.userId,
           chatId: chat._id,
         };
-        await chatServices.createWaiting(waitingData);
+        let waitingCount = await chatServices.createWaiting(waitingData);
         socket.emit("welcom_message", {
           message: msg.welcoming,
           chatId: chat._id,
         });
+        socket.emit("waiting_queue", { waitingCount });
       } else {
         socket.emit("welcom_message", {
           message: msg.welcoming,
           chatId: chat._id,
         });
         const agentSocket = await utilities.getSocketId(callAgent.username);
-        socket
-          .to(agentSocket)
-          .emit("start_chat", { chatId: chat._id, clientName: msg.fullName });
+        console.log("starting chat with: " + agentSocket);
+        socket.to(agentSocket).emit("start_chat", {
+          chatId: chat._id,
+          clientName: msg.fullName,
+          userId: chatData.userId,
+        });
         chat.chatStartTime = utilities.getNowLocalDate(new Date());
         await chatServices.addClientToAgentQueue(callAgent._id);
         await chat.save();
@@ -258,7 +264,7 @@ exports.userHandShake = async (socket) => {
 exports.sendMessage = (socket) => {
   try {
     socket.on("send_message", async (event) => {
-      console.log("sending message");
+      console.log("sending message ", event.chatId);
       const date = new Date();
       const chatId = event.chatId;
       const msg = event.message;
@@ -270,64 +276,16 @@ exports.sendMessage = (socket) => {
       };
       const chat = await chatServices.addToChatHistory(chatId, msgInfo);
       const partnerSocketId = await utilities.getSocketId(
-        sender === "user" ? chat.username : chat.agentUsername
+        sender === "user" ? chat.agentUsername : chat.username
       );
-      socket.to(partnerSocketId).emit("receive_message", { message: msg });
+      console.log("send msg to: " + partnerSocketId);
+      socket.to(partnerSocketId).emit("receive_message", {
+        chatId,
+        message: msg,
+        sender: event.sender,
+      });
     });
   } catch (err) {
     throw new Error(err);
   }
 };
-
-// exports.userSeenMessages = (socket) => {
-//   try {
-//     socket.on("scroll_bottom", async (event) => {
-//       const userId = event.userId;
-//       const partnerId = event.partnerId;
-//       const chatId = await chatServices.findCahtId(userId, partnerId);
-//       await chatServices.updateIsRead(chatId, partnerId);
-//       const unreadCount = await chatServices.getIsReadCount(
-//         chatId,
-//         event.partnerId
-//       );
-//       socket.emit("messages_seen", {});
-//     });
-//   } catch (err) {
-//     throw err;
-//   }
-// };
-
-// exports.userDisconnect = async (socket) => {
-//   try {
-//     socket.on("disconnect", async () => {
-//       const data = {
-//         userId: Number(socket.userData.userId),
-//         status: 0,
-//       };
-//       await chatServices.updateUserConnectionStatus(data);
-//       await chatServices.deleteUserSocket(data.userId);
-//       socket.broadcast.emit("user_status", {
-//         userOnline: "0",
-//         userId: data.userId,
-//       });
-//     });
-//   } catch (err) {
-//     throw new Error(err);
-//   }
-// };
-
-// exports.sendNotification = async (socket) => {
-//   try {
-//     socket.on("send_notification", async (event) => {
-//       const userId = event.userId;
-//       const message = event.message;
-//       const notificationSocket = await chatServices.getNotificationSocket(
-//         userId
-//       );
-//       socket.to(notificationSocket).emit("notification_sent", { message });
-//       await chatServices.saveNotification(userId, message);
-//     });
-//   } catch (err) {
-//     throw err;
-//   }
-// };

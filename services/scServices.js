@@ -68,8 +68,10 @@ exports.visits = async (serviceCenterId) => {
 exports.setVisitStatus = async (visitId, status) => {
   try {
     const visit = await Visit.findById(visitId);
-    visit.visitStatus = status;
-    await visit.save();
+    if (visit) {
+      visit.visitStatus = status;
+      await visit.save();
+    }
   } catch (err) {
     throw err;
   }
