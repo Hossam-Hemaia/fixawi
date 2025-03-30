@@ -20,4 +20,10 @@ router.get("/agent/chats", isAuth.agentIsAuth, chatController.getClientChats);
 
 router.get("/all/chats", isAuth.adminIsAuth, chatController.getAllChats);
 
+router.get(
+  "/agent/current/chats",
+  isAuth.agentIsAuth,
+  chatController.getCurrentChats
+);
+
 module.exports = router;

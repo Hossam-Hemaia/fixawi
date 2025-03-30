@@ -24,11 +24,19 @@ exports.getUserProfile = async (req, res, next) => {
 exports.putUpdateProfile = async (req, res, next) => {
   try {
     const { fullName, email, phoneNumber, carBrand, carModel } = req.body;
+    const file = req.files[0];
+    let imgUrl = "";
+    if (file) {
+      let url = `${req.protocol}://${req.get("host")}/files/${file.path}`;
+      imgUrl = url;
+    }
+
     const userId = req.userId;
     const userData = {
       fullName,
       email,
       phoneNumber,
+      userImage: imgUrl,
       carBrand,
       carModel,
     };
@@ -92,6 +100,20 @@ exports.patchSetDefaultCar = async (req, res, next) => {
   }
 };
 
+exports.postFirebaseToken = async (req, res, next) => {
+  try {
+    const token = req.body.firebaseToken;
+    const userId = req.userId;
+    const cacheDb = await connectRedis.getRedisConnection();
+    await cacheDb.hSet(`${userId}`, "fbaseToken", JSON.stringify(token));
+    res
+      .status(201)
+      .json({ success: true, message: "firebase token registered" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**********************************************
  * Search Filtering
  **********************************************/
@@ -142,7 +164,7 @@ exports.filterServiceCenters = async (req, res, next) => {
     }
     if (services && services.length > 0) {
       filter.serviceTypes = {
-        $elemMatch: { $in: services.map((name) => new RegExp(name, "i")) },
+        $all: services.map((name) => new RegExp(name, "i")),
       };
     }
     const filteredCenters = await userServices.filterCenters(filter);
@@ -194,20 +216,6 @@ exports.getServiceCenterRatings = async (req, res, next) => {
     const ratingId = req.query.ratingId;
     const ratings = await ratingServices.getRatings(ratingId);
     res.status(200).json({ success: true, ratings });
-  } catch (err) {
-    next(err);
-  }
-};
-
-exports.postFirebaseToken = async (req, res, next) => {
-  try {
-    const token = req.body.firebaseToken;
-    const userId = req.userId;
-    const cacheDb = await connectRedis.getRedisConnection();
-    await cacheDb.hSet(`${userId}`, "fbaseToken", JSON.stringify(token));
-    res
-      .status(201)
-      .json({ success: true, message: "firebase token registered" });
   } catch (err) {
     next(err);
   }
@@ -284,6 +292,7 @@ exports.postVisitServiceCenter = async (req, res, next) => {
     const distance = data.paths[0].distance / 1000;
     const estimatedTime = data.paths[0].time / 1000 / 60;
     const visitData = {
+      visitDate: utilities.getLocalDate(new Date()),
       userId,
       serviceCenterId,
     };
@@ -522,7 +531,8 @@ exports.postCancelRescueOrder = async (req, res, next) => {
 exports.postPayRescueOrder = async (req, res, next) => {
   try {
     const orderId = req.body.orderId;
-    const order = await orderServices.payOrder(orderId);
+    const paymentMethod = req.body.paymentMethod;
+    const order = await orderServices.payOrder(orderId, paymentMethod);
     if (order) {
       res.status(201).json({
         success: true,

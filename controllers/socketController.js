@@ -96,6 +96,7 @@ exports.driverCurrentLocation = async (socket) => {
     const io = require("../socket").getIo();
     socket.on("current_location", async (event) => {
       const { clientPhoneNumber, location, flag, orderId } = event;
+      console.log(location);
       const userSocket = await utilities.getSocketId(clientPhoneNumber);
       io.to(userSocket).emit("driver_location", { location });
       if (flag === "picking up") {
@@ -238,21 +239,31 @@ exports.userHandShake = async (socket) => {
           message: msg.welcoming,
           chatId: chat._id,
         });
-        socket.emit("waiting_queue", { waitingCount });
+        socket.broadcast.emit("waiting_queue", { waitingCount });
       } else {
         socket.emit("welcom_message", {
           message: msg.welcoming,
           chatId: chat._id,
         });
         const agentSocket = await utilities.getSocketId(callAgent.username);
-        console.log("starting chat with: " + agentSocket);
-        socket.to(agentSocket).emit("start_chat", {
-          chatId: chat._id,
-          clientName: msg.fullName,
-          userId: chatData.userId,
-        });
         chat.chatStartTime = utilities.getNowLocalDate(new Date());
-        await chatServices.addClientToAgentQueue(callAgent._id);
+        let addedToChat = await chatServices.addClientToAgentQueue(
+          callAgent._id,
+          event.userId
+        );
+        if (addedToChat) {
+          console.log("starting chat with: " + agentSocket);
+          socket.to(agentSocket).emit("start_chat", {
+            chatId: chat._id,
+            clientName: msg.fullName,
+            userId: chatData.userId,
+            chatHistory: event.isNewChat ? [] : chat.messages,
+          });
+        } else {
+          socket.emit("send_message", {
+            message: "You can't open more than one chat in the same time",
+          });
+        }
         await chat.save();
       }
     });

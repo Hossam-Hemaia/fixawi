@@ -130,6 +130,10 @@ const serviceCenterSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    walletId: {
+      type: Schema.Types.ObjectId,
+      ref: "wallet",
+    },
   },
   { timestamps: true, autoIndex: false, strictPopulate: false }
 );

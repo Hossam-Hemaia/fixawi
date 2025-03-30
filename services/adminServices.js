@@ -12,6 +12,7 @@ const Driver = require("../models/driver");
 const Settings = require("../models/settings");
 const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
+const Wallet = require("../models/wallet");
 
 /***************System Users*************/
 exports.createAdmin = async (adminData) => {
@@ -110,13 +111,13 @@ exports.updateSystemUser = async (userId, userData) => {
   }
 };
 
-exports.removeSystemUser = async (userId)=>{
-  try{
+exports.removeSystemUser = async (userId) => {
+  try {
     await Admin.findByIdAndDelete(userId);
-  }catch(err){
+  } catch (err) {
     throw err;
   }
-}
+};
 /*************Categories**************/
 exports.createMainCategory = async (categoryData) => {
   try {
@@ -265,6 +266,11 @@ exports.removeSubcategory = async (subCategoryId) => {
 exports.createServiceCenter = async (serviceCenterData) => {
   try {
     const serviceCenter = new ServiceCenter(serviceCenterData);
+    const wallet = new Wallet({
+      serviceCenterId: serviceCenter._id,
+    });
+    await wallet.save();
+    serviceCenter.walletId = wallet._id;
     await serviceCenter.save();
     return serviceCenter;
   } catch (err) {
@@ -723,6 +729,11 @@ exports.driversJoinRequests = async () => {
 exports.createDriver = async (driverData) => {
   try {
     const driver = new Driver(driverData);
+    const wallet = new Wallet({
+      driverId: driver._id,
+    });
+    await wallet.save();
+    driver.walletId = wallet._id;
     await driver.save();
     return driver;
   } catch (err) {

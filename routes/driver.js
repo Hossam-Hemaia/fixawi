@@ -10,6 +10,12 @@ router.post(
   driverController.postSubmitDriverApplication
 );
 
+router.post(
+  "/set/driver/connection/status",
+  isAuth.driverIsAuth,
+  driverController.setDriverConnectionStatus
+);
+
 router.get(
   "/driver/delivery/data",
   isAuth.driverIsAuth,

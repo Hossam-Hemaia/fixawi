@@ -160,3 +160,17 @@ exports.releaseDriver = async (driverId) => {
     throw new Error(err);
   }
 };
+
+exports.setDriverConnStatus = async (driverId, status) => {
+  try {
+    const driverLog = await DriverLog.findOne({ driverId });
+    if (driverLog) {
+      driverLog.driverOnline = status;
+      await driverLog.save();
+    } else {
+      throw new Error("driver has no logs");
+    }
+  } catch (err) {
+    throw err;
+  }
+};

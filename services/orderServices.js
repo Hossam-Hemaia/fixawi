@@ -1,5 +1,7 @@
 const Order = require("../models/orders");
 const Driver = require("../models/driver");
+const Wallet = require("../models/wallet");
+const Movement = require("../models/movement");
 const utilities = require("../utils/utilities");
 
 exports.getNextOrderNumber = async () => {
@@ -127,10 +129,27 @@ exports.driverRescueOrders = async (driverId) => {
   }
 };
 
-exports.payOrder = async (orderId) => {
+exports.payOrder = async (orderId, paymentMethod) => {
   try {
     const order = await Order.findById(orderId);
+    const driver = await Driver.findById(order.driverId);
+    const wallet = await Wallet.findById(driver.walletId);
+    const paymentData = {
+      orderId,
+      reason: "Car Rescue Order Payment",
+      movementDate: utilities.getLocalDate(new Date()),
+      movementType: "addition",
+      movementAmount: order.rescuePrice,
+      movementId: "",
+      paymentMethod: paymentMethod,
+      walletId: wallet._id,
+    };
+    const movement = new Movement(paymentData);
+    await movement.save();
+    paymentData.movementId = movement._id;
+    await wallet.addToBalance(paymentData);
     order.paymentStatus = "Paid";
+    order.paymentMethod = paymentMethod;
     await order.save();
     return order;
   } catch (err) {

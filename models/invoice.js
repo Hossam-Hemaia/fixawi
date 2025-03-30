@@ -59,7 +59,7 @@ const invoiceSchema = new Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ["cash", "card"],
+      enum: ["cash", "card", "wallet"],
     },
   },
   { timestamps: true, strictPopulate: false }

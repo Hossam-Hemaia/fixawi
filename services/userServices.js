@@ -13,6 +13,8 @@ const Check = require("../models/check");
 const Invoice = require("../models/invoice");
 const Favorite = require("../models/favorite");
 const utilities = require("../utils/utilities");
+const Wallet = require("../models/wallet");
+const Movement = require("../models/movement");
 
 exports.carsBrands = async () => {
   try {
@@ -388,7 +390,10 @@ exports.removeBooking = async (oldBookingData) => {
 
 exports.userBookings = async (userId) => {
   try {
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate({
+      path: "myBookings.serviceCenterId",
+      select: "location",
+    });
     return user.myBookings;
   } catch (err) {
     throw err;
@@ -437,6 +442,7 @@ exports.userCanceledBookings = async (userId) => {
   }
 };
 
+/***************User Favorites****************/
 exports.addFavorite = async (userId, serviceCenterId) => {
   try {
     let userFavorites = await Favorite.findOne({ userId: userId });
@@ -480,6 +486,7 @@ exports.removeFromFavorites = async (userId, serviceCenterId) => {
   }
 };
 
+/*************Check Reports************/
 exports.myCheckReports = async (userId) => {
   try {
     const checkReports = await Check.find({ userId })
@@ -534,9 +541,12 @@ exports.declineCheckReport = async (checkReportId) => {
   }
 };
 
+/***************Invoices****************/
 exports.myInvoices = async (userId) => {
   try {
-    const invoices = await Invoice.find({ userId }).sort({ createdAt: -1 });
+    const invoices = await Invoice.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate({ path: "serviceCenterId", select: "serviceCenterTitle" });
     return invoices;
   } catch (err) {
     throw err;
@@ -546,6 +556,22 @@ exports.myInvoices = async (userId) => {
 exports.payInvoice = async (invoiceId, paymentMethod) => {
   try {
     const invoice = await Invoice.findById(invoiceId);
+    const serviceCenter = await ServiceCenter.findById(invoice.serviceCenterId);
+    const wallet = await Wallet.findById(serviceCenter.walletId);
+    const paymentData = {
+      invoiceNumber: invoice.invoiceNumber,
+      reason: "Car Maintenance Invoice Payment",
+      movementDate: utilities.getNowLocalDate(new Date()),
+      movementType: "addition",
+      movementAmount: invoice.invoiceTotal,
+      movementId: "",
+      paymentMethod: paymentMethod,
+      walletId: wallet._id,
+    };
+    const movement = new Movement(paymentData);
+    await movement.save();
+    paymentData.movementId = movement._id;
+    await wallet.addToBalance(paymentData);
     invoice.paymentMethod = paymentMethod;
     invoice.paymentStatus = "paid";
     await invoice.save();

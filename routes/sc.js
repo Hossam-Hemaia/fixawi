@@ -184,4 +184,12 @@ router.get("/invoice/details", isAuth.scIsAuth, scController.getInvoiceDetails);
 
 router.put("/edit/invoice", isAuth.scIsAuth, scController.putEditInvoice);
 
+router.get("/show/balance", isAuth.scIsAuth, scController.getShowBalance);
+
+router.get(
+  "/balance/movement",
+  isAuth.scIsAuth,
+  scController.getBalanceMovement
+);
+
 module.exports = router;

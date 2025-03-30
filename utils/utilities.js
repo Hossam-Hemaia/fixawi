@@ -73,7 +73,7 @@ exports.getFirebaseToken = async (userId) => {
     const token = JSON.parse(userToken.fbaseToken);
     return token;
   } catch (err) {
-    next(err);
+    throw err;
   }
 };
 

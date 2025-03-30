@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const orderServices = require("../services/orderServices");
 const adminServices = require("../services/adminServices");
+const driverServices = require("../services/driverServices");
 
 exports.postSubmitDriverApplication = async (req, res, next) => {
   try {
@@ -51,6 +52,20 @@ exports.getDriverOrders = async (req, res, next) => {
       totalPaid += order.rescuePrice;
     }
     res.status(200).json({ success: true, orders, totalPaid });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.setDriverConnectionStatus = async (req, res, next) => {
+  try {
+    const status = req.body.status;
+    const driverId = req.driverId;
+    await driverServices.setDriverConnStatus(driverId, status);
+    res.status(201).json({
+      success: true,
+      message: `Driver ${status ? "online" : "offline"}`,
+    });
   } catch (err) {
     next(err);
   }

@@ -38,6 +38,16 @@ exports.postCloseChat = async (req, res, next) => {
   }
 };
 
+exports.getCurrentChats = async (req, res, next) => {
+  try {
+    const agentId = req.agentId;
+    const chats = await chatServices.currentChats(agentId);
+    res.status(200).json({ success: true, currentChats: chats });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getNextChat = async (req, res, next) => {
   try {
     const agentId = req.agentId;
@@ -55,12 +65,20 @@ exports.getNextChat = async (req, res, next) => {
       );
       const io = require("../socket").getIo();
       io.emit("waiting_queue", { waitingCount });
-      await chatServices.addClientToAgentQueue(agentId);
+      const agentSocket = await utilities.getSocketId(agent.username);
+      await chatServices.addToAgentQueue(agentId, nextChat.user._id);
+      io.to(agentSocket).emit("start_chat", {
+        chatId: nextChat.chat.chatId,
+        clientName: nextChat.user.fullName,
+        userId: nextChat.user._id,
+        chatHistory: [],
+      });
       return res.status(200).json({
         success: true,
         chatId: nextChat.chat.chatId,
         clientName: nextChat.user.fullName,
         userId: nextChat.user._id,
+        chatHistory: [],
       });
     } else {
       return res.status(200).json({ success: true, message: "Empty queue" });

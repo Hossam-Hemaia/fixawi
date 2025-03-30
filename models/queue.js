@@ -17,6 +17,7 @@ const queueSchema = new Schema(
       type: Number,
       default: 0,
     },
+    clients: [],
   },
   { timestamps: true }
 );

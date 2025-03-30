@@ -4,6 +4,9 @@ const Schema = mongoose.Schema;
 
 const visitSchema = new Schema(
   {
+    visitDate: {
+      type: Date,
+    },
     userId: {
       type: Schema.Types.ObjectId,
       ref: "user",

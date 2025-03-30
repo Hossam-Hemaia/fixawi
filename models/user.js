@@ -13,6 +13,9 @@ const userSchema = new Schema(
     phoneNumber: {
       type: String,
     },
+    userImage: {
+      type: String,
+    },
     authMethod: {
       type: String,
       enum: ["Google", "Facebook", "email", "phone"],
@@ -74,7 +77,7 @@ const userSchema = new Schema(
         service: { type: String },
         serviceId: { type: Schema.Types.ObjectId },
         serviceCenter: { type: String },
-        serviceCenterId: { type: Schema.Types.ObjectId },
+        serviceCenterId: { type: Schema.Types.ObjectId, ref: "service_center" },
       },
     ],
   },

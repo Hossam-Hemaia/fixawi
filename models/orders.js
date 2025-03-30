@@ -22,11 +22,15 @@ const orderSchema = new Schema(
     },
     downPyament: {
       type: Number,
+      default: 0,
     },
     rescuePrice: {
       type: Number,
     },
     paymentStatus: {
+      type: String,
+    },
+    paymentMethod: {
       type: String,
     },
     orderStatus: [{ state: { type: String }, date: { type: Date } }], //[pending, accepted, received, transporting, delivered or rejected, canceled]

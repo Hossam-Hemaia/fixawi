@@ -8,6 +8,8 @@ const BookingSettings = require("../models/bookingSettings");
 const Booking = require("../models/booking");
 const Check = require("../models/check");
 const Invoice = require("../models/invoice");
+const Wallet = require("../models/wallet");
+const Movement = require("../models/movement");
 const utilities = require("../utils/utilities");
 
 exports.servicesCategories = async () => {
@@ -53,12 +55,15 @@ exports.getUserServiceCenter = async (serviceCenterId) => {
   }
 };
 
-exports.visits = async (serviceCenterId) => {
+exports.visits = async (date, serviceCenterId) => {
   try {
-    const visits = await Visit.find({ serviceCenterId }).populate([
-      "userId",
-      "serviceCenterId",
-    ]);
+    const localDate = utilities.getLocalDate(date);
+    const visits = await Visit.find({
+      createdAt: { $gte: localDate },
+      serviceCenterId: serviceCenterId,
+    })
+      .populate(["userId", "serviceCenterId"])
+      .sort({ createdAt: -1 });
     return visits;
   } catch (err) {
     throw err;
@@ -261,18 +266,20 @@ exports.createInvoice = async (invoiceData) => {
     const datePrefix = `${today.getFullYear()}${(today.getMonth() + 1)
       .toString()
       .padStart(2, "0")}${today.getDate().toString().padStart(2, "0")}`;
-    // Count invoices created today
+    // Count invoices created
     const count = await Invoice.countDocuments({
-      date: {
-        $gte: new Date(today.setHours(0, 0, 0, 0)), // Start of the day
-        $lt: new Date(today.setHours(23, 59, 59, 999)), // End of the day
-      },
+      serviceCenterId: invoiceData.serviceCenterId,
     });
     // Increment count for the new invoice
     const invoiceNumber = `${datePrefix}${count + 1}`;
     const invoice = new Invoice(invoiceData);
     invoice.invoiceNumber = invoiceNumber;
     await invoice.save();
+    const checkReport = await Check.findById(invoiceData.checkId);
+    if (checkReport) {
+      checkReport.reportStatus = "invoiced";
+      await checkReport.save();
+    }
     return invoice;
   } catch (err) {
     throw err;
@@ -315,6 +322,29 @@ exports.editInvoice = async (invoiceData) => {
       updateData
     );
     return invoice;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getWallet = async (serviceCenterId) => {
+  try {
+    const serviceCenter = await ServiceCenter.findById(serviceCenterId);
+    const wallet = await Wallet.findById(serviceCenter.walletId);
+    return wallet;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.balanceMovement = async (walletId, dateFrom, dateTo) => {
+  try {
+    console.log(walletId, dateFrom, dateTo);
+    const movements = await Movement.find({
+      walletId: walletId,
+      movementDate: { $gte: dateFrom, $lte: dateTo },
+    }).sort({ createdAt: -1 });
+    return movements;
   } catch (err) {
     throw err;
   }

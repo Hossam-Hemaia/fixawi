@@ -66,6 +66,10 @@ const driverSchema = new Schema(
         reason: { type: String },
       },
     ],
+    walletId: {
+      type: Schema.Types.ObjectId,
+      ref: "wallet",
+    },
   },
   { timestamps: true }
 );

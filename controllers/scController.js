@@ -206,9 +206,31 @@ exports.getPriceList = async (req, res, next) => {
  **********************************************************/
 exports.getVisits = async (req, res, next) => {
   try {
+    let date = req.query.date;
+    if (!date) {
+      date = new Date();
+    }
     const serviceCenterId = req.sc.serviceCenterId;
-    const visits = await scServices.visits(serviceCenterId);
-    res.status(200).json({ success: true, visits });
+    const visits = await scServices.visits(date, serviceCenterId);
+    const bookingsCalendar = await scServices.bookingsCalendar(
+      serviceCenterId,
+      date
+    );
+    const bookingClients = [];
+    if (bookingsCalendar) {
+      for (let bookingMap of bookingsCalendar) {
+        if (bookingMap.calendar.length > 0) {
+          for (let calDate of bookingMap.calendar) {
+            if (calDate.date === utilities.getLocalDate(date)) {
+              for (let slot of calDate.slots) {
+                bookingClients.push(...slot.clients);
+              }
+            }
+          }
+        }
+      }
+    }
+    res.status(200).json({ success: true, visits, bookings: bookingClients });
   } catch (err) {
     next(err);
   }
@@ -454,6 +476,7 @@ exports.postCreateCheckReport = async (req, res, next) => {
       carBrand,
       carModel,
       date,
+      visitId,
       checkDetails,
       total,
     } = req.body;
@@ -480,6 +503,15 @@ exports.postCreateCheckReport = async (req, res, next) => {
       total,
     };
     const checkReport = await scServices.createCheckReport(checkData);
+    if (visitId) {
+      await scServices.setVisitStatus(visitId, "done");
+    }
+    const pushToken = await utilities.getFirebaseToken(clientId);
+    await utilities.sendPushNotification(
+      pushToken,
+      "تقرير فحص",
+      "لديك تقرير فحص من مركز " + req.sc.fullName
+    );
     res.status(200).json({ success: true, checkReport });
   } catch (err) {
     next(err);
@@ -557,6 +589,7 @@ exports.postCreateInvoice = async (req, res, next) => {
       date,
       invoiceDetails,
       subTotal,
+      checkId,
     } = req.body;
     const serviceCenterId = req.sc.serviceCenterId;
     const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
@@ -585,8 +618,15 @@ exports.postCreateInvoice = async (req, res, next) => {
       fixawiFare,
       salesTaxAmount,
       invoiceTotal,
+      checkId,
     };
     const invoice = await scServices.createInvoice(invoiceData);
+    const pushToken = await utilities.getFirebaseToken(userId);
+    await utilities.sendPushNotification(
+      pushToken,
+      "فاتورة صيانه",
+      "لديك فاتورة صيانه من مركز " + req.sc.fullName
+    );
     res.status(200).json({ success: true, invoice });
   } catch (err) {
     next(err);
@@ -666,6 +706,32 @@ exports.putEditInvoice = async (req, res, next) => {
     };
     await scServices.editInvoice(invoiceData);
     res.status(200).json({ success: true, message: "invoice updated" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getShowBalance = async (req, res, next) => {
+  try {
+    const serviceCenterId = req.sc.serviceCenterId;
+    const wallet = await scServices.getWallet(serviceCenterId);
+    res.status(200).json({ success: true, wallet });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBalanceMovement = async (req, res, next) => {
+  try {
+    const { dateFrom, dateTo, walletId } = req.query;
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const movements = await scServices.balanceMovement(
+      walletId,
+      localStartDate,
+      localEndDate
+    );
+    res.status(200).json({ success: true, movements });
   } catch (err) {
     next(err);
   }

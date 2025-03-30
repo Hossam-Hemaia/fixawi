@@ -42,10 +42,16 @@ exports.getAvailableAgent = async () => {
 
 exports.createWaiting = async (waitingData) => {
   try {
-    const waitingUser = new WaitingList(waitingData);
-    await waitingUser.save();
-    const waitingCount = await WaitingList.countDocuments();
-    return waitingCount;
+    const isWaiting = await WaitingList.findOne({ userId: waitingData.userId });
+    if (!isWaiting) {
+      const waitingUser = new WaitingList(waitingData);
+      await waitingUser.save();
+      const waitingCount = await WaitingList.countDocuments();
+      return waitingCount;
+    } else {
+      const waitingCount = await WaitingList.countDocuments();
+      return waitingCount;
+    }
   } catch (err) {
     throw err;
   }
@@ -78,11 +84,20 @@ exports.createChat = async (isNewChat, chatData) => {
   }
 };
 
-exports.addClientToAgentQueue = async (queueId) => {
+exports.addClientToAgentQueue = async (queueId, clientId) => {
   try {
     const agentQueue = await Queue.findById(queueId);
-    agentQueue.currentChats += 1;
-    await agentQueue.save();
+    let clientExist = agentQueue.clients.find((client) => {
+      return client.toString() === clientId.toString();
+    });
+    if (clientExist) {
+      return false;
+    } else {
+      agentQueue.currentChats += 1;
+      agentQueue.clients.push(clientId.toString());
+      await agentQueue.save();
+      return true;
+    }
   } catch (err) {
     throw err;
   }
@@ -117,9 +132,15 @@ exports.getFirstAgentMsg = async (chatId) => {
 
 exports.closeChat = async (agentId, chatId, chatData) => {
   try {
+    const chat = await Chat.findById(chatId);
     await Chat.findByIdAndUpdate(chatId, chatData);
     const queue = await Queue.findOne({ callAgentId: agentId });
     queue.currentChats -= 1;
+    const updatedClients = queue.clients;
+    const filteredClients = updatedClients.filter((client) => {
+      return client.toString() !== chat.userId.toString();
+    });
+    queue.clients = filteredClients;
     await queue.save();
   } catch (err) {
     throw err;
@@ -138,11 +159,37 @@ exports.getAgentData = async (agentId) => {
   }
 };
 
+exports.currentChats = async (agentId) => {
+  try {
+    const agentQueue = await Queue.findOne({ callAgentId: agentId });
+    const chats = [];
+    for (let clientId of agentQueue.clients) {
+      let chat = await Chat.findOne({
+        userId: clientId,
+        agentId: agentId,
+      }).sort({ createdAt: -1 });
+      let client = await User.findById(clientId);
+      if (chat) {
+        let chatData = {
+          chatId: chat._id,
+          clientName: client.fullName,
+          userId: client._id,
+          chatHistory: chat.messages,
+        };
+        chats.push(chatData);
+      }
+    }
+    return chats;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.nextChat = async () => {
   try {
     const chat = await WaitingList.findOne();
     const user = await User.findById(chat.userId);
-    if (!chat) {
+    if (!chat || !user) {
       return false;
     } else {
       return { chat, user };
@@ -170,11 +217,20 @@ exports.removeFromWaiting = async (waitingId) => {
   }
 };
 
-exports.addClientToAgentQueue = async (agentId) => {
+exports.addToAgentQueue = async (agentId, clientId) => {
   try {
     const queue = await Queue.findOne({ callAgentId: agentId });
-    queue.currentChats += 1;
-    await queue.save();
+    let clientExist = queue.clients.find((client) => {
+      return client.toString() === clientId.toString();
+    });
+    if (clientExist) {
+      return false;
+    } else {
+      queue.currentChats += 1;
+      queue.clients.push(clientId.toString());
+      await queue.save();
+      return true;
+    }
   } catch (err) {
     throw err;
   }
