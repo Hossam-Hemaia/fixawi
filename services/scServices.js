@@ -339,7 +339,6 @@ exports.getWallet = async (serviceCenterId) => {
 
 exports.balanceMovement = async (walletId, dateFrom, dateTo) => {
   try {
-    console.log(walletId, dateFrom, dateTo);
     const movements = await Movement.find({
       walletId: walletId,
       movementDate: { $gte: dateFrom, $lte: dateTo },

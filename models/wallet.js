@@ -17,6 +17,7 @@ const walletSchema = new Schema(
 
 walletSchema.methods.addToBalance = function (balanceData) {
   try {
+    console.log(balanceData);
     if (balanceData.paymentMethod === "cash") {
       this.cashOrders += balanceData.movementAmount;
     } else if (balanceData.paymentMethod === "card") {

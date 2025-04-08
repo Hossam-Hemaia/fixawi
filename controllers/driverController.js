@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const orderServices = require("../services/orderServices");
 const adminServices = require("../services/adminServices");
 const driverServices = require("../services/driverServices");
+const scServices = require("../services/scServices");
 
 exports.postSubmitDriverApplication = async (req, res, next) => {
   try {
@@ -66,6 +67,32 @@ exports.setDriverConnectionStatus = async (req, res, next) => {
       success: true,
       message: `Driver ${status ? "online" : "offline"}`,
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDriverBalance = async (req, res, next) => {
+  try {
+    const driverId = req.driverId;
+    const wallet = await driverServices.driverWallet(driverId);
+    res.status(200).json({ success: true, wallet });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getDriverBalanceMovement = async (req, res, next) => {
+  try {
+    const { dateFrom, dateTo, walletId } = req.query;
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const movements = await scServices.balanceMovement(
+      walletId,
+      localStartDate,
+      localEndDate
+    );
+    res.status(200).json({ success: true, movements });
   } catch (err) {
     next(err);
   }

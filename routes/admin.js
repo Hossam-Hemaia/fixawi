@@ -138,6 +138,28 @@ router.post(
 router.get("/users/visits", isAuth.adminIsAuth, adminController.getUsersVisits);
 
 /**********************************************************
+ * Wallet Routes
+ **********************************************************/
+
+router.get(
+  "/show/center/balance",
+  isAuth.adminIsAuth,
+  adminController.getShowCenterBalance
+);
+
+router.get(
+  "/wallet/balance/movement",
+  isAuth.adminIsAuth,
+  adminController.getBalanceMovement
+);
+
+router.post(
+  "/wallet/transaction",
+  isAuth.adminIsAuth,
+  adminController.postWalletTransaction
+);
+
+/**********************************************************
  * Booking Settings
  **********************************************************/
 router.post(

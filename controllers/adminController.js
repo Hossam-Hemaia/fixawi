@@ -522,6 +522,63 @@ exports.approveServiceCenter = async (req, res, next) => {
   }
 };
 
+exports.getShowCenterBalance = async (req, res, next) => {
+  try {
+    const walletId = req.query.walletId;
+    const wallet = await adminServices.getWallet(walletId);
+    res.status(200).json({ success: true, wallet });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getBalanceMovement = async (req, res, next) => {
+  try {
+    const { dateFrom, dateTo, walletId } = req.query;
+    const localStartDate = utilities.getLocalDate(dateFrom);
+    const localEndDate = utilities.getEndLocalDate(dateTo);
+    const movements = await scServices.balanceMovement(
+      walletId,
+      localStartDate,
+      localEndDate
+    );
+    res.status(200).json({ success: true, movements });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postWalletTransaction = async (req, res, next) => {
+  try {
+    const { walletId, transactionType, reason, paymentMethod, amount } =
+      req.body;
+    const movementData = {
+      reason,
+      movementDate: utilities.getNowLocalDate(new Date()),
+      movementType: transactionType === "withdraw" ? "deduction" : "addition",
+      movementAmount: +amount,
+      paymentMethod,
+      walletId,
+      movementId: "",
+    };
+    const movement = await adminServices.walletMovement(movementData);
+    movementData.movementId = movement._id;
+    const wallet = await adminServices.getWallet(walletId);
+    if (transactionType === "deposite") {
+      await wallet.addToBalance(movementData);
+    } else if (transactionType === "withdraw") {
+      await wallet.deductFromBalance(movementData);
+    }
+    res
+      .status(201)
+      .json({
+        success: true,
+        message: "Transaction added to wallet successfully",
+      });
+  } catch (err) {
+    next(err);
+  }
+};
 /**********************************************************
  * Booking Settings
  **********************************************************/

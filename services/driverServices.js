@@ -3,6 +3,7 @@ const DriverLog = require("../models/driverLog");
 const utilities = require("../utils/utilities");
 const Settings = require("../models/settings");
 const orderServices = require("../services/orderServices");
+const Wallet = require("../models/wallet");
 
 exports.getDriverByUsername = async (username) => {
   try {
@@ -170,6 +171,15 @@ exports.setDriverConnStatus = async (driverId, status) => {
     } else {
       throw new Error("driver has no logs");
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.driverWallet = async (driverId) => {
+  try {
+    const wallet = await Wallet.findOne({ driverId });
+    return wallet;
   } catch (err) {
     throw err;
   }

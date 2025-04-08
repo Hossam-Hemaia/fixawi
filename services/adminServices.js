@@ -13,6 +13,7 @@ const Settings = require("../models/settings");
 const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
 const Wallet = require("../models/wallet");
+const Movement = require("../models/movement");
 
 /***************System Users*************/
 exports.createAdmin = async (adminData) => {
@@ -348,6 +349,25 @@ exports.joinRequests = async () => {
   try {
     const requests = await ServiceCenter.find({ isApproved: false });
     return requests;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.getWallet = async (walletId) => {
+  try {
+    const wallet = await Wallet.findById(walletId);
+    return wallet;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.walletMovement = async (movementData) => {
+  try {
+    const movement = new Movement(movementData);
+    await movement.save();
+    return movement;
   } catch (err) {
     throw err;
   }

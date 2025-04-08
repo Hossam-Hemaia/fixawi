@@ -28,4 +28,16 @@ router.get(
   driverController.getDriverOrders
 );
 
+router.get(
+  "/show/driver/balance",
+  isAuth.driverIsAuth,
+  driverController.getDriverBalance
+);
+
+router.get(
+  "/driver/balance/movement",
+  isAuth.driverIsAuth,
+  driverController.getDriverBalanceMovement
+);
+
 module.exports = router;
