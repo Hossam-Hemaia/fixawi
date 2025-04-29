@@ -26,4 +26,22 @@ router.get(
   chatController.getCurrentChats
 );
 
+router.get(
+  "/show/waiting/clients",
+  isAuth.adminIsAuth,
+  chatController.getWaitingClients
+);
+
+router.get(
+  "/current/chats/stats",
+  isAuth.adminIsAuth,
+  chatController.getNumberOfCurrentChats
+);
+
+router.get(
+  "/client/order/details",
+  isAuth.agentIsAuth,
+  chatController.getClientOrderDetails
+);
+
 module.exports = router;

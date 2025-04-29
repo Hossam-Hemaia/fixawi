@@ -92,8 +92,13 @@ exports.deleteCategory = async (req, res, next) => {
 
 exports.postCreateSubCategory = async (req, res, next) => {
   try {
-    const { subCategoryName, subCategoryNameEn, description, mainCategoryId } =
-      req.body;
+    const {
+      subCategoryName,
+      subCategoryNameEn,
+      description,
+      descriptionEn,
+      mainCategoryId,
+    } = req.body;
     const image = req.files[0];
     let subCategoryImageUrl;
     if (image) {
@@ -108,6 +113,7 @@ exports.postCreateSubCategory = async (req, res, next) => {
       subCategoryNameEn,
       subCategoryImage: subCategoryImageUrl,
       description,
+      descriptionEn,
       mainCategoryId,
     };
     await adminServices.createSubCategory(subCategoryData);
@@ -146,6 +152,7 @@ exports.putEditSubCategory = async (req, res, next) => {
       mainCategoryId,
       subCategoryId,
       description,
+      descriptionEn,
     } = req.body;
     const image = req.files[0];
     let imageUrl;
@@ -159,6 +166,7 @@ exports.putEditSubCategory = async (req, res, next) => {
       subCategoryNameEn,
       mainCategoryId,
       description,
+      descriptionEn,
       subCategoryImage: imageUrl,
     };
     await adminServices.editSubCategory(subCategoryData, subCategoryId);
@@ -569,16 +577,15 @@ exports.postWalletTransaction = async (req, res, next) => {
     } else if (transactionType === "withdraw") {
       await wallet.deductFromBalance(movementData);
     }
-    res
-      .status(201)
-      .json({
-        success: true,
-        message: "Transaction added to wallet successfully",
-      });
+    res.status(201).json({
+      success: true,
+      message: "Transaction added to wallet successfully",
+    });
   } catch (err) {
     next(err);
   }
 };
+
 /**********************************************************
  * Booking Settings
  **********************************************************/
@@ -604,7 +611,6 @@ exports.getBookingSettings = async (req, res, next) => {
   try {
     const serviceCenterId = req.query.serviceCenterId;
     const bookingSettings = await scServices.bookingSettings(serviceCenterId);
-    console.log(bookingSettings);
     res.status(200).json({ success: true, bookingSettings });
   } catch (err) {
     next(err);
@@ -807,6 +813,7 @@ exports.deletePriceList = async (req, res, next) => {
     next(err);
   }
 };
+
 /**********************************************************
  * Cars
  **********************************************************/
@@ -1275,6 +1282,40 @@ exports.getDriversJoinRequests = async (req, res, next) => {
   }
 };
 
+exports.postApproveDriver = async (req, res, next) => {
+  try {
+    const { driverId, isActive, isApproved } = req.body;
+    const driverData = {
+      driverId,
+      isActive,
+      isApproved,
+    };
+    const driver = await adminServices.approveDriver(driverData);
+    if (driver) {
+      return res
+        .status(201)
+        .json({ success: true, message: "Driver status updated" });
+    }
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.postApproveDriverDocument = async (req, res, next) => {
+  try {
+    const { driverId, documentId, isApproved } = req.body;
+    const docData = {
+      driverId,
+      documentId,
+      isApproved,
+    };
+    await adminServices.approveDriverDoc(docData);
+    res.status(201).json({ success: true, message: "document approved" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postCreateDriver = async (req, res, next) => {
   try {
     const {
@@ -1285,13 +1326,18 @@ exports.postCreateDriver = async (req, res, next) => {
       truckNumber,
       password,
     } = req.body;
+
     const hashedPassword = await bcrypt.hash(password, 12);
     const files = req.files;
     const docs = [];
     if (files.length > 0) {
       for (let file of files) {
         let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
-        docs.push(docUrl);
+        docs.push({
+          docName: file.originalname,
+          url: docUrl,
+          isApproved: true,
+        });
       }
     }
     const driverData = {
@@ -1353,7 +1399,11 @@ exports.putEditDriver = async (req, res, next) => {
     if (files.length > 0) {
       for (let file of files) {
         let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
-        docs.push(docUrl);
+        docs.push({
+          docName: file.originalname,
+          url: docUrl,
+          isApproved: true,
+        });
       }
     }
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -1401,7 +1451,6 @@ exports.getDriversStatus = async (req, res, next) => {
 /**********************************************************
  * Settings
  **********************************************************/
-
 exports.postSetAppSettings = async (req, res, next) => {
   try {
     const {
@@ -1412,6 +1461,7 @@ exports.postSetAppSettings = async (req, res, next) => {
       rescuePricingPerKm,
       rescueFareSystem,
       fixawiRescueFare,
+      CancelBookingHours,
       chatQueue,
       chatWelcomingMsg,
     } = req.body;
@@ -1423,6 +1473,7 @@ exports.postSetAppSettings = async (req, res, next) => {
       rescuePricingPerKm,
       rescueFareSystem,
       fixawiRescueFare,
+      CancelBookingHours,
       chatQueue,
       chatWelcomingMsg,
     };

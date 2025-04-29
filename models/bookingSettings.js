@@ -8,6 +8,10 @@ const bookingSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "service_center",
     },
+    maximumCapacity: {
+      type: Number,
+      default: 0,
+    },
     services: [
       {
         serviceId: {

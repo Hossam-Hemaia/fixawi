@@ -10,6 +10,7 @@ const Check = require("../models/check");
 const Invoice = require("../models/invoice");
 const Wallet = require("../models/wallet");
 const Movement = require("../models/movement");
+const Settings = require("../models/settings");
 const utilities = require("../utils/utilities");
 
 exports.servicesCategories = async () => {
@@ -48,7 +49,7 @@ exports.getUserServiceCenter = async (serviceCenterId) => {
       password: 0,
       createdAt: 0,
       updatedAt: 0,
-    }).populate(["offerId", "serviceCategoryIds"]);
+    }).populate(["offerId", "serviceCategoryIds", "priceListId"]);
     return serviceCenter;
   } catch (err) {
     throw err;
@@ -59,10 +60,10 @@ exports.visits = async (date, serviceCenterId) => {
   try {
     const localDate = utilities.getLocalDate(date);
     const visits = await Visit.find({
-      createdAt: { $gte: localDate },
+      visitDate: { $gte: localDate },
       serviceCenterId: serviceCenterId,
     })
-      .populate(["userId", "serviceCenterId"])
+      .populate([{ path: "userId", select: "-myBookings" }])
       .sort({ createdAt: -1 });
     return visits;
   } catch (err) {
@@ -187,6 +188,7 @@ exports.updateBookingSettings = async (bookingSettingsId, bookingData) => {
   try {
     const bookingSettings = await BookingSettings.findById(bookingSettingsId);
     bookingSettings.services = bookingData.services;
+    bookingSettings.maximumCapacity = bookingData.maximumCapacity;
     await bookingSettings.save();
     return bookingSettings;
   } catch (err) {
@@ -218,10 +220,11 @@ exports.createCheckReport = async (checkData) => {
   }
 };
 
-exports.checkReports = async (date) => {
+exports.checkReports = async (date, serviceCenterId) => {
   try {
     const localDate = utilities.getLocalDate(date);
     const checkReports = await Check.find({
+      serviceCenterId,
       createdAt: { $gte: localDate },
     }).sort({ createdAt: -1 });
     return checkReports;
@@ -253,6 +256,8 @@ exports.cancelClientBooking = async (bookingData) => {
       serviceCenterId: bookingData.serviceCenterId,
       serviceId: bookingData.serviceId,
     });
+    const settings = await Settings.findOne();
+    bookingData.allowedCancelHours = settings.CancelBookingHours;
     const canceledBooking = await bookingCalendar.cancelBooking(bookingData);
     return canceledBooking;
   } catch (err) {

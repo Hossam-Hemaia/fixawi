@@ -14,6 +14,9 @@ const subCategorySchema = new Schema({
   description: {
     type: String,
   },
+  descriptionEn: {
+    type: String,
+  },
   mainCategoryId: {
     type: Schema.Types.ObjectId,
     ref: "category",

@@ -5,6 +5,9 @@ const adminServices = require("../services/adminServices");
 const userServices = require("../services/userServices");
 const utilities = require("../utils/utilities");
 
+/**********************************************************
+ * Price List
+ **********************************************************/
 exports.postJoinRequest = async (req, res, next) => {
   try {
     //admin should be notified
@@ -221,7 +224,10 @@ exports.getVisits = async (req, res, next) => {
       for (let bookingMap of bookingsCalendar) {
         if (bookingMap.calendar.length > 0) {
           for (let calDate of bookingMap.calendar) {
-            if (calDate.date === utilities.getLocalDate(date)) {
+            if (
+              calDate.date.toString() ===
+              utilities.getLocalDate(date).toString()
+            ) {
               for (let slot of calDate.slots) {
                 bookingClients.push(...slot.clients);
               }
@@ -271,19 +277,33 @@ exports.postCreatePromotion = async (req, res, next) => {
       promotionConditions,
       expiryDate,
     } = req.body;
-    const serviceCenterId = req.sc.serviceCenterId;
+    const file = req.files[0];
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
+    }
+    let serviceCenterId;
+    let approved = false;
+    if (req.adminId) {
+      serviceCenterId = req.body.serviceCenterId;
+      approved = true;
+    } else {
+      serviceCenterId = req.sc.serviceCenterId;
+    }
     const promotionData = {
       promotionTitle,
-      promotionDetails,
-      promotionConditions,
+      promotionDetails: JSON.parse(promotionDetails),
+      promotionConditions: JSON.parse(promotionConditions),
       expiryDate: utilities.getLocalDate(expiryDate),
       serviceCenterId,
+      approved,
+      imageUrl,
     };
     const promotion = await scServices.createPromotion(promotionData);
     if (promotion) {
       return res.status(201).json({
         success: true,
-        message: "Promotion created, waiting for admin approval",
+        message: "Promotion created",
       });
     }
   } catch (err) {
@@ -320,13 +340,27 @@ exports.putUpdatePromotion = async (req, res, next) => {
       expiryDate,
       promotionId,
     } = req.body;
-    const serviceCenterId = req.sc.serviceCenterId;
+    const file = req.files[0];
+    let imageUrl = "";
+    if (file) {
+      imageUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
+    }
+    let serviceCenterId;
+    let approved = false;
+    if (req.adminId) {
+      serviceCenterId = req.body.serviceCenterId;
+      approved = true;
+    } else {
+      serviceCenterId = req.sc.serviceCenterId;
+    }
     const promotionData = {
       promotionTitle,
-      promotionDetails,
-      promotionConditions,
+      promotionDetails: JSON.parse(promotionDetails),
+      promotionConditions: JSON.parse(promotionConditions),
       expiryDate: utilities.getLocalDate(expiryDate),
       serviceCenterId,
+      approved,
+      imageUrl,
     };
     const promotion = await scServices.updatePromotion(
       promotionId,
@@ -369,10 +403,11 @@ exports.getServicesDetails = async (req, res, next) => {
 
 exports.postCreateBookingSettings = async (req, res, next) => {
   try {
-    const { services } = req.body;
+    const { maximumCapacity, services } = req.body;
     const serviceCenterId = req.sc.serviceCenterId;
     const bookingData = {
       serviceCenterId,
+      maximumCapacity,
       services,
     };
     const bookingSettings = await scServices.createBookingSettings(bookingData);
@@ -398,8 +433,9 @@ exports.getBookingSettings = async (req, res, next) => {
 
 exports.putUpdateBookingSettings = async (req, res, next) => {
   try {
-    const { services, bookingSettingsId } = req.body;
+    const { maximumCapacity, services, bookingSettingsId } = req.body;
     const bookingSettingsData = {
+      maximumCapacity,
       services,
     };
     const bookingSettings = await scServices.updateBookingSettings(
@@ -441,15 +477,18 @@ exports.deleteClientBooking = async (req, res, next) => {
     const phone = req.query.phone;
     const date = req.query.date;
     const clientId = req.query.clientId;
+    const reason = req.query.reason;
     const localDate = utilities.getLocalDate(date);
     const bookingData = {
       serviceCenterId,
       serviceId,
       slotId,
       date: localDate,
+      time: new Date().getHours(),
       phone,
       userId: clientId,
       canceledBy: "service center",
+      reason,
     };
     const bookingDeleted = await scServices.cancelClientBooking(bookingData);
     if (bookingDeleted) {
@@ -463,6 +502,7 @@ exports.deleteClientBooking = async (req, res, next) => {
     next(err);
   }
 };
+
 /**********************************************************
  * Check Report
  **********************************************************/
@@ -521,7 +561,8 @@ exports.postCreateCheckReport = async (req, res, next) => {
 exports.getCheckReports = async (req, res, next) => {
   try {
     const date = req.query.date;
-    const checkReports = await scServices.checkReports(date);
+    const serviceCenterId = req.sc.serviceCenterId;
+    const checkReports = await scServices.checkReports(date, serviceCenterId);
     res.status(200).json({ success: true, checkReports });
   } catch (err) {
     next(err);

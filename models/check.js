@@ -34,6 +34,7 @@ const checkSchema = new Schema(
         quantity: { type: Number },
         price: { type: Number },
         amount: { type: Number },
+        clientApproved: { type: Boolean, default: false },
       },
     ],
     total: {

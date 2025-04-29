@@ -119,3 +119,36 @@ exports.getClientChats = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.getWaitingClients = async (req, res, next) => {
+  try {
+    const waitingList = await chatServices.waitingList();
+    res.status(200).json({ success: true, waitingList });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getNumberOfCurrentChats = async (req, res, next) => {
+  try {
+    const currentChats = await chatServices.countCurrentChats();
+    res
+      .status(200)
+      .json({ success: true, currentChats: currentChats.currentChatsArray });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getClientOrderDetails = async (req, res, next) => {
+  try {
+    const { orderId, userId } = req.query;
+    const { user, orderDetails } = await chatServices.clientOrderDetails(
+      orderId,
+      userId
+    );
+    res.status(200).json({ success: true, user, orderDetails });
+  } catch (err) {
+    next(err);
+  }
+};

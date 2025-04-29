@@ -80,6 +80,8 @@ bookingSchema.methods.createBooking = function (bookingData) {
       const slot = slots[slotIndex];
       if (slot.slotIsFull) {
         throw new Error("booking time is full, please select another time");
+      } else if (slot.clients.length >= bookingData.maximumCapacity) {
+        throw new Error("Service center reached maximum capacity");
       }
       const booking = {
         clientName: bookingData.clientName,
@@ -141,6 +143,14 @@ bookingSchema.methods.cancelBooking = function (bookingData) {
     const slotIndex = currentCalendar[dayIndex].slots.findIndex((slot) => {
       return slot._id.toString() === bookingData.slotId.toString();
     });
+    if (bookingData.allowedCancelHours) {
+      if (
+        currentCalendar[dayIndex].slots[slotIndex].time - bookingData.time <
+        bookingData.allowedCancelHours
+      ) {
+        throw new Error("Cancling booking is not allowed!");
+      }
+    }
     if (slotIndex > -1) {
       const filteredClients = currentCalendar[dayIndex].slots[
         slotIndex

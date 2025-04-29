@@ -363,6 +363,24 @@ exports.bookVisit = async (bookingData) => {
       await booking.save();
       return booking;
     } else {
+      const bookingCalendars = await Booking.findOne({
+        serviceCenterId: bookingData.serviceCenterId,
+      });
+      let currentBookers = 0;
+      for (let bookingCalendar of bookingCalendars) {
+        for (let calendar of bookingCalendar) {
+          if (calendar.date.toString() === bookingData.date.toString()) {
+            for (let slot of calendar.slots) {
+              if (slot.time === bookingData.time) {
+                currentBookers += slot.clients.length;
+              }
+            }
+          }
+        }
+      }
+      if (currentBookers >= bookingData.maximumCapacity) {
+        throw new Error("Maximum capacity exceeded!");
+      }
       booking = await bookingCalendar.createBooking(bookingData);
     }
     return booking;
@@ -515,8 +533,12 @@ exports.updateCheckReport = async (checkReportId, checkDetails) => {
     let totalCost = 0;
     for (let detail of checkDetails) {
       totalCost += detail.amount;
+      for (let check of checkReport.checkDetails) {
+        if (check.service === detail.service) {
+          check.clientApproved = true;
+        }
+      }
     }
-    checkReport.checkDetails = checkDetails;
     checkReport.total = totalCost;
     checkReport.reportStatus = "confirmed";
     await checkReport.save();

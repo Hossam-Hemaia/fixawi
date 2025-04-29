@@ -51,6 +51,10 @@ const chatSchema = new Schema(
       issueCategory: { type: String },
       satisfactionScore: { type: String },
     },
+    orderId: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );

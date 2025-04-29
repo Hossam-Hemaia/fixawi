@@ -599,6 +599,7 @@ exports.getClientPromotions = async (req, res, next) => {
     next(err);
   }
 };
+
 /**********************************************
  * Booking Controllers
  **********************************************/
@@ -663,6 +664,7 @@ exports.postCreateBooking = async (req, res, next) => {
     const bookingData = {
       serviceCenterId,
       serviceId,
+      maximumCapacity: bookingSettings.maximumCapacity,
       serviceName: service.serviceId.subCategoryName,
       slotCapacity: service.capacity,
       date: utilities.getLocalDate(date),
@@ -763,6 +765,7 @@ exports.putEditUserBooking = async (req, res, next) => {
 exports.deleteUserBooking = async (req, res, next) => {
   try {
     const bookingId = req.query.bookingId;
+    const reason = req.query.reason;
     const userId = req.userId;
     const user = await userServices.findUserById(userId);
     const oldBookingData = user.myBookings.find((booking) => {
@@ -772,6 +775,7 @@ exports.deleteUserBooking = async (req, res, next) => {
     oldBookingData.clientName = user.fullName;
     oldBookingData.phone = user.phoneNumber;
     oldBookingData.canceledBy = "client";
+    oldBookingData.reason = reason;
     const oldBookingRemoved = await userServices.removeBooking(oldBookingData);
     if (oldBookingRemoved) {
       await userServices.addCanceledBooking(oldBookingData);

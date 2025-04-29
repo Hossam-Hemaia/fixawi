@@ -18,7 +18,13 @@ const driverSchema = new Schema(
     truckNumber: {
       type: String,
     },
-    driverDocs: [],
+    driverDocs: [
+      {
+        docName: { type: String },
+        url: { type: String },
+        isApproved: { type: Boolean, default: false },
+      },
+    ],
     driverLogId: {
       type: Schema.Types.ObjectId,
       ref: "driverLog",

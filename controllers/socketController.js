@@ -13,6 +13,7 @@ exports.updateSocket = async (socket) => {
       const username = event.username;
       const role = event.role;
       await cacheDB.hSet(`${username}-s`, "socket", JSON.stringify(socket.id));
+      console.log("Updating Socket...");
       if (role === "driver") {
         const driver = await driverServices.getDriverByUsername(username);
         const driverLog = await driverServices.getDriverLog(driver.driverLogId);
@@ -51,6 +52,12 @@ exports.driverAccepted = async (socket) => {
     }
     const userSocket = await utilities.getSocketId(user.phoneNumber);
     if (order.orderStatus[order.orderStatus.length - 1].state !== "canceled") {
+      const token = await utilities.getFirebaseToken(order.clientId);
+      await utilities.sendPushNotification(
+        token,
+        "rescue driver on the way",
+        "driver accepted your rescue order request, please be patient"
+      );
       await driverServices.assignDriver(driverId);
       await orderServices.assignOrder(orderId, driverId);
       const driver = await driverServices.findDriver(driverId);
@@ -95,10 +102,28 @@ exports.driverCurrentLocation = async (socket) => {
   try {
     const io = require("../socket").getIo();
     socket.on("current_location", async (event) => {
-      const { clientPhoneNumber, location, flag, orderId } = event;
-      console.log(location);
+      const { clientPhoneNumber, location, flag, orderId, userLocation } =
+        event;
+      const driverData = {
+        driverId: event.driverId,
+        location: {
+          type: "Point",
+          coordinates: [location.lng, location.lat],
+        },
+      };
+      await driverServices.updateDriverLog(driverData);
       const userSocket = await utilities.getSocketId(clientPhoneNumber);
       io.to(userSocket).emit("driver_location", { location });
+      if (userLocation) {
+        const coords = {
+          fromPoint: { latitude: location.lat, longitude: location.lng },
+          toPoint: { latitude: userLocation.lat, longitude: userLocation.lng },
+        };
+        let inSpot = utilities.isInSpot(coords);
+        if (inSpot) {
+          socket.emit("driver_in_spot", { inSpot });
+        }
+      }
       if (flag === "picking up") {
         await orderServices.updateOrderStatus(orderId, "transporting");
         io.to(userSocket).emit("transporting", { orderId });
@@ -143,7 +168,6 @@ exports.driverDeliveredOrder = async (socket) => {
         const order = await orderServices.findOrder(orderId);
         await driverServices.releaseDriver(driverId);
         const userSocket = await utilities.getSocketId(order.phoneNumber);
-        console.log("order_finished", userSocket);
         io.to(userSocket).emit("order_delivered", { order });
       }
     });
@@ -226,6 +250,7 @@ exports.userHandShake = async (socket) => {
             message: msg.welcoming,
           },
         ],
+        orderId: event.orderId,
       };
       const chat = await chatServices.createChat(event.isNewChat, chatData);
       if (!callAgent) {

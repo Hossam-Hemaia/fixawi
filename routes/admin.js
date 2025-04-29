@@ -356,6 +356,18 @@ router.get(
   adminController.getPendingPromotions
 );
 
+router.post(
+  "/admin/create/promotion",
+  isAuth.adminIsAuth,
+  scController.postCreatePromotion
+);
+
+router.put(
+  "/admin/update/promotion",
+  isAuth.adminIsAuth,
+  scController.putUpdatePromotion
+);
+
 router.put(
   "/set/promotion/approval",
   isAuth.adminIsAuth,
@@ -392,6 +404,18 @@ router.get(
   "/drivers/join/requests",
   isAuth.adminIsAuth,
   adminController.getDriversJoinRequests
+);
+
+router.post(
+  "/approve/driver/request",
+  isAuth.adminIsAuth,
+  adminController.postApproveDriver
+);
+
+router.post(
+  "/approve/driver/document",
+  isAuth.adminIsAuth,
+  adminController.postApproveDriverDocument
 );
 
 router.post(

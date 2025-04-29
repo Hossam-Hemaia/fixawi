@@ -21,6 +21,7 @@ const chatRouter = require("./routes/chat");
 const logger = require("./middleware/logger");
 
 const socketController = require("./controllers/socketController");
+const adminServices = require("./services/adminServices");
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -61,6 +62,11 @@ app.use(compression());
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/files", express.static(path.join(__dirname, "files")));
 app.use(multer({ storage: fileStorage }).array("files"));
+
+cron.schedule("1 18 * * *", async () => {
+  const date = new Date();
+  await adminServices.bookingReminder(date);
+});
 
 app.use(process.env.API, authRouter);
 app.use(process.env.API, userRouter);

@@ -14,6 +14,7 @@ const CanceledBooking = require("../models/canceledBookings");
 const Check = require("../models/check");
 const Wallet = require("../models/wallet");
 const Movement = require("../models/movement");
+const utilities = require("../utils/utilities");
 
 /***************System Users*************/
 exports.createAdmin = async (adminData) => {
@@ -746,8 +747,48 @@ exports.driversJoinRequests = async () => {
   }
 };
 
+exports.approveDriver = async (driverData) => {
+  try {
+    const driver = await Driver.findById(driverData.driverId);
+    if (!driver) {
+      throw new Error("Driver not found!");
+    }
+    driver.isActive = driverData.isActive;
+    driver.isApproved = driverData.isApproved;
+    await driver.save();
+    return driver;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.approveDriverDoc = async (docData) => {
+  try{
+    const driver = await Driver.findById(docData.driverId);
+    let docs = driver.driverDocs;
+    const docIndex = docs.findIndex(idx => {
+      return idx._id.toString() === docData.documentId.toString();
+    });
+    if (docIndex > -1){
+      const doc = docs[docIndex];
+      doc.isApproved = docData.isApproved;
+      docs[docIndex] = doc;
+    }
+    driver.driverDocs = docs;
+    await driver.save();
+  }catch(err){
+    throw err;
+  }
+}
+
 exports.createDriver = async (driverData) => {
   try {
+    const oldDriver = await Driver.findOne({
+      phoneNumber: driverData.phoneNumber,
+    });
+    if (oldDriver) {
+      throw new Error("driver phone number is already registered!");
+    }
     const driver = new Driver(driverData);
     const wallet = new Wallet({
       driverId: driver._id,
@@ -801,6 +842,7 @@ exports.deleteDriver = async (driverId) => {
     throw err;
   }
 };
+
 /*******************Settings******************/
 exports.setAppSettings = async (settingsData) => {
   try {
@@ -867,6 +909,29 @@ exports.setCheckReportStatus = async (checkReportId, status) => {
     checkReport.reportStatus = status;
     await checkReport.save();
     return checkReport;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.bookingReminder = async (currentDate) => {
+  try {
+    const localCurrentDate = utilities.getLocalDate(currentDate);
+    const clients = await User.find({
+      myBookings: {
+        $elemMatch: {
+          date: { $gt: localCurrentDate },
+        },
+      },
+    });
+    for (let client of clients) {
+      const token = await utilities.getFirebaseToken(client._id);
+      await utilities.sendPushNotification(
+        token,
+        "تذكير بحجز الصيانه",
+        "نذكركم بان لديكم حجز لصيانة السياره غدا"
+      );
+    }
   } catch (err) {
     throw err;
   }

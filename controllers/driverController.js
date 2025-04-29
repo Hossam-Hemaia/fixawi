@@ -20,7 +20,7 @@ exports.postSubmitDriverApplication = async (req, res, next) => {
     if (files.length > 0) {
       for (let file of files) {
         let docUrl = `${req.protocol}s://${req.get("host")}/${file.path}`;
-        docs.push(docUrl);
+        docs.push({ docName: file.originalname, url: docUrl });
       }
     }
     const driverData = {

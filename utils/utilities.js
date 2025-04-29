@@ -3,6 +3,7 @@ const firebaseAdmin = require("firebase-admin");
 const rdsClient = require("../config/redisConnect");
 const Settings = require("../models/settings");
 const axios = require("axios");
+const geolib = require("geolib");
 
 exports.tokenCreator = () => {
   try {
@@ -69,6 +70,7 @@ exports.sendPushNotification = async (token, title, message) => {
 exports.getFirebaseToken = async (userId) => {
   try {
     const cacheDb = await rdsClient.getRedisConnection();
+    console.log(userId);
     const userToken = await cacheDb.hGetAll(`${userId}`);
     const token = JSON.parse(userToken.fbaseToken);
     return token;
@@ -143,6 +145,10 @@ exports.getDriverCache = async (driverId) => {
   try {
     const cacheDB = await rdsClient.getRedisConnection();
     const driver = await cacheDB.hGetAll(`${driverId}-c`);
+    if (!driver) {
+      return {};
+    }
+    console.log(driverId, driver);
     const driverCache = JSON.parse(driver.cache);
     return driverCache;
   } catch (err) {
@@ -237,5 +243,19 @@ exports.textLang = (str) => {
     return true;
   } else {
     return false;
+  }
+};
+
+exports.isInSpot = (coords) => {
+  try {
+    const spotDistance = 200; // value in meter
+    let inSpot = false;
+    const distance = geolib.getDistance(coords.fromPoint, coords.toPoint);
+    if (distance <= spotDistance) {
+      inSpot = true;
+    }
+    return inSpot;
+  } catch (err) {
+    next(err);
   }
 };

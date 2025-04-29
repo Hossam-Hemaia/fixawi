@@ -114,11 +114,25 @@ exports.postLogin = async (req, res, next) => {
         expiresIn: "1y",
         audience: user._id.toString(),
       });
+      let hasActiveOrder = false;
       const lastOrder = await orderServices.findLastPendingOrder(user._id);
       const lastOrderId = lastOrder ? lastOrder._id : "";
-      res
-        .status(201)
-        .json({ success: true, user, token, refreshToken, lastOrderId });
+      const lastBooking = user.myBookings[user.myBookings.length - 1];
+      const hasBooking =
+        lastBooking.date.localeDateString() > new Date().toLocaleDateString()
+          ? true
+          : false;
+      if (hasBooking || lastOrderId !== "") {
+        hasActiveOrder = true;
+      }
+      res.status(201).json({
+        success: true,
+        user,
+        token,
+        refreshToken,
+        lastOrderId,
+        hasActiveOrder,
+      });
     }
   } catch (err) {
     next(err);

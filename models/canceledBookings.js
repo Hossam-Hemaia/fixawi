@@ -28,6 +28,9 @@ const canceledBookingSchema = new mongoose.Schema(
     canceledBy: {
       type: String,
     },
+    reason: {
+      type: String,
+    },
   },
   { timestamps: true }
 );

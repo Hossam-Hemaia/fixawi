@@ -20,6 +20,9 @@ const promotionSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "service_center",
     },
+    imageUrl: {
+      type: String,
+    },
   },
   {
     timestamps: true,

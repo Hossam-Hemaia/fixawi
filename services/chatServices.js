@@ -4,6 +4,8 @@ const WaitingList = require("../models/waitingList");
 const Admin = require("../models/admin");
 const User = require("../models/user");
 const Chat = require("../models/chat");
+const Order = require("../models/orders");
+const Visit = require("../models/visit");
 
 exports.createQueue = async (userData) => {
   try {
@@ -163,23 +165,81 @@ exports.currentChats = async (agentId) => {
   try {
     const agentQueue = await Queue.findOne({ callAgentId: agentId });
     const chats = [];
-    for (let clientId of agentQueue.clients) {
-      let chat = await Chat.findOne({
-        userId: clientId,
-        agentId: agentId,
-      }).sort({ createdAt: -1 });
-      let client = await User.findById(clientId);
-      if (chat) {
-        let chatData = {
-          chatId: chat._id,
-          clientName: client.fullName,
-          userId: client._id,
-          chatHistory: chat.messages,
-        };
-        chats.push(chatData);
+    if (agentQueue) {
+      for (let clientId of agentQueue.clients) {
+        let chat = await Chat.findOne({
+          userId: clientId,
+          agentId: agentId,
+        }).sort({ createdAt: -1 });
+        let client = await User.findById(clientId);
+        if (chat) {
+          let chatData = {
+            chatId: chat._id,
+            clientName: client.fullName,
+            userId: client._id,
+            chatHistory: chat.messages,
+          };
+          chats.push(chatData);
+        }
       }
     }
     return chats;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.countCurrentChats = async () => {
+  try {
+    const pipeline = [
+      {
+        $match: {}, // You can add any matching criteria here if needed
+      },
+      {
+        $lookup: {
+          from: "admin", // Make sure this matches your admin collection name
+          localField: "callAgentId",
+          foreignField: "_id",
+          as: "agentDetails",
+        },
+      },
+      {
+        $unwind: {
+          path: "$agentDetails",
+          preserveNullAndEmptyArrays: true, // This keeps documents even if no agent is found
+        },
+      },
+      {
+        $project: {
+          agentName: "$agentDetails.fullName", // Replace "name" with the actual field name in your admin schema
+          username: 1,
+          maxQueue: 1,
+          currentChats: 1,
+          _id: 0, // Exclude the _id field from the output
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          currentChatsArray: {
+            $push: {
+              agentName: "$agentName",
+              username: "$username",
+              maxChatsAllowed: "$maxQueue",
+              currentChats: "$currentChats",
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          currentChatsArray: 1,
+        },
+      },
+    ];
+    const currentChats = await Queue.aggregate(pipeline);
+    return currentChats[0];
   } catch (err) {
     throw err;
   }
@@ -264,6 +324,39 @@ exports.userChats = async (userId) => {
   try {
     const userChats = await Chat.find({ userId });
     return userChats;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.waitingList = async () => {
+  try {
+    const waitingList = await WaitingList.find().populate({
+      path: "userId",
+      select: "-myBookings -password",
+    });
+    return waitingList;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.clientOrderDetails = async (orderId, userId) => {
+  try {
+    let orderDetails;
+    orderDetails = await Visit.findById(orderId);
+    if (!orderDetails) {
+      orderDetails = await Order.findById(orderId);
+    }
+    const user = await User.findById(userId, {
+      fullName: 1,
+      phoneNumber: 1,
+      userCars: 1,
+      isActive: 1,
+      isBlocked: 1,
+      myBookings: 1,
+    });
+    return { user, orderDetails };
   } catch (err) {
     throw err;
   }

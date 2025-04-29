@@ -26,6 +26,9 @@ const settingsSchema = new Schema(
     fixawiRescueFare: {
       type: Number,
     },
+    CancelBookingHours: {
+      type: Number,
+    },
     chatQueue: {
       type: Number,
     },
