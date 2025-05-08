@@ -21,7 +21,7 @@ exports.createAdmin = async (adminData) => {
   try {
     const adminUsername = await Admin.findOne({ username: adminData.username });
     if (adminUsername) {
-      throw new error("This username is taken");
+      throw new Error("This username is taken");
     }
     const admin = new Admin(adminData);
     await admin.save();

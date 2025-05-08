@@ -46,7 +46,6 @@ exports.emailSender = async (email, verificationCode, emailType = "reset") => {
     };
   }
   const emailStatus = await transporter.sendMail(emailOptions);
-  console.log(emailStatus);
 };
 
 exports.sendPushNotification = async (token, title, message) => {
@@ -70,7 +69,6 @@ exports.sendPushNotification = async (token, title, message) => {
 exports.getFirebaseToken = async (userId) => {
   try {
     const cacheDb = await rdsClient.getRedisConnection();
-    console.log(userId);
     const userToken = await cacheDb.hGetAll(`${userId}`);
     const token = JSON.parse(userToken.fbaseToken);
     return token;
@@ -130,6 +128,26 @@ exports.getNowLocalDate = (date) => {
   return localDate;
 };
 
+exports.convertToStartOfDay = (date) => {
+  // If input is a string, convert to Date object
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+
+  // Create new date with same year, month, day but at 00:00:00.000
+  const startOfDay = new Date(
+    Date.UTC(
+      dateObj.getUTCFullYear(),
+      dateObj.getUTCMonth(),
+      dateObj.getUTCDate(),
+      0,
+      0,
+      0,
+      0
+    )
+  );
+
+  return startOfDay;
+};
+
 exports.getSocketId = async (username) => {
   try {
     const cacheDB = rdsClient.getRedisConnection();
@@ -148,7 +166,6 @@ exports.getDriverCache = async (driverId) => {
     if (!driver) {
       return {};
     }
-    console.log(driverId, driver);
     const driverCache = JSON.parse(driver.cache);
     return driverCache;
   } catch (err) {

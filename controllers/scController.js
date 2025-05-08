@@ -233,7 +233,6 @@ exports.getVisits = async (req, res, next) => {
                   for (let client of slot.clients) {
                     client.time = slot.time;
                     client.bookingId = bookingMap._id;
-                    console.log(client);
                     bookingClients.push(client);
                   }
                 }
@@ -562,7 +561,7 @@ exports.postCreateCheckReport = async (req, res, next) => {
         checkDetails,
         total,
         isBooking,
-        bookingsCalendarId: bookingId,
+        bookingCalendarId: bookingId,
         bookingTime: time,
         slotId: visitId,
       };
@@ -589,7 +588,7 @@ exports.postCreateCheckReport = async (req, res, next) => {
         visitId,
         date,
         time,
-        "invoiced"
+        "checking"
       );
     }
     const pushToken = await utilities.getFirebaseToken(clientId);
@@ -699,7 +698,7 @@ exports.postCreateInvoice = async (req, res, next) => {
       phoneNumber,
       carBrand,
       carModel,
-      date: utilities.getNowLocalDate(date),
+      date: utilities.convertToStartOfDay(date),
       invoiceDetails,
       subTotal,
       fixawiFare,

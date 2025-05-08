@@ -615,6 +615,9 @@ exports.getUserBookingCalendar = async (req, res, next) => {
     const openingHour = serviceCenter.openAt;
     const closingHour = serviceCenter.closeAt;
     const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    if (!bookingSettings) {
+      throw new Error("Booking plan has not been set!");
+    }
     const service = bookingSettings.services.find((service) => {
       return service.serviceId._id.toString() === serviceId.toString();
     });
@@ -663,6 +666,9 @@ exports.postCreateBooking = async (req, res, next) => {
       serviceCenterId
     );
     const bookingSettings = await scServices.bookingSettings(serviceCenterId);
+    if (!bookingSettings) {
+      throw new Error("Booking plan has not been set!");
+    }
     const service = bookingSettings.services.find((service) => {
       return service.serviceId._id.toString() === serviceId.toString();
     });

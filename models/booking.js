@@ -93,7 +93,6 @@ bookingSchema.methods.createBooking = function (bookingData) {
             },
           ],
         };
-        console.log(slot);
       } else {
         slot = slots[slotIndex];
         const booking = {
@@ -143,8 +142,7 @@ bookingSchema.methods.updateBooking = function (bookingData) {
     }
     const slots = currentCalendar[dayIndex].slots;
     const slotIndex = slots.findIndex((slot) => {
-      console.log(slot.time, bookingData.time);
-      return `${slot.time}` === `${bookingData.time}`;
+      return `${slot.time}` == `${bookingData.time}`;
     });
     if (slotIndex < 0) {
       throw new Error("slot does not exist!");

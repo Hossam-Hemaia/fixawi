@@ -24,7 +24,6 @@ exports.servicesCategories = async () => {
 
 exports.setPriceListDisapproved = async (priceListId) => {
   try {
-    console.log(priceListId);
     const priceList = await PriceList.findById(priceListId);
     priceList.priceListApporved = false;
     await priceList.save();
@@ -225,9 +224,9 @@ exports.setBookingStatus = async (
     const bookingData = {
       checkReportId,
       visitId,
-      date: new Date(date),
+      date: utilities.convertToStartOfDay(date),
       time,
-      status: bookingStatus ? bookingStatus : "checking",
+      status: bookingStatus,
     };
     const bookingCalendar = await Booking.findById(bookingId);
     const booking = await bookingCalendar.updateBooking(bookingData);
@@ -254,7 +253,7 @@ exports.checkReports = async (date, serviceCenterId) => {
     const localDate = utilities.getLocalDate(date);
     const checkReports = await Check.find({
       serviceCenterId,
-      date: localDate,
+      date: { $gte: localDate },
     }).sort({ createdAt: -1 });
     return checkReports;
   } catch (err) {
@@ -321,7 +320,7 @@ exports.createInvoice = async (invoiceData) => {
         checkReport.slotId,
         checkReport.date,
         checkReport.bookingTime,
-        ""
+        "invoiced"
       );
     }
     return invoice;
@@ -335,7 +334,7 @@ exports.serviceCenterInvoices = async (dateFrom, dateTo, serviceCenterId) => {
     const localStartDate = utilities.getLocalDate(dateFrom);
     const localEndDate = utilities.getEndLocalDate(dateTo);
     const invoices = await Invoice.find({
-      date: { $gte: localStartDate, $lte: localEndDate },
+      createdAt: { $gte: localStartDate, $lte: localEndDate },
       serviceCenterId: serviceCenterId,
     });
     return invoices;
