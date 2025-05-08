@@ -698,6 +698,12 @@ exports.setPromotionApproval = async (promotionId, status) => {
   try {
     const promotion = await Promotion.findById(promotionId);
     promotion.approved = status;
+    const serviceCenter = await ServiceCenter.findById(
+      promotion.serviceCenterId
+    );
+    if (serviceCenter) {
+      serviceCenter.hasOffer = status;
+    }
     await promotion.save();
     return promotion;
   } catch (err) {
@@ -763,23 +769,23 @@ exports.approveDriver = async (driverData) => {
 };
 
 exports.approveDriverDoc = async (docData) => {
-  try{
+  try {
     const driver = await Driver.findById(docData.driverId);
     let docs = driver.driverDocs;
-    const docIndex = docs.findIndex(idx => {
+    const docIndex = docs.findIndex((idx) => {
       return idx._id.toString() === docData.documentId.toString();
     });
-    if (docIndex > -1){
+    if (docIndex > -1) {
       const doc = docs[docIndex];
       doc.isApproved = docData.isApproved;
       docs[docIndex] = doc;
     }
     driver.driverDocs = docs;
     await driver.save();
-  }catch(err){
+  } catch (err) {
     throw err;
   }
-}
+};
 
 exports.createDriver = async (driverData) => {
   try {

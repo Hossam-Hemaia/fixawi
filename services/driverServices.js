@@ -5,6 +5,15 @@ const Settings = require("../models/settings");
 const orderServices = require("../services/orderServices");
 const Wallet = require("../models/wallet");
 
+exports.driverProfile = async (driverId) => {
+  try {
+    const driver = await Driver.findById(driverId);
+    return driver;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.getDriverByUsername = async (username) => {
   try {
     const driver = await Driver.findOne({ phoneNumber: username });

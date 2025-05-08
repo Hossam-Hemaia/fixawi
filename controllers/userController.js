@@ -135,19 +135,24 @@ exports.getNearServiceCenters = async (req, res, next) => {
 exports.filterServiceCenters = async (req, res, next) => {
   try {
     const { lat, lng, maxDistance, carBrand, serviceNames } = req.query;
-    if (!lat || !lng || lat === "" || lng === "") {
-      const error = new Error("Location coordenates are required!");
-      error.statusCode = 422;
-      throw error;
-    }
+    // if (!lat || !lng || lat === "" || lng === "") {
+    //   const error = new Error("Location coordenates are required!");
+    //   error.statusCode = 422;
+    //   throw error;
+    // }
     let services = [];
     if (serviceNames) {
       services = JSON.parse(serviceNames);
     }
-    const distance = maxDistance || 20000;
-    const coords = [lat, lng];
     const filter = {
-      location: {
+      isActive: true,
+      isApproved: true,
+    };
+    let location;
+    if (lat && lng && lat !== "" && lng !== "") {
+      const distance = maxDistance || 20000;
+      const coords = [lat, lng];
+      location = {
         $near: {
           $geometry: {
             type: "Point",
@@ -155,10 +160,9 @@ exports.filterServiceCenters = async (req, res, next) => {
           },
           $maxDistance: distance,
         },
-      },
-      isActive: true,
-      isApproved: true,
-    };
+      };
+      filter.location = location;
+    }
     if (carBrand && carBrand !== "") {
       filter.carBrands = { $elemMatch: { $regex: new RegExp(carBrand, "i") } };
     }
@@ -167,6 +171,7 @@ exports.filterServiceCenters = async (req, res, next) => {
         $all: services.map((name) => new RegExp(name, "i")),
       };
     }
+    console.log(filter);
     const filteredCenters = await userServices.filterCenters(filter);
     res.status(200).json({ success: true, serviceCenters: filteredCenters });
   } catch (err) {

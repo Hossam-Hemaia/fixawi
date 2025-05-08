@@ -12,6 +12,13 @@ const promotionSchema = new Schema(
     expiryDate: {
       type: Date,
     },
+    discountType: {
+      type: String,
+      enum: ["ration", "fixed amount"],
+    },
+    discountValue: {
+      type: Number,
+    },
     approved: {
       type: Boolean,
       default: false,

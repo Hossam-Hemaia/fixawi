@@ -24,6 +24,12 @@ const bookingSchema = new Schema(
                 carBrand: { type: String },
                 carModel: { type: String },
                 malfuncion: { type: String },
+                bookingStatus: {
+                  type: String,
+                  default: "pending",
+                  enum: ["pending", "checking", "invoiced"],
+                },
+                checkReportId: { type: Schema.Types.ObjectId, ref: "check" },
                 promotionId: { type: Schema.Types.ObjectId, ref: "promotion" },
               },
             ],
@@ -59,7 +65,6 @@ bookingSchema.methods.createBooking = function (bookingData) {
                 carModel: bookingData.carModel,
               },
             ],
-            slotIsFull: { type: Boolean, default: false },
           },
         ],
       };
@@ -74,33 +79,88 @@ bookingSchema.methods.createBooking = function (bookingData) {
       const slotIndex = slots.findIndex((slot) => {
         return slot.time === bookingData.time;
       });
+      let slot;
       if (slotIndex <= -1) {
-        throw new Error("slot does not exist!");
+        slot = {
+          time: bookingData.time,
+          clients: [
+            {
+              clientId: bookingData.clientId,
+              clientName: bookingData.clientName,
+              phone: bookingData.phone,
+              carBrand: bookingData.carBrand,
+              carModel: bookingData.carModel,
+            },
+          ],
+        };
+        console.log(slot);
+      } else {
+        slot = slots[slotIndex];
+        const booking = {
+          clientId: bookingData.clientId,
+          clientName: bookingData.clientName,
+          phone: bookingData.phone,
+          carBrand: bookingData.carBrand,
+          carModel: bookingData.carModel,
+        };
+        slot.clients.push(booking);
       }
-      const slot = slots[slotIndex];
       if (slot.slotIsFull) {
         throw new Error("booking time is full, please select another time");
       } else if (slot.clients.length >= bookingData.maximumCapacity) {
-        throw new Error("Service center reached maximum capacity");
+        throw new Error("Service center reached maximum capacity at this time");
       }
-      const booking = {
-        clientName: bookingData.clientName,
-        phone: bookingData.phone,
-        carBrand: bookingData.carBrand,
-        carModel: bookingData.carModel,
-      };
-      slot.clients.push(booking);
       let slotIsFull = false;
       if (slot.clients.length === bookingData.slotCapacity) {
         slotIsFull = true;
       }
       slot.slotIsFull = slotIsFull;
-      slots[slotIndex] = slot;
-      currentCalendar[dayIndex].slots = slots;
+      if (slotIndex > -1) {
+        slots[slotIndex] = slot;
+        currentCalendar[dayIndex].slots = slots;
+      } else {
+        currentCalendar[dayIndex].slots.push(slot);
+      }
       this.calendar = currentCalendar;
       this.save();
       return this;
     }
+  } catch (err) {
+    throw err;
+  }
+};
+
+bookingSchema.methods.updateBooking = function (bookingData) {
+  try {
+    const currentCalendar = this.calendar;
+    const dayIndex = currentCalendar.findIndex((cal) => {
+      return (
+        cal.date.toLocaleDateString() === bookingData.date.toLocaleDateString()
+      );
+    });
+    if (dayIndex <= -1) {
+      throw new Error("Incorrect booking date!");
+    }
+    const slots = currentCalendar[dayIndex].slots;
+    const slotIndex = slots.findIndex((slot) => {
+      console.log(slot.time, bookingData.time);
+      return `${slot.time}` === `${bookingData.time}`;
+    });
+    if (slotIndex < 0) {
+      throw new Error("slot does not exist!");
+    }
+    let slot = slots[slotIndex];
+    for (let client of slot.clients) {
+      if (client._id.toString() === bookingData.visitId.toString()) {
+        client.bookingStatus = bookingData.status;
+        client.checkReportId = bookingData.checkReportId;
+      }
+    }
+    slots[slotIndex] = slot;
+    currentCalendar[dayIndex].slots = slots;
+    this.calendar = currentCalendar;
+    this.save();
+    return this;
   } catch (err) {
     throw err;
   }

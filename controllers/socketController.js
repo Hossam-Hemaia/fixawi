@@ -52,16 +52,19 @@ exports.driverAccepted = async (socket) => {
     }
     const userSocket = await utilities.getSocketId(user.phoneNumber);
     if (order.orderStatus[order.orderStatus.length - 1].state !== "canceled") {
-      const token = await utilities.getFirebaseToken(order.clientId);
-      await utilities.sendPushNotification(
-        token,
-        "rescue driver on the way",
-        "driver accepted your rescue order request, please be patient"
-      );
+      console.log("driver accepted");
       await driverServices.assignDriver(driverId);
       await orderServices.assignOrder(orderId, driverId);
       const driver = await driverServices.findDriver(driverId);
       io.to(userSocket).emit("driver_assigned", { order, driver });
+      const token = await utilities.getFirebaseToken(order.clientId);
+      if (token) {
+        await utilities.sendPushNotification(
+          token,
+          "rescue driver on the way",
+          "driver accepted your rescue order request, please be patient"
+        );
+      }
     } else {
       socket.emit("order_canceled", { order });
     }
@@ -196,6 +199,7 @@ exports.getDriverCache = async (socket) => {
   try {
     socket.on("get_driver_cache", async (event) => {
       const driverCache = await utilities.getDriverCache(event.driverId);
+      console.log(driverCache);
       socket.emit("driver_cache", driverCache);
     });
   } catch (err) {

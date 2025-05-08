@@ -117,11 +117,17 @@ exports.postLogin = async (req, res, next) => {
       let hasActiveOrder = false;
       const lastOrder = await orderServices.findLastPendingOrder(user._id);
       const lastOrderId = lastOrder ? lastOrder._id : "";
-      const lastBooking = user.myBookings[user.myBookings.length - 1];
-      const hasBooking =
-        lastBooking.date.localeDateString() > new Date().toLocaleDateString()
-          ? true
-          : false;
+      let lastBooking;
+      if (user.myBookings && user.myBookings.length > 0) {
+        lastBooking = user.myBookings[user.myBookings.length - 1];
+      }
+      let hasBooking;
+      if (lastBooking) {
+        hasBooking =
+          lastBooking.date.localeDateString() > new Date().toLocaleDateString()
+            ? true
+            : false;
+      }
       if (hasBooking || lastOrderId !== "") {
         hasActiveOrder = true;
       }

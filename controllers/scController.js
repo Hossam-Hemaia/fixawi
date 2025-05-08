@@ -6,7 +6,7 @@ const userServices = require("../services/userServices");
 const utilities = require("../utils/utilities");
 
 /**********************************************************
- * Price List
+ * Service Center
  **********************************************************/
 exports.postJoinRequest = async (req, res, next) => {
   try {
@@ -229,7 +229,14 @@ exports.getVisits = async (req, res, next) => {
               utilities.getLocalDate(date).toString()
             ) {
               for (let slot of calDate.slots) {
-                bookingClients.push(...slot.clients);
+                if (slot.clients.length > 0) {
+                  for (let client of slot.clients) {
+                    client.time = slot.time;
+                    client.bookingId = bookingMap._id;
+                    console.log(client);
+                    bookingClients.push(client);
+                  }
+                }
               }
             }
           }
@@ -247,7 +254,7 @@ exports.getVisitorDetails = async (req, res, next) => {
     const userId = req.query.userId;
     const visitId = req.query.visitId;
     const user = await scServices.visitorDetails(userId);
-    await scServices.setVisitStatus(visitId, "visited");
+    await scServices.setVisitStatus(visitId, "", "visited");
     res.status(200).json({ success: true, user });
   } catch (err) {
     next(err);
@@ -275,6 +282,8 @@ exports.postCreatePromotion = async (req, res, next) => {
       promotionTitle,
       promotionDetails,
       promotionConditions,
+      discountType,
+      discountValue,
       expiryDate,
     } = req.body;
     const file = req.files[0];
@@ -294,6 +303,8 @@ exports.postCreatePromotion = async (req, res, next) => {
       promotionTitle,
       promotionDetails: JSON.parse(promotionDetails),
       promotionConditions: JSON.parse(promotionConditions),
+      discountType,
+      discountValue,
       expiryDate: utilities.getLocalDate(expiryDate),
       serviceCenterId,
       approved,
@@ -337,6 +348,8 @@ exports.putUpdatePromotion = async (req, res, next) => {
       promotionTitle,
       promotionDetails,
       promotionConditions,
+      discountType,
+      discountValue,
       expiryDate,
       promotionId,
     } = req.body;
@@ -357,6 +370,8 @@ exports.putUpdatePromotion = async (req, res, next) => {
       promotionTitle,
       promotionDetails: JSON.parse(promotionDetails),
       promotionConditions: JSON.parse(promotionConditions),
+      discountType,
+      discountValue,
       expiryDate: utilities.getLocalDate(expiryDate),
       serviceCenterId,
       approved,
@@ -516,7 +531,10 @@ exports.postCreateCheckReport = async (req, res, next) => {
       carBrand,
       carModel,
       date,
+      time,
+      isBooking,
       visitId,
+      bookingId,
       checkDetails,
       total,
     } = req.body;
@@ -531,20 +549,48 @@ exports.postCreateCheckReport = async (req, res, next) => {
       }
       clientId = user._id;
     }
-    const checkData = {
-      serviceCenterId,
-      userId: clientId,
-      clientName,
-      phoneNumber,
-      carBrand,
-      carModel,
-      date: utilities.getNowLocalDate(date),
-      checkDetails,
-      total,
-    };
+    let checkData;
+    if (isBooking) {
+      checkData = {
+        serviceCenterId,
+        userId: clientId,
+        clientName,
+        phoneNumber,
+        carBrand,
+        carModel,
+        date: utilities.getNowLocalDate(date),
+        checkDetails,
+        total,
+        isBooking,
+        bookingsCalendarId: bookingId,
+        bookingTime: time,
+        slotId: visitId,
+      };
+    } else {
+      checkData = {
+        serviceCenterId,
+        userId: clientId,
+        clientName,
+        phoneNumber,
+        carBrand,
+        carModel,
+        date: utilities.getNowLocalDate(date),
+        checkDetails,
+        total,
+      };
+    }
     const checkReport = await scServices.createCheckReport(checkData);
-    if (visitId) {
-      await scServices.setVisitStatus(visitId, "done");
+    if (visitId && !isBooking) {
+      await scServices.setVisitStatus(visitId, checkReport._id, "done");
+    } else if (visitId && isBooking) {
+      await scServices.setBookingStatus(
+        checkReport._id,
+        bookingId,
+        visitId,
+        date,
+        time,
+        "invoiced"
+      );
     }
     const pushToken = await utilities.getFirebaseToken(clientId);
     await utilities.sendPushNotification(
@@ -638,7 +684,7 @@ exports.postCreateInvoice = async (req, res, next) => {
     if (serviceCenter.fixawiFareType === "fixed amount") {
       fixawiFare = serviceCenter.fareValue;
     } else if (serviceCenter.fixawiFareType === "ratio") {
-      fixawiFare = subTotal * serviceCenter.fareValue;
+      fixawiFare = subTotal * (serviceCenter.fareValue / 100);
     } else if (serviceCenter.fixawiFareType === "subscription") {
       fixawiFare = 0;
     }

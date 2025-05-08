@@ -15,6 +15,10 @@ const visitSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "service_center",
     },
+    checkReportId: {
+      type: Schema.Types.ObjectId,
+      ref: "check",
+    },
     visitStatus: {
       type: String,
       default: "pending",

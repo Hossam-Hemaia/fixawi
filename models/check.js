@@ -45,6 +45,19 @@ const checkSchema = new Schema(
       enum: ["pending confirmation", "confirmed", "invoiced", "declined"],
       default: "pending confirmation",
     },
+    isBooking: {
+      type: Boolean,
+      default: false,
+    },
+    bookingCalendarId: {
+      type: Schema.Types.ObjectId,
+    },
+    bookingTime: {
+      type: String,
+    },
+    slotId: {
+      type: Schema.Types.ObjectId,
+    },
   },
   { timestamps: true }
 );

@@ -494,36 +494,36 @@ exports.getJoinRequests = async (req, res, next) => {
 
 exports.approveServiceCenter = async (req, res, next) => {
   try {
-    const { serviceCenterId, username, password, isApproved } = req.body;
+    const { serviceCenterId, isApproved } = req.body;
     const error = validationResult(req);
     if (!error.isEmpty() && error.array()[0].msg !== "Invalid value") {
       const errorMsg = new Error(error.array()[0].msg);
       errorMsg.statusCode = 422;
       throw errorMsg;
     }
-    const hashedPassword = await bcrypt.hash(password, 12);
+    // const hashedPassword = await bcrypt.hash(password, 12);
     const serviceCenterData = {
       isApproved,
-      username,
-      password: hashedPassword,
+      // username,
+      // password: hashedPassword,
     };
     const serviceCenter = await adminServices.updateServiceCenter(
       serviceCenterId,
       serviceCenterData
     );
-    const scData = {
-      fullName: serviceCenter.serviceCenterTitle,
-      username,
-      password: hashedPassword,
-      role: "service center",
-      serviceCenterId: serviceCenter._id,
-    };
-    await adminServices.createAdmin(scData);
+    // const scData = {
+    //   fullName: serviceCenter.serviceCenterTitle,
+    //   username,
+    //   password: hashedPassword,
+    //   role: "service center",
+    //   serviceCenterId: serviceCenter._id,
+    // };
+    // await adminServices.createAdmin(scData);
     res.status(201).json({
       success: true,
       message: "Service Center Approved",
-      username,
-      password,
+      // username,
+      // password,
     });
   } catch (err) {
     next(err);
@@ -591,9 +591,10 @@ exports.postWalletTransaction = async (req, res, next) => {
  **********************************************************/
 exports.postCreateBookingSettings = async (req, res, next) => {
   try {
-    const { serviceCenterId, services } = req.body;
+    const { serviceCenterId, maximumCapacity, services } = req.body;
     const bookingData = {
       serviceCenterId,
+      maximumCapacity,
       services,
     };
     const bookingSettings = await scServices.createBookingSettings(bookingData);
@@ -619,8 +620,9 @@ exports.getBookingSettings = async (req, res, next) => {
 
 exports.putUpdateBookingSettings = async (req, res, next) => {
   try {
-    const { services, bookingSettingsId } = req.body;
+    const { services, maximumCapacity, bookingSettingsId } = req.body;
     const bookingSettingsData = {
+      maximumCapacity,
       services,
     };
     const bookingSettings = await scServices.updateBookingSettings(

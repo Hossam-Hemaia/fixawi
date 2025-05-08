@@ -71,10 +71,13 @@ exports.visits = async (date, serviceCenterId) => {
   }
 };
 
-exports.setVisitStatus = async (visitId, status) => {
+exports.setVisitStatus = async (visitId, checkReportId, status) => {
   try {
     const visit = await Visit.findById(visitId);
     if (visit) {
+      if (checkReportId && checkReportId !== "") {
+        visit.checkReportId = checkReportId;
+      }
       visit.visitStatus = status;
       await visit.save();
     }
@@ -203,8 +206,34 @@ exports.bookingsCalendar = async (serviceCenterId, date) => {
     const bookingCalendar = await Booking.find({
       serviceCenterId,
       "calendar.date": { $gte: localDate, $lte: futureDate },
-    });
+    }).lean();
     return bookingCalendar;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setBookingStatus = async (
+  checkReportId,
+  bookingId,
+  visitId,
+  date,
+  time,
+  bookingStatus
+) => {
+  try {
+    const bookingData = {
+      checkReportId,
+      visitId,
+      date: new Date(date),
+      time,
+      status: bookingStatus ? bookingStatus : "checking",
+    };
+    const bookingCalendar = await Booking.findById(bookingId);
+    const booking = await bookingCalendar.updateBooking(bookingData);
+    if (booking) {
+      return true;
+    }
   } catch (err) {
     throw err;
   }
@@ -225,7 +254,7 @@ exports.checkReports = async (date, serviceCenterId) => {
     const localDate = utilities.getLocalDate(date);
     const checkReports = await Check.find({
       serviceCenterId,
-      createdAt: { $gte: localDate },
+      date: localDate,
     }).sort({ createdAt: -1 });
     return checkReports;
   } catch (err) {
@@ -284,6 +313,16 @@ exports.createInvoice = async (invoiceData) => {
     if (checkReport) {
       checkReport.reportStatus = "invoiced";
       await checkReport.save();
+    }
+    if (checkReport.isBooking) {
+      await this.setBookingStatus(
+        checkReport._id,
+        checkReport.bookingCalendarId,
+        checkReport.slotId,
+        checkReport.date,
+        checkReport.bookingTime,
+        ""
+      );
     }
     return invoice;
   } catch (err) {

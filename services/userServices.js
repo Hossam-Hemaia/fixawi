@@ -363,13 +363,13 @@ exports.bookVisit = async (bookingData) => {
       await booking.save();
       return booking;
     } else {
-      const bookingCalendars = await Booking.findOne({
+      const bookingCalendars = await Booking.find({
         serviceCenterId: bookingData.serviceCenterId,
       });
       let currentBookers = 0;
       for (let bookingCalendar of bookingCalendars) {
-        for (let calendar of bookingCalendar) {
-          if (calendar.date.toString() === bookingData.date.toString()) {
+        for (let calendar of bookingCalendar.calendar) {
+          if (calendar.date === bookingData.date) {
             for (let slot of calendar.slots) {
               if (slot.time === bookingData.time) {
                 currentBookers += slot.clients.length;
@@ -379,7 +379,9 @@ exports.bookVisit = async (bookingData) => {
         }
       }
       if (currentBookers >= bookingData.maximumCapacity) {
-        throw new Error("Maximum capacity exceeded!");
+        throw new Error(
+          "Maximum capacity exceeded! please select another time"
+        );
       }
       booking = await bookingCalendar.createBooking(bookingData);
     }

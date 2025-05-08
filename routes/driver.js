@@ -5,6 +5,12 @@ const userController = require("../controllers/userController");
 
 const router = express.Router();
 
+router.get(
+  "/driver/profile",
+  isAuth.driverIsAuth,
+  driverController.getDriverProfile
+);
+
 router.post(
   "/submit/driver/application",
   driverController.postSubmitDriverApplication

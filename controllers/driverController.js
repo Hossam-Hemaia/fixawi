@@ -4,6 +4,16 @@ const adminServices = require("../services/adminServices");
 const driverServices = require("../services/driverServices");
 const scServices = require("../services/scServices");
 
+exports.getDriverProfile = async (req, res, next) => {
+  try {
+    const driverId = req.driverId;
+    const driver = await driverServices.driverProfile(driverId);
+    res.status(200).json({ success: true, driver });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postSubmitDriverApplication = async (req, res, next) => {
   try {
     const {
