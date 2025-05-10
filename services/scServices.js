@@ -311,6 +311,7 @@ exports.createInvoice = async (invoiceData) => {
     const checkReport = await Check.findById(invoiceData.checkId);
     if (checkReport) {
       checkReport.reportStatus = "invoiced";
+      checkReport.invoiceId = invoice._id;
       await checkReport.save();
     }
     if (checkReport.isBooking) {

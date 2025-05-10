@@ -102,12 +102,19 @@ bookingSchema.methods.createBooking = function (bookingData) {
           carBrand: bookingData.carBrand,
           carModel: bookingData.carModel,
         };
+        for (let client of slot.clients) {
+          if (client.clientId.toString() === bookingData.clientId.toString()) {
+            throw new Error("You already have a booking in this time slot!");
+          }
+        }
         slot.clients.push(booking);
       }
       if (slot.slotIsFull) {
         throw new Error("booking time is full, please select another time");
       } else if (slot.clients.length >= bookingData.maximumCapacity) {
-        throw new Error("Service center reached maximum capacity at this time");
+        throw new Error(
+          "Maximum capacity reached!, Please select anothre time"
+        );
       }
       let slotIsFull = false;
       if (slot.clients.length === bookingData.slotCapacity) {

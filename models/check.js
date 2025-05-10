@@ -58,6 +58,10 @@ const checkSchema = new Schema(
     slotId: {
       type: Schema.Types.ObjectId,
     },
+    invoiceId: {
+      type: Schema.Types.ObjectId,
+      ref: "invoice",
+    },
   },
   { timestamps: true }
 );

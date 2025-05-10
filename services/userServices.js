@@ -317,6 +317,9 @@ exports.getBookedDays = async (serviceCenterId, serviceId, currentDate) => {
       serviceId,
       "calendar.date": { $gte: currentDate, $lte: futureDate },
     });
+    // .select({
+    //   "calendar.slots.clients": 0, // Exclude clients array
+    // });
     return bookings;
   } catch (err) {
     throw err;
@@ -371,7 +374,7 @@ exports.bookVisit = async (bookingData) => {
         for (let calendar of bookingCalendar.calendar) {
           if (calendar.date === bookingData.date) {
             for (let slot of calendar.slots) {
-              if (slot.time === bookingData.time) {
+              if (slot.time == bookingData.time) {
                 currentBookers += slot.clients.length;
               }
             }
@@ -410,10 +413,12 @@ exports.removeBooking = async (oldBookingData) => {
 
 exports.userBookings = async (userId) => {
   try {
-    const user = await User.findById(userId).populate({
-      path: "myBookings.serviceCenterId",
-      select: "location",
-    });
+    const user = await User.findById(userId)
+      .populate({
+        path: "myBookings.serviceCenterId",
+        select: "location",
+      })
+      .sort({ createdAt: -1 });
     return user.myBookings;
   } catch (err) {
     throw err;
