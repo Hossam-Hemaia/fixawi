@@ -933,6 +933,16 @@ exports.getMyInvoices = async (req, res, next) => {
   }
 };
 
+exports.getUserInvoiceDetails = async (req, res, next) => {
+  try {
+    const invoiceId = req.query.invoiceId;
+    const invoice = await userServices.invoiceDetails(invoiceId);
+    res.status(200).json({ success: true, invoice });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postPayInvoice = async (req, res, next) => {
   try {
     const invoiceId = req.body.invoiceId;

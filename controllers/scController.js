@@ -233,6 +233,9 @@ exports.getVisits = async (req, res, next) => {
                   for (let client of slot.clients) {
                     client.time = slot.time;
                     client.bookingId = bookingMap._id;
+                    client.serviceId = bookingMap.serviceId;
+                    client.slotId = slot._id;
+                    client.bookingDate = date;
                     bookingClients.push(client);
                   }
                 }
@@ -592,11 +595,13 @@ exports.postCreateCheckReport = async (req, res, next) => {
       );
     }
     const pushToken = await utilities.getFirebaseToken(clientId);
-    await utilities.sendPushNotification(
-      pushToken,
-      "تقرير فحص",
-      "لديك تقرير فحص من مركز " + req.sc.fullName
-    );
+    if (pushToken) {
+      await utilities.sendPushNotification(
+        pushToken,
+        "تقرير فحص",
+        "لديك تقرير فحص من مركز " + req.sc.fullName
+      );
+    }
     res.status(200).json({ success: true, checkReport });
   } catch (err) {
     next(err);
@@ -657,7 +662,9 @@ exports.getServiceCenterFees = async (req, res, next) => {
       fixawiFareType: serviceCenter.fixawiFareType,
       fareValue: serviceCenter.fareValue,
       salesTaxEnabled: serviceCenter.salesTaxesEnabled,
-      salesTaxRate: serviceCenter.salesTaxRate,
+      salesTaxRate: serviceCenter.salesTaxesEnabled
+        ? serviceCenter.salesTaxRate
+        : 0,
     });
   } catch (err) {
     next(err);
@@ -677,6 +684,10 @@ exports.postCreateInvoice = async (req, res, next) => {
       subTotal,
       checkId,
     } = req.body;
+    const checkReport = await scServices.checkReportDetails(checkId);
+    if (checkReport.invoiceId && checkReport.invoiceId !== "") {
+      throw new Error("An invoice is already issued for this check report!");
+    }
     const serviceCenterId = req.sc.serviceCenterId;
     const serviceCenter = await scServices.getServiceCenter(serviceCenterId);
     let fixawiFare;
@@ -708,11 +719,13 @@ exports.postCreateInvoice = async (req, res, next) => {
     };
     const invoice = await scServices.createInvoice(invoiceData);
     const pushToken = await utilities.getFirebaseToken(userId);
-    await utilities.sendPushNotification(
-      pushToken,
-      "فاتورة صيانه",
-      "لديك فاتورة صيانه من مركز " + req.sc.fullName
-    );
+    if (pushToken) {
+      await utilities.sendPushNotification(
+        pushToken,
+        "فاتورة صيانه",
+        "لديك فاتورة صيانه من مركز " + req.sc.fullName
+      );
+    }
     res.status(200).json({ success: true, invoice });
   } catch (err) {
     next(err);

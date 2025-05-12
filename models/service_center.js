@@ -116,10 +116,11 @@ const serviceCenterSchema = new Schema(
     },
     salesTaxesEnabled: {
       type: Boolean,
+      default: false,
     },
     salesTaxRate: {
       type: Number,
-      default: 0.14,
+      default: 0,
     },
     closingDay: [
       {

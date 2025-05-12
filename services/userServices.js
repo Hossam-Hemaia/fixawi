@@ -582,6 +582,15 @@ exports.myInvoices = async (userId) => {
   }
 };
 
+exports.invoiceDetails = async (invoiceId) => {
+  try {
+    const invoice = await Invoice.findById(invoiceId);
+    return invoice;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.payInvoice = async (invoiceId, paymentMethod) => {
   try {
     const invoice = await Invoice.findById(invoiceId);

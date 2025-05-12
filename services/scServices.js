@@ -201,11 +201,19 @@ exports.updateBookingSettings = async (bookingSettingsId, bookingData) => {
 exports.bookingsCalendar = async (serviceCenterId, date) => {
   try {
     const localDate = utilities.getLocalDate(date);
-    const futureDate = utilities.getFutureDate(date, 7);
-    const bookingCalendar = await Booking.find({
-      serviceCenterId,
-      "calendar.date": { $gte: localDate, $lte: futureDate },
-    }).lean();
+    // const futureDate = utilities.getEndLocalDate(date);
+    const bookingCalendar = await Booking.find(
+      {
+        serviceCenterId,
+        "calendar.date": localDate,
+      },
+      {
+        "calendar.$": 1, // Returns only the first matching date in the array
+        serviceCenterId: 1,
+        serviceId: 1,
+        serviceName: 1,
+      }
+    ).lean();
     return bookingCalendar;
   } catch (err) {
     throw err;

@@ -266,6 +266,12 @@ router.post(
 
 router.get("/my/invoices", isAuth.userIsAuth, userController.getMyInvoices);
 
+router.get(
+  "/user/invoice/details",
+  isAuth.userIsAuth,
+  userController.getUserInvoiceDetails
+);
+
 router.post("/pay/invoice", isAuth.userIsAuth, userController.postPayInvoice);
 
 module.exports = router;

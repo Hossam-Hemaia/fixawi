@@ -70,8 +70,12 @@ exports.getFirebaseToken = async (userId) => {
   try {
     const cacheDb = await rdsClient.getRedisConnection();
     const userToken = await cacheDb.hGetAll(`${userId}`);
-    const token = JSON.parse(userToken.fbaseToken);
-    return token;
+    if (!userToken || !userToken.fbaseToken) {
+      return false;
+    } else {
+      const token = JSON.parse(userToken?.fbaseToken || "");
+      return token;
+    }
   } catch (err) {
     throw err;
   }
