@@ -539,6 +539,7 @@ exports.postCreateCheckReport = async (req, res, next) => {
       bookingId,
       checkDetails,
       total,
+      promotionId,
     } = req.body;
     const serviceCenterId = req.sc.serviceCenterId;
     let clientId = userId;
@@ -567,6 +568,7 @@ exports.postCreateCheckReport = async (req, res, next) => {
         bookingCalendarId: bookingId,
         bookingTime: time,
         slotId: visitId,
+        promotionId,
       };
     } else {
       checkData = {
@@ -688,6 +690,7 @@ exports.postCreateInvoice = async (req, res, next) => {
       invoiceDetails,
       subTotal,
       checkId,
+      promotionId,
     } = req.body;
     const checkReport = await scServices.checkReportDetails(checkId);
     if (checkReport.invoiceId && checkReport.invoiceId !== "") {
@@ -721,6 +724,7 @@ exports.postCreateInvoice = async (req, res, next) => {
       salesTaxAmount,
       invoiceTotal,
       checkId,
+      promotionId,
     };
     const invoice = await scServices.createInvoice(invoiceData);
     const pushToken = await utilities.getFirebaseToken(userId);

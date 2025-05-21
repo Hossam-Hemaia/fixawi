@@ -278,7 +278,7 @@ exports.getServiceCenterDetails = async (req, res, next) => {
 
 exports.postVisitServiceCenter = async (req, res, next) => {
   try {
-    const { serviceCenterId, lng, lat } = req.body;
+    const { serviceCenterId, lng, lat, promotionId } = req.body;
     const userId = req.userId;
     const serviceCenter = await scServices.getUserServiceCenter(
       serviceCenterId
@@ -300,6 +300,7 @@ exports.postVisitServiceCenter = async (req, res, next) => {
       visitDate: utilities.getLocalDate(new Date()),
       userId,
       serviceCenterId,
+      promotionId,
     };
     await userServices.createVisit(visitData);
     res.status(200).json({
@@ -606,7 +607,7 @@ exports.getDriverRatings = async (req, res, next) => {
 
 exports.getClientPromotions = async (req, res, next) => {
   try {
-    const promotionId = req.query.serviceCenterId;
+    const serviceCenterId = req.query.serviceCenterId;
     const promotions = await userServices.clientPromotions(serviceCenterId);
     res.status(200).json({ success: true, promotions });
   } catch (err) {

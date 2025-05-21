@@ -61,6 +61,10 @@ const invoiceSchema = new Schema(
       type: String,
       enum: ["cash", "card", "wallet"],
     },
+    promotionId: {
+      type: Schema.Types.ObjectId,
+      ref: "protmotion",
+    },
   },
   { timestamps: true, strictPopulate: false }
 );

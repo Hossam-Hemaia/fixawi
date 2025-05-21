@@ -62,6 +62,10 @@ const checkSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "invoice",
     },
+    promotionId: {
+      type: Schema.Types.ObjectId,
+      ref: "promotion",
+    },
   },
   { timestamps: true }
 );

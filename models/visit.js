@@ -23,6 +23,10 @@ const visitSchema = new Schema(
       type: String,
       default: "pending",
     },
+    promotionId: {
+      type: Schema.Types.ObjectId,
+      ref: "promotion",
+    },
   },
   { timestamps: true, strictPopulate: false }
 );
