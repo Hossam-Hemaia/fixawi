@@ -1,7 +1,10 @@
 const express = require("express");
 const isAuth = require("../middleware/isAuth");
 const userController = require("../controllers/userController");
+const adminController = require("../controllers/adminController");
 const router = express.Router();
+
+router.get("/all/home/ads", adminController.getHomeAds);
 
 router.get("/user/profile", isAuth.userIsAuth, userController.getUserProfile);
 
@@ -231,6 +234,15 @@ router.delete(
   "/remove/favorite",
   isAuth.userIsAuth,
   userController.removeFromFavorite
+);
+
+/******************************************
+ * Notification
+ ******************************************/
+router.get(
+  "/user/notifications",
+  isAuth.userIsAuth,
+  userController.getUserNotifications
 );
 
 /******************************************

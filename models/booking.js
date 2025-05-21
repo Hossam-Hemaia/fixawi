@@ -23,14 +23,14 @@ const bookingSchema = new Schema(
                 phone: { type: String },
                 carBrand: { type: String },
                 carModel: { type: String },
-                malfuncion: { type: String },
+                malfuncion: { type: String, default: "" },
+                promotionId: { type: Schema.Types.ObjectId, ref: "promotion" },
                 bookingStatus: {
                   type: String,
                   default: "pending",
                   enum: ["pending", "checking", "invoiced"],
                 },
                 checkReportId: { type: Schema.Types.ObjectId, ref: "check" },
-                promotionId: { type: Schema.Types.ObjectId, ref: "promotion" },
               },
             ],
             slotIsFull: { type: Boolean, default: false },
@@ -39,7 +39,7 @@ const bookingSchema = new Schema(
       },
     ],
   },
-  { timestamps: true }
+  { timestamps: true, strictPopulate: false }
 );
 
 bookingSchema.methods.createBooking = function (bookingData) {
@@ -63,6 +63,10 @@ bookingSchema.methods.createBooking = function (bookingData) {
                 phone: bookingData.phone,
                 carBrand: bookingData.carBrand,
                 carModel: bookingData.carModel,
+                malfunction: bookingData.malfunction,
+                ...(bookingData.promotionId && {
+                  promotionId: bookingData.promotionId,
+                }),
               },
             ],
           },
@@ -90,6 +94,10 @@ bookingSchema.methods.createBooking = function (bookingData) {
               phone: bookingData.phone,
               carBrand: bookingData.carBrand,
               carModel: bookingData.carModel,
+              malfunction: bookingData.malfunction,
+              ...(bookingData.promotionId && {
+                promotionId: bookingData.promotionId,
+              }),
             },
           ],
         };
@@ -101,6 +109,10 @@ bookingSchema.methods.createBooking = function (bookingData) {
           phone: bookingData.phone,
           carBrand: bookingData.carBrand,
           carModel: bookingData.carModel,
+          malfunction: bookingData.malfunction,
+          ...(bookingData.promotionId && {
+            promotionId: bookingData.promotionId,
+          }),
         };
         for (let client of slot.clients) {
           if (client.clientId.toString() === bookingData.clientId.toString()) {

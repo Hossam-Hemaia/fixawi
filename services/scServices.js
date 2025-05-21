@@ -303,6 +303,10 @@ exports.cancelClientBooking = async (bookingData) => {
 
 exports.createInvoice = async (invoiceData) => {
   try {
+    const checkReport = await Check.findById(invoiceData.checkId);
+    if (checkReport.reportStatus !== "confirmed") {
+      throw new Error("Client must confirm check report!");
+    }
     const today = new Date();
     const datePrefix = `${today.getFullYear()}${(today.getMonth() + 1)
       .toString()
@@ -316,7 +320,6 @@ exports.createInvoice = async (invoiceData) => {
     const invoice = new Invoice(invoiceData);
     invoice.invoiceNumber = invoiceNumber;
     await invoice.save();
-    const checkReport = await Check.findById(invoiceData.checkId);
     if (checkReport) {
       checkReport.reportStatus = "invoiced";
       checkReport.invoiceId = invoice._id;
@@ -345,7 +348,7 @@ exports.serviceCenterInvoices = async (dateFrom, dateTo, serviceCenterId) => {
     const invoices = await Invoice.find({
       createdAt: { $gte: localStartDate, $lte: localEndDate },
       serviceCenterId: serviceCenterId,
-    });
+    }).sort({ createdAt: -1 });
     return invoices;
   } catch (err) {
     throw err;

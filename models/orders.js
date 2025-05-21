@@ -36,7 +36,6 @@ const orderSchema = new Schema(
     orderStatus: [{ state: { type: String }, date: { type: Date } }], //[pending, accepted, received, transporting, delivered or rejected, canceled]
     orderDate: {
       type: Date,
-      default: new Date(),
     },
     companyName: {
       type: String,
@@ -53,6 +52,9 @@ const orderSchema = new Schema(
     driverId: {
       type: Schema.Types.ObjectId,
       ref: "driver",
+    },
+    distancePerKm: {
+      type: Number,
     },
   },
   { timestamps: true, strictPopulate: false }

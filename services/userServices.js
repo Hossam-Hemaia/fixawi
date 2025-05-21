@@ -15,6 +15,7 @@ const Favorite = require("../models/favorite");
 const utilities = require("../utils/utilities");
 const Wallet = require("../models/wallet");
 const Movement = require("../models/movement");
+const Notification = require("../models/notification");
 
 exports.carsBrands = async () => {
   try {
@@ -295,10 +296,11 @@ exports.removeCarMaintenance = async (userId, maintenanceId) => {
   }
 };
 /********************Promotions*********************/
-exports.clientPromotions = async () => {
+exports.clientPromotions = async (serviceCenterId) => {
   try {
     const currentDate = utilities.getLocalDate(new Date());
     const promotions = await Promotion.find({
+      serviceCenterId,
       approved: true,
       expiryDate: { $gt: currentDate },
     });
@@ -419,7 +421,8 @@ exports.userBookings = async (userId) => {
         select: "location",
       })
       .sort({ createdAt: -1 });
-    return user.myBookings;
+    const bookings = user.myBookings.reverse();
+    return bookings;
   } catch (err) {
     throw err;
   }
@@ -511,6 +514,31 @@ exports.removeFromFavorites = async (userId, serviceCenterId) => {
   }
 };
 
+/***************User Notifications****************/
+exports.userNotifications = async (userId) => {
+  try {
+    const notifications = await Notification.find({ clientId: userId }).sort({
+      createdAt: -1,
+    });
+    return notifications;
+  } catch (err) {
+    throw err;
+  }
+};
+
+exports.setNotification = async (userId, title, msg) => {
+  try {
+    const notificationData = {
+      clientId: userId,
+      title,
+      msg,
+    };
+    const notification = new Notification(notificationData);
+    await notification.save();
+  } catch (err) {
+    throw err;
+  }
+};
 /*************Check Reports************/
 exports.myCheckReports = async (userId) => {
   try {
@@ -573,7 +601,10 @@ exports.declineCheckReport = async (checkReportId) => {
 /***************Invoices****************/
 exports.myInvoices = async (userId) => {
   try {
-    const invoices = await Invoice.find({ userId })
+    const invoices = await Invoice.find(
+      { userId },
+      { invoiceTotal: 0, fixawiFare: 0 }
+    )
       .sort({ createdAt: -1 })
       .populate({ path: "serviceCenterId", select: "serviceCenterTitle" });
     return invoices;
@@ -584,7 +615,10 @@ exports.myInvoices = async (userId) => {
 
 exports.invoiceDetails = async (invoiceId) => {
   try {
-    const invoice = await Invoice.findById(invoiceId);
+    const invoice = await Invoice.findById(invoiceId, {
+      invoiceTotal: 0,
+      fixawiFare: 0,
+    });
     return invoice;
   } catch (err) {
     throw err;

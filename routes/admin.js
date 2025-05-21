@@ -455,6 +455,20 @@ router.get(
  **********************************************************/
 
 router.post(
+  "/carousel/ads",
+  isAuth.adminIsAuth,
+  adminController.postCarouselAds
+);
+
+router.get("/home/ads", isAuth.adminIsAuth, adminController.getHomeAds);
+
+router.delete(
+  "/delete/carousel/ad",
+  isAuth.adminIsAuth,
+  adminController.deleteCarouselAd
+);
+
+router.post(
   "/set/app/settings",
   isAuth.adminIsAuth,
   adminController.postSetAppSettings

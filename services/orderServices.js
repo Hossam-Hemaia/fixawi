@@ -120,6 +120,28 @@ exports.userRescueOrders = async (userId) => {
   }
 };
 
+exports.userPaidOrders = async (userId) => {
+  try {
+    const orders = await Order.find(
+      { clientId: userId, paymentStatus: "Paid" },
+      {
+        orderNumber: 1,
+        downPyament: 1,
+        rescuePrice: 1,
+        paymentStatus: 1,
+        paymentMethod: 1,
+        orderDate: 1,
+        distancePerKm: 1,
+      }
+    ).sort({
+      createdAt: -1,
+    });
+    return orders;
+  } catch (err) {
+    throw err;
+  }
+};
+
 exports.driverRescueOrders = async (driverId) => {
   try {
     const orders = await Order.find({ driverId }).sort({ createdAt: -1 });
@@ -159,7 +181,9 @@ exports.payOrder = async (orderId, paymentMethod) => {
 
 exports.allOrders = async () => {
   try {
-    const orders = await Order.find().populate(["clientId", "driverId"]);
+    const orders = await Order.find()
+      .populate(["clientId", "driverId"])
+      .sort({ createdAt: -1 });
     return orders;
   } catch (err) {
     throw err;

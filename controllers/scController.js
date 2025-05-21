@@ -601,6 +601,11 @@ exports.postCreateCheckReport = async (req, res, next) => {
         "تقرير فحص",
         "لديك تقرير فحص من مركز " + req.sc.fullName
       );
+      await userServices.setNotification(
+        clientId,
+        "تقرير فحص",
+        "لديك تقرير فحص من مركز " + req.sc.fullName
+      );
     }
     res.status(200).json({ success: true, checkReport });
   } catch (err) {
@@ -722,6 +727,11 @@ exports.postCreateInvoice = async (req, res, next) => {
     if (pushToken) {
       await utilities.sendPushNotification(
         pushToken,
+        "فاتورة صيانه",
+        "لديك فاتورة صيانه من مركز " + req.sc.fullName
+      );
+      await userServices.setNotification(
+        userId,
         "فاتورة صيانه",
         "لديك فاتورة صيانه من مركز " + req.sc.fullName
       );

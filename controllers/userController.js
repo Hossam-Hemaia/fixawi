@@ -438,6 +438,12 @@ exports.postCreateRescueOrder = async (req, res, next) => {
       lat: toPointLat,
       lng: toPointLng,
     };
+    const locations = {
+      fromPoint,
+      toPoint,
+    };
+    const data = await utilities.getDrivingRoute(locations, false);
+    const distance = data.paths[0].distance / 1000;
     const orderNumber = await orderServices.getNextOrderNumber();
     const orderStatus = { state: "pending", date: new Date() };
     const orderData = {
@@ -450,7 +456,9 @@ exports.postCreateRescueOrder = async (req, res, next) => {
       rescuePrice,
       paymentStatus: "Pending Payment",
       orderStatus,
+      orderDate: utilities.getNowLocalDate(new Date()),
       clientId: user._id,
+      distancePerKm: distance,
     };
     // find closest available driver
     const coords = [fromPointLng, fromPointLat];
@@ -598,7 +606,8 @@ exports.getDriverRatings = async (req, res, next) => {
 
 exports.getClientPromotions = async (req, res, next) => {
   try {
-    const promotions = await userServices.clientPromotions();
+    const promotionId = req.query.serviceCenterId;
+    const promotions = await userServices.clientPromotions(serviceCenterId);
     res.status(200).json({ success: true, promotions });
   } catch (err) {
     next(err);
@@ -805,7 +814,10 @@ exports.getBookingsDetails = async (req, res, next) => {
   try {
     const userId = req.userId;
     const bookings = await userServices.userBookings(userId);
-    res.status(200).json({ success: true, myBookings: bookings });
+    const orders = await orderServices.userRescueOrders(userId);
+    res
+      .status(200)
+      .json({ success: true, myBookings: bookings, rescueOrders: orders });
   } catch (err) {
     next(err);
   }
@@ -862,6 +874,19 @@ exports.removeFromFavorite = async (req, res, next) => {
       success: true,
       message: "Service center removed from favorites",
     });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/******************************************
+ * Notifications
+ ******************************************/
+exports.getUserNotifications = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const notifications = await userServices.userNotifications(userId);
+    res.status(200).json({ success: true, notifications });
   } catch (err) {
     next(err);
   }
@@ -927,7 +952,8 @@ exports.getMyInvoices = async (req, res, next) => {
   try {
     const userId = req.userId;
     const invoices = await userServices.myInvoices(userId);
-    res.status(200).json({ success: true, invoices });
+    const paidOrders = await orderServices.userPaidOrders(userId);
+    res.status(200).json({ success: true, invoices, paidOrders });
   } catch (err) {
     next(err);
   }

@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const Ads = require("../models/ads");
 const adminServices = require("../services/adminServices");
 const scServices = require("../services/scServices");
 const userServices = require("../services/userServices");
@@ -1453,6 +1454,66 @@ exports.getDriversStatus = async (req, res, next) => {
 /**********************************************************
  * Settings
  **********************************************************/
+
+exports.postCarouselAds = async (req, res, next) => {
+  try {
+    const files = req.files;
+    const clickablePosition = +req.body.clickablePosition;
+    if (files.length < 1) {
+      throw new Error("No images uploaded!");
+    }
+    const baseUrl = `${req.protocol}s://${req.get("host")}/`;
+    let carousel = [];
+    for (let i = 0; i < files.length; ++i) {
+      let imageUrl = baseUrl + files[i].path;
+      if (i + 1 === clickablePosition) {
+        carousel.push({ url: imageUrl, clickable: true });
+      } else {
+        carousel.push({ url: imageUrl });
+      }
+    }
+    let ads = await Ads.findOne();
+    if (!ads) {
+      ads = new Ads({
+        carousel: carousel,
+      });
+      await ads.save();
+    } else {
+      ads.carousel.push(...carousel);
+      await ads.save();
+    }
+    res
+      .status(201)
+      .json({ success: true, message: "Carousel Images Uploaded" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getHomeAds = async (req, res, next) => {
+  try {
+    const homeAds = await Ads.findOne();
+    res.status(200).json({ success: true, homeAds });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.deleteCarouselAd = async (req, res, next) => {
+  try {
+    const adId = req.query.adId;
+    const ad = await Ads.findOne();
+    const newCarousel = ad.carousel.filter((adObj) => {
+      return adObj._id.toString() !== adId.toString();
+    });
+    ad.carousel = newCarousel;
+    await ad.save();
+    res.status(200).json({ success: true, message: "ad deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.postSetAppSettings = async (req, res, next) => {
   try {
     const {
