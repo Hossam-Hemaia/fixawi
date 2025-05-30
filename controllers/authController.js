@@ -8,6 +8,7 @@ const userServices = require("../services/userServices");
 const driverServices = require("../services/driverServices");
 const orderServices = require("../services/orderServices");
 const utilities = require("../utils/utilities");
+const vodafone = require("../utils/vodafone");
 
 exports.postCreateUser = async (req, res, next) => {
   try {
@@ -255,6 +256,7 @@ exports.postverifyAccount = async (req, res, next) => {
 exports.getNewVerificationCode = async (req, res, next) => {
   try {
     const username = req.query.username;
+    console.log(username);
     const user = await userServices.resendCode(username);
     if (user.authMethod === "email") {
       await utilities.emailSender(
@@ -263,7 +265,8 @@ exports.getNewVerificationCode = async (req, res, next) => {
         "confirmation"
       );
     } else if (user.authMethod === "phone") {
-      // use otp api here to send code
+      const msg = "Your SAYYN OTP is: " + user.verificationCode;
+      await vodafone.sendSms(username, msg);
     }
     res.status(200).json({
       success: true,

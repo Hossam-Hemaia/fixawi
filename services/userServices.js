@@ -88,8 +88,9 @@ exports.setUserActive = async (id, status) => {
 exports.resendCode = async (username) => {
   try {
     const user = await User.findOne({
-      $or: [{ email: username }, { phoneNumber: username }],
+      phoneNumber: username,
     });
+    console.log(user);
     const token = utilities.tokenCreator();
     user.verificationCode = token.code;
     user.codeExpiry = token.codeExpiry;

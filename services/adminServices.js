@@ -744,8 +744,8 @@ exports.removeContactUsMessage = async (msgId) => {
 exports.driversJoinRequests = async () => {
   try {
     const driversRequests = await Driver.find({
-      isActive: false,
-      isApproved: false,
+      // isActive: false,
+      // isApproved: false,
     }).sort({ createdAt: -1 });
     return driversRequests;
   } catch (err) {
