@@ -256,7 +256,6 @@ exports.postverifyAccount = async (req, res, next) => {
 exports.getNewVerificationCode = async (req, res, next) => {
   try {
     const username = req.query.username;
-    console.log(username);
     const user = await userServices.resendCode(username);
     if (user.authMethod === "email") {
       await utilities.emailSender(

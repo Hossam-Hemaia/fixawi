@@ -1,0 +1,374 @@
+AxiosError: Request failed with status code 400
+2|api  |     at settle (/home/api/node_modules/axios/dist/node/axios.cjs:2019:12)
+2|api  |     at IncomingMessage.handleStreamEnd (/home/api/node_modules/axios/dist/node/axios.cjs:3135:11)
+2|api  |     at IncomingMessage.emit (node:events:531:35)
+2|api  |     at endReadableNT (node:internal/streams/readable:1696:12)
+2|api  |     at process.processTicksAndRejections (node:internal/process/task_queues:82:21)
+2|api  |     at Axios.request (/home/api/node_modules/axios/dist/node/axios.cjs:4287:41)
+2|api  |     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+2|api  |     at async Object.sendSms (/home/api/utils/vodafone.js:42:24)
+2|api  |     at async exports.getNewVerificationCode (/home/api/controllers/authController.js:269:7) {
+2|api  |   code: 'ERR_BAD_REQUEST',
+2|api  |   config: {
+2|api  |     transitional: {
+2|api  |       silentJSONParsing: true,
+2|api  |       forcedJSONParsing: true,
+2|api  |       clarifyTimeoutError: false
+2|api  |     },
+2|api  |     adapter: [ 'xhr', 'http', 'fetch' ],
+2|api  |     transformRequest: [ [Function: transformRequest] ],
+2|api  |     transformResponse: [ [Function: transformResponse] ],
+2|api  |     timeout: 0,
+2|api  |     xsrfCookieName: 'XSRF-TOKEN',
+2|api  |     xsrfHeaderName: 'X-XSRF-TOKEN',
+2|api  |     maxContentLength: -1,
+2|api  |     maxBodyLength: -1,
+2|api  |     env: { FormData: [Function], Blob: [class Blob] },
+2|api  |     validateStatus: [Function: validateStatus],
+2|api  |     headers: Object [AxiosHeaders] {
+2|api  |       Accept: 'application/xml',
+2|api  |       'Content-Type': 'application/xml',
+2|api  |       'User-Agent': 'axios/1.7.7',
+2|api  |       'Content-Length': '506',
+2|api  |       'Accept-Encoding': 'gzip, compress, deflate, br'
+2|api  |     },
+2|api  |     method: 'post',
+2|api  |     url: 'https://e3len.vodafone.com.eg/web2sms/sms/submit/',
+2|api  |     data: '\n' +
+2|api  |       '      <?xml version="1.0" encoding="UTF-8"?>\n' +
+2|api  |       "      <SubmitSMSRequest xmlns='http://www.edafa.com/web2sms/sms/model/'>\n" +
+2|api  |       '        <AccountId>550205075</AccountId>\n' +
+2|api  |       '        <Password>Vodafone.1</Password>\n' +
+2|api  |       '        <SecureHash>49813C0C09430E586DF5C0F776365D6FADE108316D56F34BF0020B9670193DD9</SecureHash>\n' +
+2|api  |       '        <SMSList>\n' +
+2|api  |       '          <SenderName>Futurera</SenderName>\n' +
+2|api  |       '          <ReceiverMSISDN>201066553558</ReceiverMSISDN>\n' +
+2|api  |       '          <SMSText>this is test msg</SMSText>\n' +
+2|api  |       '        </SMSList>\n' +
+2|api  |       '      </SubmitSMSRequest>'
+2|api  |   },
+2|api  |   request: <ref *1> ClientRequest {
+2|api  |     _events: [Object: null prototype] {
+2|api  |       abort: [Function (anonymous)],
+2|api  |       aborted: [Function (anonymous)],
+2|api  |       connect: [Function (anonymous)],
+2|api  |       error: [Function (anonymous)],
+2|api  |       socket: [Function (anonymous)],
+2|api  |       timeout: [Function (anonymous)],
+2|api  |       finish: [Function: requestOnFinish]
+2|api  |     },
+2|api  |     _eventsCount: 7,
+2|api  |     _maxListeners: undefined,
+2|api  |     outputData: [],
+2|api  |     outputSize: 0,
+2|api  |     writable: true,
+2|api  |     destroyed: false,
+2|api  |     _last: false,
+2|api  |     chunkedEncoding: false,
+2|api  |     shouldKeepAlive: false,
+2|api  |     maxRequestsOnConnectionReached: false,
+2|api  |     _defaultKeepAlive: true,
+2|api  |     useChunkedEncodingByDefault: true,
+2|api  |     sendDate: false,
+2|api  |     _removedConnection: false,
+2|api  |     _removedContLen: false,
+2|api  |     _removedTE: false,
+2|api  |     strictContentLength: false,
+2|api  |     _contentLength: '506',
+2|api  |     _hasBody: true,
+2|api  |     _trailer: '',
+2|api  |     finished: true,
+2|api  |     _headerSent: true,
+2|api  |     _closed: false,
+2|api  |     socket: TLSSocket {
+2|api  |       _tlsOptions: [Object],
+2|api  |       _secureEstablished: true,
+2|api  |       _securePending: false,
+2|api  |       _newSessionPending: false,
+2|api  |       _controlReleased: true,
+2|api  |       secureConnecting: false,
+2|api  |       _SNICallback: null,
+2|api  |       servername: 'e3len.vodafone.com.eg',
+2|api  |       alpnProtocol: false,
+2|api  |       authorized: true,
+2|api  |       authorizationError: null,
+2|api  |       encrypted: true,
+2|api  |       _events: [Object: null prototype],
+2|api  |       _eventsCount: 10,
+2|api  |       connecting: false,
+2|api  |       _hadError: false,
+2|api  |       _parent: null,
+2|api  |       _host: 'e3len.vodafone.com.eg',
+2|api  |       _closeAfterHandlingError: false,
+2|api  |       _readableState: [ReadableState],
+2|api  |       _writableState: [WritableState],
+2|api  |       allowHalfOpen: false,
+2|api  |       _maxListeners: undefined,
+2|api  |       _sockname: null,
+2|api  |       _pendingData: null,
+2|api  |       _pendingEncoding: '',
+2|api  |       server: undefined,
+2|api  |       _server: null,
+2|api  |       ssl: [TLSWrap],
+2|api  |       _requestCert: true,
+2|api  |       _rejectUnauthorized: true,
+2|api  |       timeout: 5000,
+2|api  |       parser: null,
+2|api  |       _httpMessage: [Circular *1],
+2|api  |       [Symbol(alpncallback)]: null,
+2|api  |       [Symbol(res)]: [TLSWrap],
+2|api  |       [Symbol(verified)]: true,
+2|api  |       [Symbol(pendingSession)]: null,
+2|api  |       [Symbol(async_id_symbol)]: 769,
+2|api  |       [Symbol(kHandle)]: [TLSWrap],
+2|api  |       [Symbol(lastWriteQueueSize)]: 0,
+2|api  |       [Symbol(timeout)]: Timeout {
+2|api  |         _idleTimeout: 5000,
+2|api  |         _idlePrev: [TimersList],
+2|api  |         _idleNext: [Timeout],
+2|api  |         _idleStart: 10157,
+2|api  |         _onTimeout: [Function: bound ],
+2|api  |         _timerArgs: undefined,
+2|api  |         _repeat: null,
+2|api  |         _destroyed: false,
+2|api  |         [Symbol(refed)]: false,
+2|api  |         [Symbol(kHasPrimitive)]: false,
+2|api  |         [Symbol(asyncId)]: 771,
+2|api  |         [Symbol(triggerId)]: 0
+2|api  |       },
+2|api  |       [Symbol(kBuffer)]: null,
+2|api  |       [Symbol(kBufferCb)]: null,
+2|api  |       [Symbol(kBufferGen)]: null,
+2|api  |       [Symbol(shapeMode)]: true,
+2|api  |       [Symbol(kCapture)]: false,
+2|api  |       [Symbol(kSetNoDelay)]: false,
+2|api  |       [Symbol(kSetKeepAlive)]: true,
+2|api  |       [Symbol(kSetKeepAliveInitialDelay)]: 60,
+2|api  |       [Symbol(kBytesRead)]: 0,
+2|api  |       [Symbol(kBytesWritten)]: 0,
+2|api  |       [Symbol(connect-options)]: [Object]
+2|api  |     },
+2|api  |     _header: 'POST /web2sms/sms/submit/ HTTP/1.1\r\n' +
+2|api  |       'Accept: application/xml\r\n' +
+2|api  |       'Content-Type: application/xml\r\n' +
+2|api  |       'User-Agent: axios/1.7.7\r\n' +
+2|api  |       'Content-Length: 506\r\n' +
+2|api  |       'Accept-Encoding: gzip, compress, deflate, br\r\n' +
+2|api  |       'Host: e3len.vodafone.com.eg\r\n' +
+2|api  |       'Connection: keep-alive\r\n' +
+2|api  |       '\r\n',
+2|api  |     _keepAliveTimeout: 0,
+2|api  |     _onPendingData: [Function: nop],
+2|api  |     agent: Agent {
+2|api  |       _events: [Object: null prototype],
+2|api  |       _eventsCount: 2,
+2|api  |       _maxListeners: undefined,
+2|api  |       defaultPort: 443,
+2|api  |       protocol: 'https:',
+2|api  |       options: [Object: null prototype],
+2|api  |       requests: [Object: null prototype] {},
+2|api  |       sockets: [Object: null prototype],
+2|api  |       freeSockets: [Object: null prototype] {},
+2|api  |       keepAliveMsecs: 1000,
+2|api  |       keepAlive: true,
+2|api  |       maxSockets: Infinity,
+2|api  |       maxFreeSockets: 256,
+2|api  |       scheduling: 'lifo',
+2|api  |       maxTotalSockets: Infinity,
+2|api  |       totalSocketCount: 1,
+2|api  |       maxCachedSessions: 100,
+2|api  |       _sessionCache: [Object],
+2|api  |       [Symbol(shapeMode)]: false,
+2|api  |       [Symbol(kCapture)]: false
+2|api  |     },
+2|api  |     socketPath: undefined,
+2|api  |     method: 'POST',
+2|api  |     maxHeaderSize: undefined,
+2|api  |     insecureHTTPParser: undefined,
+2|api  |     joinDuplicateHeaders: undefined,
+2|api  |     path: '/web2sms/sms/submit/',
+2|api  |     _ended: true,
+2|api  |     res: IncomingMessage {
+2|api  |       _events: [Object],
+2|api  |       _readableState: [ReadableState],
+2|api  |       _maxListeners: undefined,
+2|api  |       socket: [TLSSocket],
+2|api  |       httpVersionMajor: 1,
+2|api  |       httpVersionMinor: 1,
+2|api  |       httpVersion: '1.1',
+2|api  |       complete: true,
+2|api  |       rawHeaders: [Array],
+2|api  |       rawTrailers: [],
+2|api  |       joinDuplicateHeaders: undefined,
+2|api  |       aborted: false,
+2|api  |       upgrade: false,
+2|api  |       url: '',
+2|api  |       method: null,
+2|api  |       statusCode: 400,
+2|api  |       statusMessage: 'Bad Request',
+2|api  |       client: [TLSSocket],
+2|api  |       _consuming: true,
+2|api  |       _dumped: false,
+2|api  |       req: [Circular *1],
+2|api  |       _eventsCount: 4,
+2|api  |       responseUrl: 'https://e3len.vodafone.com.eg/web2sms/sms/submit/',
+2|api  |       redirects: [],
+2|api  |       [Symbol(shapeMode)]: true,
+2|api  |       [Symbol(kCapture)]: false,
+2|api  |       [Symbol(kHeaders)]: [Object],
+2|api  |       [Symbol(kHeadersCount)]: 10,
+2|api  |       [Symbol(kTrailers)]: null,
+2|api  |       [Symbol(kTrailersCount)]: 0
+2|api  |     },
+2|api  |     aborted: false,
+2|api  |     timeoutCb: [Function: emitRequestTimeout],
+2|api  |     upgradeOrConnect: false,
+2|api  |     parser: null,
+2|api  |     maxHeadersCount: null,
+2|api  |     reusedSocket: false,
+2|api  |     host: 'e3len.vodafone.com.eg',
+2|api  |     protocol: 'https:',
+2|api  |     _redirectable: Writable {
+2|api  |       _events: [Object],
+2|api  |       _writableState: [WritableState],
+2|api  |       _maxListeners: undefined,
+2|api  |       _options: [Object],
+2|api  |       _ended: true,
+2|api  |       _ending: true,
+2|api  |       _redirectCount: 0,
+2|api  |       _redirects: [],
+2|api  |       _requestBodyLength: 506,
+2|api  |       _requestBodyBuffers: [],
+2|api  |       _eventsCount: 3,
+2|api  |       _onNativeResponse: [Function (anonymous)],
+2|api  |       _currentRequest: [Circular *1],
+2|api  |       _currentUrl: 'https://e3len.vodafone.com.eg/web2sms/sms/submit/',
+2|api  |       [Symbol(shapeMode)]: true,
+2|api  |       [Symbol(kCapture)]: false
+2|api  |     },
+2|api  |     [Symbol(shapeMode)]: false,
+2|api  |     [Symbol(kCapture)]: false,
+2|api  |     [Symbol(kBytesWritten)]: 0,
+2|api  |     [Symbol(kNeedDrain)]: false,
+2|api  |     [Symbol(corked)]: 0,
+2|api  |     [Symbol(kOutHeaders)]: [Object: null prototype] {
+2|api  |       accept: [Array],
+2|api  |       'content-type': [Array],
+2|api  |       'user-agent': [Array],
+2|api  |       'content-length': [Array],
+2|api  |       'accept-encoding': [Array],
+2|api  |       host: [Array]
+2|api  |     },
+2|api  |     [Symbol(errored)]: null,
+2|api  |     [Symbol(kHighWaterMark)]: 16384,
+2|api  |     [Symbol(kRejectNonStandardBodyWrites)]: false,
+2|api  |     [Symbol(kUniqueHeaders)]: null
+2|api  |   },
+2|api  |   response: {
+2|api  |     status: 400,
+2|api  |     statusText: 'Bad Request',
+2|api  |     headers: Object [AxiosHeaders] {
+2|api  |       date: 'Wed, 04 Jun 2025 06:26:10 GMT',
+2|api  |       'content-length': '11',
+2|api  |       connection: 'close',
+2|api  |       'content-type': 'text/html; charset=UTF-8',
+2|api  |       'set-cookie': [Array]
+2|api  |     },
+2|api  |     config: {
+2|api  |       transitional: [Object],
+2|api  |       adapter: [Array],
+2|api  |       transformRequest: [Array],
+2|api  |       transformResponse: [Array],
+2|api  |       timeout: 0,
+2|api  |       xsrfCookieName: 'XSRF-TOKEN',
+2|api  |       xsrfHeaderName: 'X-XSRF-TOKEN',
+2|api  |       maxContentLength: -1,
+2|api  |       maxBodyLength: -1,
+2|api  |       env: [Object],
+2|api  |       validateStatus: [Function: validateStatus],
+2|api  |       headers: [Object [AxiosHeaders]],
+2|api  |       method: 'post',
+2|api  |       url: 'https://e3len.vodafone.com.eg/web2sms/sms/submit/',
+2|api  |       data: '\n' +
+2|api  |         '      <?xml version="1.0" encoding="UTF-8"?>\n' +
+2|api  |         "      <SubmitSMSRequest xmlns='http://www.edafa.com/web2sms/sms/model/'>\n" +
+2|api  |         '        <AccountId>550205075</AccountId>\n' +
+2|api  |         '        <Password>Vodafone.1</Password>\n' +
+2|api  |         '        <SecureHash>49813C0C09430E586DF5C0F776365D6FADE108316D56F34BF0020B9670193DD9</SecureHash>\n' +
+2|api  |         '        <SMSList>\n' +
+2|api  |         '          <SenderName>Futurera</SenderName>\n' +
+2|api  |         '          <ReceiverMSISDN>201066553558</ReceiverMSISDN>\n' +
+2|api  |         '          <SMSText>this is test msg</SMSText>\n' +
+2|api  |         '        </SMSList>\n' +
+2|api  |         '      </SubmitSMSRequest>'
+2|api  |     },
+2|api  |     request: <ref *1> ClientRequest {
+2|api  |       _events: [Object: null prototype],
+2|api  |       _eventsCount: 7,
+2|api  |       _maxListeners: undefined,
+2|api  |       outputData: [],
+2|api  |       outputSize: 0,
+2|api  |       writable: true,
+2|api  |       destroyed: false,
+2|api  |       _last: false,
+2|api  |       chunkedEncoding: false,
+2|api  |       shouldKeepAlive: false,
+2|api  |       maxRequestsOnConnectionReached: false,
+2|api  |       _defaultKeepAlive: true,
+2|api  |       useChunkedEncodingByDefault: true,
+2|api  |       sendDate: false,
+2|api  |       _removedConnection: false,
+2|api  |       _removedContLen: false,
+2|api  |       _removedTE: false,
+2|api  |       strictContentLength: false,
+2|api  |       _contentLength: '506',
+2|api  |       _hasBody: true,
+2|api  |       _trailer: '',
+2|api  |       finished: true,
+2|api  |       _headerSent: true,
+2|api  |       _closed: false,
+2|api  |       socket: [TLSSocket],
+2|api  |       _header: 'POST /web2sms/sms/submit/ HTTP/1.1\r\n' +
+2|api  |         'Accept: application/xml\r\n' +
+2|api  |         'Content-Type: application/xml\r\n' +
+2|api  |         'User-Agent: axios/1.7.7\r\n' +
+2|api  |         'Content-Length: 506\r\n' +
+2|api  |         'Accept-Encoding: gzip, compress, deflate, br\r\n' +
+2|api  |         'Host: e3len.vodafone.com.eg\r\n' +
+2|api  |         'Connection: keep-alive\r\n' +
+2|api  |         '\r\n',
+2|api  |       _keepAliveTimeout: 0,
+2|api  |       _onPendingData: [Function: nop],
+2|api  |       agent: [Agent],
+2|api  |       socketPath: undefined,
+2|api  |       method: 'POST',
+2|api  |       maxHeaderSize: undefined,
+2|api  |       insecureHTTPParser: undefined,
+2|api  |       joinDuplicateHeaders: undefined,
+2|api  |       path: '/web2sms/sms/submit/',
+2|api  |       _ended: true,
+2|api  |       res: [IncomingMessage],
+2|api  |       aborted: false,
+2|api  |       timeoutCb: [Function: emitRequestTimeout],
+2|api  |       upgradeOrConnect: false,
+2|api  |       parser: null,
+2|api  |       maxHeadersCount: null,
+2|api  |       reusedSocket: false,
+2|api  |       host: 'e3len.vodafone.com.eg',
+2|api  |       protocol: 'https:',
+2|api  |       _redirectable: [Writable],
+2|api  |       [Symbol(shapeMode)]: false,
+2|api  |       [Symbol(kCapture)]: false,
+2|api  |       [Symbol(kBytesWritten)]: 0,
+2|api  |       [Symbol(kNeedDrain)]: false,
+2|api  |       [Symbol(corked)]: 0,
+2|api  |       [Symbol(kOutHeaders)]: [Object: null prototype],
+2|api  |       [Symbol(errored)]: null,
+2|api  |       [Symbol(kHighWaterMark)]: 16384,
+2|api  |       [Symbol(kRejectNonStandardBodyWrites)]: false,
+2|api  |       [Symbol(kUniqueHeaders)]: null
+2|api  |     },
+2|api  |     data: 'Bad Request'
+2|api  |   },
+2|api  |   status: 400
+2|api  | }

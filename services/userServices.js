@@ -296,6 +296,15 @@ exports.removeCarMaintenance = async (userId, maintenanceId) => {
     throw err;
   }
 };
+
+exports.userVisits = async (userId) => {
+  try {
+    const visits = await Visit.find({ userId });
+    return visits;
+  } catch (err) {
+    throw err;
+  }
+};
 /********************Promotions*********************/
 exports.clientPromotions = async (serviceCenterId) => {
   try {

@@ -135,6 +135,12 @@ router.post(
   adminController.approveServiceCenter
 );
 
+router.get(
+  "/service/center/visits",
+  isAuth.adminIsAuth,
+  adminController.getServiceCenterVisits
+);
+
 router.get("/users/visits", isAuth.adminIsAuth, adminController.getUsersVisits);
 
 /**********************************************************

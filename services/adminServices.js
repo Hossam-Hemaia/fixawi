@@ -374,6 +374,26 @@ exports.walletMovement = async (movementData) => {
   }
 };
 
+exports.scVisits = async (scId, startDate, endDate) => {
+  try {
+    let visits;
+    if (startDate && endDate) {
+      visits = await Visit.find({
+        serviceCenterId: scId,
+        visitDate: { $gte: startDate, $lte: endDate },
+      }).populate("checkReportId");
+      return visits;
+    } else {
+      visits = await Visit.find({
+        serviceCenterId: scId,
+      }).populate("checkReportId");
+      return visits;
+    }
+  } catch (err) {
+    throw err;
+  }
+};
+
 /*********************Price List************************/
 exports.createList = async (serviceCenterId, priceListData) => {
   try {

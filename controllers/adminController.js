@@ -587,6 +587,30 @@ exports.postWalletTransaction = async (req, res, next) => {
   }
 };
 
+exports.getServiceCenterVisits = async (req, res, next) => {
+  try {
+    const { serviceCenterId, dateFrom, dateTo } = req.query;
+    let visits;
+    if (dateFrom && dateTo) {
+      const localDateFrom = utilities.getLocalDate(dateFrom);
+      const localDateTo = utilities.getEndLocalDate(dateTo);
+      if (localDateTo < localDateFrom) {
+        throw new Error("Start date must be less than end date!");
+      }
+      visits = await adminServices.scVisits(
+        serviceCenterId,
+        localDateFrom,
+        localDateTo
+      );
+    } else {
+      visits = await adminServices.scVisits(serviceCenterId);
+    }
+    res.status(200).json({ success: true, visits });
+  } catch (err) {
+    next(err);
+  }
+};
+
 /**********************************************************
  * Booking Settings
  **********************************************************/

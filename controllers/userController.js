@@ -816,9 +816,15 @@ exports.getBookingsDetails = async (req, res, next) => {
     const userId = req.userId;
     const bookings = await userServices.userBookings(userId);
     const orders = await orderServices.userRescueOrders(userId);
+    const visits = await userServices.userVisits(userId);
     res
       .status(200)
-      .json({ success: true, myBookings: bookings, rescueOrders: orders });
+      .json({
+        success: true,
+        myBookings: bookings,
+        rescueOrders: orders,
+        directVisits: visits,
+      });
   } catch (err) {
     next(err);
   }
